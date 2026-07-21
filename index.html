@@ -1,12 +1,496 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mini Archive</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Archive — Every miniature has a story</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0c0b09;
+    --bg-raised: #141210;
+    --hairline: #2a2620;
+    --gold: #c9a24b;
+    --gold-bright: #e8c877;
+    --cream: #ece6d8;
+    --cream-dim: #a89f8c;
+    --mono: #8a8072;
+  }
+ 
+  *{ margin:0; padding:0; box-sizing:border-box; }
+ 
+  html{ scroll-behavior: smooth; }
+ 
+  body{
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+ 
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+ 
+  a{ color: inherit; text-decoration: none; }
+ 
+  .eyebrow{
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+ 
+  .rule-row{
+    display:flex; align-items:center; gap: 14px;
+    margin: 18px 0 28px;
+  }
+  .rule-row .line{ height:1px; background: var(--hairline); flex: 1; }
+  .rule-row .diamond{
+    width: 6px; height: 6px; background: var(--gold);
+    transform: rotate(45deg); flex-shrink: 0;
+  }
+ 
+  /* ---------- Header ---------- */
+  header{
+    position: sticky; top:0; z-index: 50;
+    display:flex; align-items:center; justify-content: space-between;
+    padding: 22px 56px;
+    background: rgba(12,11,9,0.88);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{
+    width: 30px; height:30px;
+    border: 1px solid var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    position: relative;
+  }
+  .brand-mark svg{ width:16px; height:16px; fill: var(--gold); }
+  .brand-name{
+    font-family:'Cormorant Garamond', serif;
+    font-size: 1.35rem;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+  nav{ display:flex; align-items:center; gap:40px; }
+  nav ul{ display:flex; gap: 34px; list-style:none; }
+  nav ul li a{
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    color: var(--cream-dim);
+    position: relative;
+    padding-bottom: 4px;
+  }
+  nav ul li a::after{
+    content:''; position:absolute; left:0; bottom:0;
+    width:0; height:1px; background: var(--gold-bright);
+    transition: width 0.35s ease;
+  }
+  nav ul li a:hover{ color: var(--cream); }
+  nav ul li a:hover::after{ width: 100%; }
+ 
+  .btn-gold{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #0c0b09;
+    background: var(--gold);
+    padding: 11px 22px;
+    border: 1px solid var(--gold);
+    transition: background 0.25s ease, color 0.25s ease;
+  }
+  .btn-gold:hover{ background: var(--gold-bright); }
+ 
+  .btn-ghost{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--cream);
+    padding: 11px 22px;
+    border: 1px solid var(--hairline);
+    transition: border-color 0.25s ease, color 0.25s ease;
+  }
+  .btn-ghost:hover{ border-color: var(--gold); color: var(--gold-bright); }
+ 
+  /* ---------- Hero ---------- */
+  .hero{
+    padding: 120px 56px 100px;
+    max-width: 1100px;
+  }
+  .hero h1{
+    font-family:'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: clamp(3rem, 7vw, 5.4rem);
+    line-height: 1.02;
+    letter-spacing: 0.005em;
+  }
+  .hero h1 .accent{
+    font-style: italic;
+    font-weight: 400;
+    color: var(--gold);
+    display: inline-block;
+    background: linear-gradient(90deg, var(--gold-bright) 0%, var(--gold) 40%, var(--gold) 100%);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: highlight-sweep 2.4s ease-out 0.3s 1;
+  }
+  @keyframes highlight-sweep{
+    from{ background-position: 100% 0; }
+    to{ background-position: 0% 0; }
+  }
+ 
+  .hero p.lede{
+    margin-top: 28px;
+    max-width: 520px;
+    color: var(--cream-dim);
+    font-size: 1.05rem;
+    font-weight: 300;
+  }
+ 
+  .hero-actions{ display:flex; gap:16px; margin-top: 44px; }
+ 
+  /* ---------- Ticker strip ---------- */
+  .ticker{
+    border-top: 1px solid var(--hairline);
+    border-bottom: 1px solid var(--hairline);
+    padding: 18px 56px;
+    display:flex;
+    gap: 60px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--mono);
+    letter-spacing: 0.05em;
+    flex-wrap: wrap;
+  }
+  .ticker span b{ color: var(--gold); font-weight: 500; }
+ 
+  /* ---------- Section shell ---------- */
+  section.block{
+    padding: 100px 56px;
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+  .section-head h2{
+    font-family:'Cormorant Garamond', serif;
+    font-weight: 500;
+    font-size: 2.4rem;
+  }
+ 
+  /* ---------- Collection preview ---------- */
+  .grid-3{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 26px;
+    margin-top: 46px;
+  }
+  .mini-card{
+    border: 1px solid var(--hairline);
+    background: var(--bg-raised);
+    overflow: hidden;
+    transition: border-color 0.3s ease, transform 0.3s ease;
+  }
+  .mini-card:hover{ border-color: var(--gold); transform: translateY(-4px); }
+  .mini-card .thumb{
+    height: 230px;
+    background: linear-gradient(160deg, #23201a, #131110);
+    position: relative;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .mini-card .thumb .placeholder-icon{
+    width: 34px; height:34px; opacity:0.35;
+  }
+  .mini-card .thumb .id-tag{
+    position:absolute; top:12px; left:12px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    border: 1px solid rgba(201,162,75,0.4);
+    padding: 3px 8px;
+  }
+  .mini-card .info{ padding: 20px 22px 24px; }
+  .mini-card .info .name{
+    font-family:'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--cream);
+  }
+  .mini-card .info .meta{
+    margin-top: 6px;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    color: var(--mono);
+    text-transform: uppercase;
+  }
+ 
+  .view-all-row{
+    margin-top: 40px;
+    display:flex; justify-content:center;
+  }
+ 
+  /* ---------- How it works ---------- */
+  .how-grid{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 44px;
+    margin-top: 50px;
+  }
+  .how-item .num{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+  }
+  .how-item h3{
+    font-family:'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 10px 0 10px;
+  }
+  .how-item p{ color: var(--cream-dim); font-size: 0.92rem; }
+ 
+  /* ---------- Provenance / certificate teaser ---------- */
+  .cert-teaser{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 70px;
+    align-items: center;
+  }
+  .cert-teaser .copy p{ color: var(--cream-dim); margin-top: 18px; font-size: 0.98rem; max-width: 460px;}
+  .cert-box{
+    border: 1px solid var(--hairline);
+    background: radial-gradient(circle at 30% 20%, #1b170f, #0c0b09 70%);
+    padding: 44px;
+    text-align:center;
+    position: relative;
+  }
+  .cert-box::before, .cert-box::after{
+    content:''; position:absolute; width:22px; height:22px;
+    border-top: 1px solid var(--gold); border-left: 1px solid var(--gold);
+  }
+  .cert-box::before{ top:14px; left:14px; }
+  .cert-box::after{ bottom:14px; right:14px; border-top:none; border-left:none; border-bottom:1px solid var(--gold); border-right:1px solid var(--gold); }
+  .cert-box .shield{
+    width:46px; height:46px; margin: 0 auto 18px;
+    border: 1px solid var(--gold); border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .cert-box .shield svg{ width:20px; height:20px; fill: var(--gold); }
+  .cert-box .cert-title{
+    font-family:'Cormorant Garamond', serif;
+    font-size: 1.4rem;
+    font-weight: 600;
+  }
+  .cert-box .cert-sub{
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    color: var(--mono);
+    letter-spacing: 0.1em;
+    margin-top: 8px;
+  }
+ 
+  /* ---------- CTA band ---------- */
+  .cta-band{
+    text-align:center;
+    padding: 90px 56px;
+    border-top: 1px solid var(--hairline);
+  }
+  .cta-band h2{
+    font-family:'Cormorant Garamond', serif;
+    font-size: 2.6rem;
+    font-weight: 500;
+  }
+  .cta-band p{ color: var(--cream-dim); margin-top: 16px; }
+  .cta-band .hero-actions{ justify-content:center; margin-top: 34px; }
+ 
+  /* ---------- Footer ---------- */
+  footer{
+    border-top: 1px solid var(--hairline);
+    padding: 32px 56px;
+    display:flex; align-items:center; justify-content:space-between;
+    font-family:'IBM Plex Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--mono);
+    letter-spacing: 0.05em;
+  }
+  footer a:hover{ color: var(--gold); }
+  footer .foot-links{ display:flex; gap: 26px; }
+ 
+  /* ---------- Responsive ---------- */
+  @media (max-width: 900px){
+    header{ padding: 18px 24px; }
+    nav ul{ display:none; }
+    .hero{ padding: 80px 24px 70px; }
+    .ticker{ padding: 16px 24px; gap: 30px; }
+    section.block{ padding: 70px 24px; }
+    .grid-3, .how-grid{ grid-template-columns: 1fr; }
+    .cert-teaser{ grid-template-columns: 1fr; gap: 40px; }
+    footer{ flex-direction: column; gap: 16px; text-align:center; }
+  }
+ 
+  :focus-visible{
+    outline: 1px solid var(--gold-bright);
+    outline-offset: 3px;
+  }
+</style>
 </head>
 <body>
-    <h1>Mini Archive</h1>
-    <p>Every miniature has a story.</p>
+ 
+<header>
+  <div class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
+    </div>
+    <div class="brand-name">MINI ARCHIVE</div>
+  </div>
+  <nav>
+    <ul>
+      <li><a href="#collection">Collection</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#provenance">Provenance</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+    <a class="btn-gold" href="#">Start an Archive</a>
+  </nav>
+</header>
+ 
+<section class="hero">
+  <div class="eyebrow">A LIVING RECORD OF PAINTED MINIATURES</div>
+  <h1>Every miniature<br><span class="accent">has a story.</span></h1>
+  <p class="lede">Mini Archive keeps the record straight — who painted it, how long it took, every colour that went into it, and where it's been since. Not just photos. Provenance.</p>
+  <div class="hero-actions">
+    <a class="btn-gold" href="#collection">View the Collection</a>
+    <a class="btn-ghost" href="#how">How it works</a>
+  </div>
+</section>
+ 
+<div class="ticker">
+  <span><b>01</b> — Model created</span>
+  <span><b>02</b> — Every step logged</span>
+  <span><b>03</b> — Photographed, front to back</span>
+  <span><b>04</b> — Archived for good</span>
+</div>
+ 
+<section class="block" id="collection">
+  <div class="section-head">
+    <div class="eyebrow">Section I</div>
+    <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+    <h2>From the Collection</h2>
+  </div>
+ 
+  <div class="grid-3">
+    <div class="mini-card">
+      <div class="thumb">
+        <span class="id-tag">MA-0001</span>
+        <svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
+      </div>
+      <div class="info">
+        <div class="name">Captain Cassian</div>
+        <div class="meta">Games Workshop · 35.0 hrs</div>
+      </div>
+    </div>
+    <div class="mini-card">
+      <div class="thumb">
+        <span class="id-tag">MA-0002</span>
+        <svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
+      </div>
+      <div class="info">
+        <div class="name">Magnus the Red</div>
+        <div class="meta">Forge World · in progress</div>
+      </div>
+    </div>
+    <div class="mini-card">
+      <div class="thumb">
+        <span class="id-tag">MA-0003</span>
+        <svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
+      </div>
+      <div class="info">
+        <div class="name">Christmas Gitz</div>
+        <div class="meta">Games Workshop · queued</div>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="view-all-row">
+    <a class="btn-ghost" href="#">View Full Collection →</a>
+  </div>
+</section>
+ 
+<section class="block" id="how">
+  <div class="section-head">
+    <div class="eyebrow">Section II</div>
+    <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+    <h2>How it Works</h2>
+  </div>
+  <div class="how-grid">
+    <div class="how-item">
+      <div class="num">01</div>
+      <h3>Log the model</h3>
+      <p>Name, painter, owner, and photos front to back. That's the whole minimum — everything else is optional detail.</p>
+    </div>
+    <div class="how-item">
+      <div class="num">02</div>
+      <h3>Add as much as you want</h3>
+      <p>Paint recipes, build timeline, campaign history, awards. As thin or as detailed as the piece deserves.</p>
+    </div>
+    <div class="how-item">
+      <div class="num">03</div>
+      <h3>Keep it forever</h3>
+      <p>Every record lives in the archive permanently — a history of the hobby, not just a folder of photos.</p>
+    </div>
+  </div>
+</section>
+ 
+<section class="block" id="provenance">
+  <div class="section-head">
+    <div class="eyebrow">Section III</div>
+    <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+    <h2>Provenance, When it Matters</h2>
+  </div>
+  <div class="cert-teaser">
+    <div class="copy">
+      <p>For commissions and competitions, a photo isn't proof. Verified records pair a certificate with an NFC-tagged base, so ownership and authorship are never in question — even after the piece changes hands.</p>
+      <p>Free to log a collection. Verification is for the pieces where it counts.</p>
+    </div>
+    <div class="cert-box">
+      <div class="shield">
+        <svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
+      </div>
+      <div class="cert-title">Certificate of Authenticity</div>
+      <div class="cert-sub">SCAN · VERIFY · MINI ARCHIVE</div>
+    </div>
+  </div>
+</section>
+ 
+<section class="cta-band" id="about">
+  <div class="eyebrow">START YOUR ARCHIVE</div>
+  <h2>Give the hours you put in somewhere to live.</h2>
+  <p>Free to start. No credit card, no catch — just a proper record of the work.</p>
+  <div class="hero-actions">
+    <a class="btn-gold" href="#">Start an Archive</a>
+  </div>
+</section>
+ 
+<footer>
+  <div>© 2026 Mini Archive. Every miniature has a story.</div>
+  <div class="foot-links">
+    <a href="#collection">Collection</a>
+    <a href="#how">How it works</a>
+    <a href="#provenance">Provenance</a>
+  </div>
+</footer>
+ 
 </body>
 </html>
