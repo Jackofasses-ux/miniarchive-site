@@ -63,6 +63,8 @@
     transition: background .25s ease;
   }
   .btn-gold:hover{ background: var(--gold-bright); }
+  .login-link{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); transition: color .2s ease; }
+  .login-link:hover{ color: var(--gold-bright); }
  
   .page-head{ padding: 70px 56px 20px; max-width:1280px; margin:0 auto; }
   .page-head h1{ font-family:'Cormorant Garamond', serif; font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight:500; }
@@ -175,7 +177,8 @@
       <li><a href="index.html#provenance">Provenance</a></li>
       <li><a href="index.html#about">About</a></li>
     </ul>
-    <a class="btn-gold" href="index.html#about">Start an Archive</a>
+    <a class="login-link" href="login.html">Log in</a>
+    <a class="btn-gold" href="start.html">Start an Archive</a>
   </nav>
 </header>
  
@@ -251,7 +254,7 @@
     }
  
     grid.innerHTML = filtered.map(m => `
-      <div class="mini-card">
+      <div class="mini-card" onclick="window.location.href='model.html'">
         <div class="thumb">
           <span class="id-tag">${m.id}</span>
           <span class="status-tag ${m.status}">${statusLabel(m.status)}</span>
