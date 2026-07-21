@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Collection — Mini Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0c0b09;
+    --bg-raised: #141210;
+    --hairline: #2a2620;
+    --gold: #c9a24b;
+    --gold-bright: #e8c877;
+    --cream: #ece6d8;
+    --cream-dim: #a89f8c;
+    --mono: #8a8072;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{
+    background: var(--bg); color: var(--cream);
+    font-family:'Jost', sans-serif; font-weight:300; line-height:1.6;
+  }
+  a{ color:inherit; text-decoration:none; }
+ 
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+ 
+  .eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem; letter-spacing:0.22em;
+    text-transform:uppercase; color: var(--gold);
+  }
+  .rule-row{ display:flex; align-items:center; gap:14px; margin:18px 0 28px; }
+  .rule-row .line{ height:1px; background: var(--hairline); flex:1; }
+  .rule-row .diamond{ width:6px; height:6px; background: var(--gold); transform:rotate(45deg); flex-shrink:0; }
+ 
+  header{
+    position: sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 56px;
+    background: rgba(12,11,9,0.88);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{ width:30px; height:30px; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; }
+  .brand-mark svg{ width:16px; height:16px; fill: var(--gold); }
+  .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
+  nav ul{ display:flex; gap:34px; list-style:none; }
+  nav ul li a{ font-size:0.85rem; color: var(--cream-dim); position:relative; padding-bottom:4px; }
+  nav ul li a.active{ color: var(--gold-bright); }
+  nav ul li a::after{ content:''; position:absolute; left:0; bottom:0; width:0; height:1px; background: var(--gold-bright); transition:width .35s ease; }
+  nav ul li a:hover{ color: var(--cream); }
+  nav ul li a:hover::after{ width:100%; }
+  nav{ display:flex; align-items:center; gap:40px; }
+  .btn-gold{
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color:#0c0b09; background: var(--gold); padding:11px 22px; border:1px solid var(--gold);
+    transition: background .25s ease;
+  }
+  .btn-gold:hover{ background: var(--gold-bright); }
+ 
+  .page-head{ padding: 70px 56px 20px; max-width:1280px; margin:0 auto; }
+  .page-head h1{ font-family:'Cormorant Garamond', serif; font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight:500; }
+ 
+  .controls{
+    max-width:1280px; margin: 0 auto; padding: 0 56px 20px;
+    display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;
+  }
+  .search-box{
+    flex:1; min-width:240px; max-width:420px;
+    display:flex; align-items:center; gap:10px;
+    border:1px solid var(--hairline); background: var(--bg-raised);
+    padding: 12px 16px;
+  }
+  .search-box svg{ width:15px; height:15px; stroke: var(--mono); flex-shrink:0; }
+  .search-box input{
+    background:transparent; border:none; outline:none; color: var(--cream);
+    font-family:'Jost', sans-serif; font-size:0.92rem; width:100%;
+  }
+  .search-box input::placeholder{ color: var(--mono); }
+ 
+  .filters{ display:flex; gap:10px; flex-wrap:wrap; }
+  .filter-btn{
+    font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.08em; text-transform:uppercase;
+    color: var(--cream-dim); border:1px solid var(--hairline); padding:9px 16px; background:transparent;
+    cursor:pointer; transition: all .2s ease;
+  }
+  .filter-btn:hover{ border-color: var(--gold); color: var(--cream); }
+  .filter-btn.active{ background: var(--gold); border-color: var(--gold); color:#0c0b09; }
+ 
+  .result-count{
+    max-width:1280px; margin: 0 auto; padding: 0 56px 10px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color: var(--mono); letter-spacing:0.05em;
+  }
+ 
+  .grid{
+    max-width:1280px; margin: 0 auto; padding: 10px 56px 100px;
+    display:grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
+  }
+  .mini-card{
+    border:1px solid var(--hairline); background: var(--bg-raised); overflow:hidden;
+    transition: border-color .3s ease, transform .3s ease; cursor:pointer;
+  }
+  .mini-card:hover{ border-color: var(--gold); transform: translateY(-4px); }
+  .mini-card .thumb{
+    height: 190px; position:relative;
+    background: linear-gradient(160deg, #23201a, #131110);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .mini-card .thumb .placeholder-icon{ width:30px; height:30px; opacity:0.3; }
+  .mini-card .thumb .id-tag{
+    position:absolute; top:10px; left:10px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.06em;
+    color: var(--gold); border:1px solid rgba(201,162,75,0.4); padding:3px 7px;
+  }
+  .mini-card .thumb .status-tag{
+    position:absolute; top:10px; right:10px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.6rem; letter-spacing:0.06em; text-transform:uppercase;
+    padding:3px 7px; border:1px solid var(--hairline); color: var(--cream-dim);
+  }
+  .status-tag.finished{ color:#8fae7a; border-color: rgba(143,174,122,0.4); }
+  .status-tag.wip{ color: var(--gold-bright); border-color: rgba(201,162,75,0.4); }
+  .status-tag.queued{ color: var(--mono); }
+ 
+  .mini-card .info{ padding:16px 18px 20px; }
+  .mini-card .info .name{ font-family:'Cormorant Garamond', serif; font-size:1.15rem; font-weight:600; }
+  .mini-card .info .meta{
+    margin-top:5px; font-family:'IBM Plex Mono', monospace; font-size:0.64rem;
+    letter-spacing:0.05em; color: var(--mono); text-transform:uppercase;
+  }
+ 
+  .empty-state{
+    grid-column: 1 / -1; text-align:center; padding: 70px 20px;
+    color: var(--cream-dim);
+  }
+  .empty-state .eyebrow{ display:block; margin-bottom: 10px; }
+ 
+  footer{
+    border-top:1px solid var(--hairline); padding:32px 56px;
+    display:flex; align-items:center; justify-content:space-between;
+    font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono);
+  }
+ 
+  @media (max-width: 1100px){ .grid{ grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 800px){
+    header{ padding:18px 24px; }
+    nav ul{ display:none; }
+    .page-head, .controls, .result-count, .grid{ padding-left:24px; padding-right:24px; }
+    .grid{ grid-template-columns: repeat(2, 1fr); }
+    footer{ flex-direction:column; gap:14px; text-align:center; padding:24px; }
+  }
+  @media (max-width: 500px){ .grid{ grid-template-columns: 1fr; } }
+ 
+  :focus-visible{ outline:1px solid var(--gold-bright); outline-offset:3px; }
+</style>
+</head>
+<body>
+ 
+<header>
+  <div class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
+    </div>
+    <div class="brand-name">MINI ARCHIVE</div>
+  </div>
+  <nav>
+    <ul>
+      <li><a class="active" href="collection.html">Collection</a></li>
+      <li><a href="index.html#how">How it works</a></li>
+      <li><a href="index.html#provenance">Provenance</a></li>
+      <li><a href="index.html#about">About</a></li>
+    </ul>
+    <a class="btn-gold" href="index.html#about">Start an Archive</a>
+  </nav>
+</header>
+ 
+<div class="page-head">
+  <div class="eyebrow">The Collection</div>
+  <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+  <h1>Every model, catalogued.</h1>
+</div>
+ 
+<div class="controls">
+  <div class="search-box">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+    <input id="searchInput" type="text" placeholder="Search by name or painter…" autocomplete="off">
+  </div>
+  <div class="filters" id="filters">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="finished">Finished</button>
+    <button class="filter-btn" data-filter="wip">In Progress</button>
+    <button class="filter-btn" data-filter="queued">Queued</button>
+  </div>
+</div>
+ 
+<div class="result-count" id="resultCount"></div>
+ 
+<div class="grid" id="grid"></div>
+ 
+<footer>
+  <div>© 2026 Mini Archive. Every miniature has a story.</div>
+  <div><a href="index.html">← Back home</a></div>
+</footer>
+ 
+<script>
+  // ---- Mock data (stand-in for the future Sheet/DB-backed API) ----
+  const MOCK_MINIS = [
+    { id: "MA-0001", name: "Captain Cassian", painter: "E. Stegosaurus", manufacturer: "Games Workshop", hours: 35.0, status: "finished" },
+    { id: "MA-0002", name: "Magnus the Red", painter: "E. Stegosaurus", manufacturer: "Forge World", hours: 18.5, status: "wip" },
+    { id: "MA-0003", name: "Christmas Gitz", painter: "E. Stegosaurus", manufacturer: "Games Workshop", hours: 0, status: "queued" },
+    { id: "MA-0004", name: "Sacred Rose Celestine", painter: "E. Stegosaurus", manufacturer: "Games Workshop", hours: 22.0, status: "finished" },
+    { id: "MA-0005", name: "Nighthaunt Lord", painter: "A. Harwick", manufacturer: "Games Workshop", hours: 9.0, status: "wip" },
+    { id: "MA-0006", name: "Ork Warboss", painter: "A. Harwick", manufacturer: "Games Workshop", hours: 12.5, status: "finished" },
+    { id: "MA-0007", name: "Custodian Guard", painter: "E. Stegosaurus", manufacturer: "Games Workshop", hours: 40.0, status: "finished" },
+    { id: "MA-0008", name: "Genestealer Cultist", painter: "J. Marchetti", manufacturer: "Games Workshop", hours: 0, status: "queued" },
+  ];
+ 
+  const grid = document.getElementById("grid");
+  const searchInput = document.getElementById("searchInput");
+  const resultCount = document.getElementById("resultCount");
+  const filterBtns = document.querySelectorAll(".filter-btn");
+  let activeFilter = "all";
+ 
+  const shieldIcon = `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>`;
+ 
+  function statusLabel(status){
+    return { finished: "Finished", wip: "In Progress", queued: "Queued" }[status] || status;
+  }
+ 
+  function render(){
+    const query = searchInput.value.trim().toLowerCase();
+    const filtered = MOCK_MINIS.filter(m => {
+      const matchesFilter = activeFilter === "all" || m.status === activeFilter;
+      const matchesQuery = !query || m.name.toLowerCase().includes(query) || m.painter.toLowerCase().includes(query);
+      return matchesFilter && matchesQuery;
+    });
+ 
+    resultCount.textContent = `${filtered.length} model${filtered.length === 1 ? "" : "s"}`;
+ 
+    if (filtered.length === 0){
+      grid.innerHTML = `<div class="empty-state">
+        <span class="eyebrow">No matches</span>
+        Nothing fits that search yet. Try a different name or painter.
+      </div>`;
+      return;
+    }
+ 
+    grid.innerHTML = filtered.map(m => `
+      <div class="mini-card">
+        <div class="thumb">
+          <span class="id-tag">${m.id}</span>
+          <span class="status-tag ${m.status}">${statusLabel(m.status)}</span>
+          ${shieldIcon}
+        </div>
+        <div class="info">
+          <div class="name">${m.name}</div>
+          <div class="meta">${m.manufacturer} · ${m.painter}</div>
+        </div>
+      </div>
+    `).join("");
+  }
+ 
+  searchInput.addEventListener("input", render);
+  filterBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      filterBtns.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      activeFilter = btn.dataset.filter;
+      render();
+    });
+  });
+ 
+  render();
+</script>
+ 
+</body>
+</html>
