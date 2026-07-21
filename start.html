@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Start an Archive — Mini Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
+    --gold:#c9a24b; --gold-bright:#e8c877;
+    --cream:#ece6d8; --cream-dim:#a89f8c; --mono:#8a8072;
+    --green:#8fae7a; --error:#c97b6a;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif; font-weight:300; line-height:1.6; min-height:100vh; }
+  a{ color:inherit; text-decoration:none; }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+ 
+  .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.22em; text-transform:uppercase; color: var(--gold); }
+  .rule-row{ display:flex; align-items:center; gap:14px; margin:16px 0 0; }
+  .rule-row .line{ height:1px; background: var(--hairline); flex:1; }
+  .rule-row .diamond{ width:6px; height:6px; background: var(--gold); transform:rotate(45deg); flex-shrink:0; }
+ 
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 56px; border-bottom:1px solid var(--hairline);
+  }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{ width:30px; height:30px; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; }
+  .brand-mark svg{ width:16px; height:16px; fill: var(--gold); }
+  .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
+  header nav a{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); }
+  header nav a:hover{ color: var(--gold-bright); }
+ 
+  .wrap{
+    max-width: 1180px; margin: 0 auto;
+    display:grid; grid-template-columns: 1fr 460px;
+    gap: 70px; align-items:start;
+    padding: 80px 56px 100px;
+  }
+ 
+  .pitch h1{
+    font-family:'Cormorant Garamond', serif; font-weight:500;
+    font-size: clamp(2.2rem, 4.2vw, 3rem); line-height:1.1; margin-top:16px;
+  }
+  .pitch h1 .accent{ color: var(--gold); font-style: italic; font-weight:400; }
+  .pitch p.lede{ margin-top:20px; color: var(--cream-dim); max-width: 460px; font-size: 0.98rem; }
+ 
+  .perk-list{ margin-top: 44px; display:flex; flex-direction:column; gap: 22px; max-width: 440px; }
+  .perk{ display:flex; gap:16px; align-items:flex-start; }
+  .perk .icon{ width:20px; height:20px; flex-shrink:0; margin-top:2px; }
+  .perk .icon svg{ width:100%; height:100%; stroke: var(--gold); fill:none; stroke-width:1.6; }
+  .perk h4{ font-family:'Cormorant Garamond', serif; font-size:1.1rem; font-weight:600; }
+  .perk p{ color: var(--cream-dim); font-size:0.86rem; margin-top:3px; }
+ 
+  .tier-note{
+    margin-top: 46px; border:1px solid var(--hairline); background: var(--bg-raised);
+    padding: 20px 22px; max-width: 440px;
+  }
+  .tier-note .label{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); }
+  .tier-note .value{ margin-top:6px; font-size:0.9rem; color: var(--cream-dim); }
+  .tier-note .value b{ color: var(--gold-bright); font-weight:500; }
+ 
+  /* Form card */
+  .form-card{ border:1px solid var(--hairline); background: var(--bg-raised); padding: 40px 36px; }
+  .form-card h2{ font-family:'Cormorant Garamond', serif; font-size:1.6rem; font-weight:600; }
+  .form-card .sub{ margin-top: 6px; color: var(--cream-dim); font-size:0.85rem; }
+ 
+  .field{ margin-top: 22px; }
+  .field label{
+    display:block; font-family:'IBM Plex Mono', monospace; font-size:0.65rem;
+    letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); margin-bottom:8px;
+  }
+  .field input{
+    width:100%; background: var(--bg); border:1px solid var(--hairline);
+    padding: 12px 14px; color: var(--cream); font-family:'Jost', sans-serif; font-size:0.94rem;
+    transition: border-color .2s ease;
+  }
+  .field input:focus{ outline:none; border-color: var(--gold); }
+  .field .hint{ margin-top:6px; font-size:0.78rem; color: var(--mono); }
+  .field .error-msg{ margin-top:6px; font-size:0.78rem; color: var(--error); display:none; }
+  .field.invalid input{ border-color: var(--error); }
+  .field.invalid .error-msg{ display:block; }
+ 
+  .field-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+ 
+  .submit-btn{
+    width:100%; margin-top: 30px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.75rem; letter-spacing:0.14em; text-transform:uppercase;
+    color:#0c0b09; background: var(--gold); padding: 15px 22px; border:1px solid var(--gold);
+    cursor:pointer; transition: background .25s ease;
+  }
+  .submit-btn:hover{ background: var(--gold-bright); }
+ 
+  .form-foot{ margin-top: 18px; text-align:center; font-size:0.82rem; color: var(--cream-dim); }
+  .form-foot a{ color: var(--gold-bright); }
+  .form-foot a:hover{ text-decoration: underline; }
+ 
+  .success-state{ display:none; text-align:center; padding: 20px 0 6px; }
+  .success-state .shield{ width:46px; height:46px; margin:0 auto 18px; border:1px solid var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .success-state .shield svg{ width:20px; height:20px; fill: var(--gold); }
+  .success-state h2{ font-family:'Cormorant Garamond', serif; font-size:1.5rem; font-weight:600; }
+  .success-state p{ margin-top:10px; color: var(--cream-dim); font-size:0.9rem; }
+ 
+  footer{ border-top:1px solid var(--hairline); padding:28px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); }
+ 
+  @media (max-width: 950px){
+    header{ padding:18px 24px; }
+    .wrap{ grid-template-columns: 1fr; padding: 50px 24px 70px; gap: 50px; }
+    .form-card{ padding: 32px 24px; }
+    .field-row{ grid-template-columns: 1fr; }
+    footer{ flex-direction:column; gap:14px; text-align:center; padding:24px; }
+  }
+  :focus-visible{ outline:1px solid var(--gold-bright); outline-offset:3px; }
+</style>
+</head>
+<body>
+ 
+<header>
+  <div class="brand">
+    <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
+    <div class="brand-name">MINI ARCHIVE</div>
+  </div>
+  <nav><a href="index.html">← Back home</a></nav>
+</header>
+ 
+<div class="wrap">
+  <div class="pitch">
+    <div class="eyebrow">Start an Archive</div>
+    <h1>Give the hours you<br>put in <span class="accent">somewhere to live.</span></h1>
+    <p class="lede">Free to start, no card required. Log your first model in a few minutes — you can always add the fine detail later.</p>
+ 
+    <div class="perk-list">
+      <div class="perk">
+        <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
+        <div><h4>Up to 25 models, free forever</h4><p>No trial, no expiry — the free tier stays free.</p></div>
+      </div>
+      <div class="perk">
+        <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <div><h4>Full profile per model</h4><p>Photos, paint recipes, timeline, history — as much or as little as you want to log.</p></div>
+      </div>
+      <div class="perk">
+        <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg></div>
+        <div><h4>Verification when you need it</h4><p>NFC-tagged provenance is available any time as a paid add-on — never required.</p></div>
+      </div>
+    </div>
+ 
+    <div class="tier-note">
+      <div class="label">Free Tier</div>
+      <div class="value">Up to <b>25 models</b> · full profiles · no verification/NFC. Upgrade any time from your archive settings.</div>
+    </div>
+  </div>
+ 
+  <div class="form-card">
+    <div id="formState">
+      <h2>Create your archive</h2>
+      <div class="sub">A couple of minutes, that's it.</div>
+ 
+      <form id="archiveForm" novalidate>
+        <div class="field" id="field-archiveName">
+          <label for="archiveName">Archive name</label>
+          <input id="archiveName" type="text" placeholder="e.g. Paint or Die Studios">
+          <div class="hint">This is the name shown on your public collection page.</div>
+          <div class="error-msg">Give your archive a name.</div>
+        </div>
+ 
+        <div class="field-row">
+          <div class="field" id="field-firstName">
+            <label for="firstName">First name</label>
+            <input id="firstName" type="text" placeholder="Jane">
+            <div class="error-msg">Required.</div>
+          </div>
+          <div class="field" id="field-lastName">
+            <label for="lastName">Last name</label>
+            <input id="lastName" type="text" placeholder="Doe">
+            <div class="error-msg">Required.</div>
+          </div>
+        </div>
+ 
+        <div class="field" id="field-email">
+          <label for="email">Email</label>
+          <input id="email" type="email" placeholder="you@example.com">
+          <div class="error-msg">Enter a valid email address.</div>
+        </div>
+ 
+        <div class="field" id="field-password">
+          <label for="password">Password</label>
+          <input id="password" type="password" placeholder="At least 8 characters">
+          <div class="error-msg">Password must be at least 8 characters.</div>
+        </div>
+ 
+        <button type="submit" class="submit-btn">Create My Archive</button>
+      </form>
+ 
+      <div class="form-foot">Already have an archive? <a href="#">Log in</a></div>
+    </div>
+ 
+    <div class="success-state" id="successState">
+      <div class="shield"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
+      <h2>Archive created</h2>
+      <p>This is a design mock — no account was actually created. Once the backend's wired up, this is where you'd land straight in your new (empty) archive.</p>
+    </div>
+  </div>
+</div>
+ 
+<footer>
+  <div>© 2026 Mini Archive. Every miniature has a story.</div>
+  <div><a href="index.html">Home</a></div>
+</footer>
+ 
+<script>
+  // NOTE: this is a front-end mock only — no request is sent anywhere.
+  // Validation here just demonstrates the intended UX; real auth/account
+  // creation gets wired in once there's a backend to talk to.
+  const form = document.getElementById("archiveForm");
+  const formState = document.getElementById("formState");
+  const successState = document.getElementById("successState");
+ 
+  function setInvalid(fieldId, invalid){
+    const el = document.getElementById(fieldId);
+    el.classList.toggle("invalid", invalid);
+  }
+ 
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+ 
+    const archiveName = document.getElementById("archiveName").value.trim();
+    const firstName = document.getElementById("firstName").value.trim();
+    const lastName = document.getElementById("lastName").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+ 
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const passwordValid = password.length >= 8;
+ 
+    setInvalid("field-archiveName", !archiveName);
+    setInvalid("field-firstName", !firstName);
+    setInvalid("field-lastName", !lastName);
+    setInvalid("field-email", !emailValid);
+    setInvalid("field-password", !passwordValid);
+ 
+    if (archiveName && firstName && lastName && emailValid && passwordValid){
+      formState.style.display = "none";
+      successState.style.display = "block";
+    }
+  });
+</script>
+ 
+</body>
+</html>
