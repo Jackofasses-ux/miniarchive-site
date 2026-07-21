@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log In — Mini Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
+    --gold:#c9a24b; --gold-bright:#e8c877;
+    --cream:#ece6d8; --cream-dim:#a89f8c; --mono:#8a8072;
+    --error:#c97b6a;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{
+    background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif; font-weight:300; line-height:1.6;
+    min-height:100vh; display:flex; flex-direction:column;
+  }
+  a{ color:inherit; text-decoration:none; }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+ 
+  .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.22em; text-transform:uppercase; color: var(--gold); }
+ 
+  header{ display:flex; align-items:center; justify-content:space-between; padding:22px 56px; border-bottom:1px solid var(--hairline); }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{ width:30px; height:30px; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; }
+  .brand-mark svg{ width:16px; height:16px; fill: var(--gold); }
+  .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
+  header nav a{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); }
+  header nav a:hover{ color: var(--gold-bright); }
+ 
+  .center-wrap{ flex:1; display:flex; align-items:center; justify-content:center; padding: 60px 24px; }
+ 
+  .form-card{ width:100%; max-width: 420px; border:1px solid var(--hairline); background: var(--bg-raised); padding: 42px 38px; }
+  .form-card .eyebrow{ display:block; text-align:center; }
+  .form-card h1{ font-family:'Cormorant Garamond', serif; font-size:1.8rem; font-weight:600; text-align:center; margin-top:12px; }
+  .form-card .sub{ margin-top:8px; text-align:center; color: var(--cream-dim); font-size:0.86rem; }
+ 
+  .field{ margin-top: 24px; }
+  .field label{ display:block; font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); margin-bottom:8px; }
+  .field input{
+    width:100%; background: var(--bg); border:1px solid var(--hairline);
+    padding: 12px 14px; color: var(--cream); font-family:'Jost', sans-serif; font-size:0.94rem;
+    transition: border-color .2s ease;
+  }
+  .field input:focus{ outline:none; border-color: var(--gold); }
+  .field .error-msg{ margin-top:6px; font-size:0.78rem; color: var(--error); display:none; }
+  .field.invalid input{ border-color: var(--error); }
+  .field.invalid .error-msg{ display:block; }
+ 
+  .field-foot{ margin-top:10px; text-align:right; }
+  .field-foot a{ font-size:0.8rem; color: var(--gold-bright); }
+  .field-foot a:hover{ text-decoration: underline; }
+ 
+  .submit-btn{
+    width:100%; margin-top: 28px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.75rem; letter-spacing:0.14em; text-transform:uppercase;
+    color:#0c0b09; background: var(--gold); padding: 15px 22px; border:1px solid var(--gold);
+    cursor:pointer; transition: background .25s ease;
+  }
+  .submit-btn:hover{ background: var(--gold-bright); }
+ 
+  .form-foot{ margin-top: 22px; text-align:center; font-size:0.85rem; color: var(--cream-dim); }
+  .form-foot a{ color: var(--gold-bright); }
+  .form-foot a:hover{ text-decoration: underline; }
+ 
+  .top-error{
+    margin-top: 20px; border:1px solid rgba(201,123,106,0.4); background: rgba(201,123,106,0.08);
+    padding: 12px 14px; font-size:0.82rem; color: var(--error); display:none;
+  }
+ 
+  footer{ border-top:1px solid var(--hairline); padding:28px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); }
+ 
+  @media (max-width: 600px){
+    header{ padding:18px 24px; }
+    .form-card{ padding: 32px 24px; }
+    footer{ flex-direction:column; gap:14px; text-align:center; padding:24px; }
+  }
+  :focus-visible{ outline:1px solid var(--gold-bright); outline-offset:3px; }
+</style>
+</head>
+<body>
+ 
+<header>
+  <div class="brand">
+    <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
+    <div class="brand-name">MINI ARCHIVE</div>
+  </div>
+  <nav><a href="index.html">← Back home</a></nav>
+</header>
+ 
+<div class="center-wrap">
+  <div class="form-card">
+    <div class="eyebrow">Welcome Back</div>
+    <h1>Log in to your archive</h1>
+    <div class="sub">Pick up right where you left off.</div>
+ 
+    <div class="top-error" id="topError">That email and password combination doesn't match an archive. This is a design mock — no accounts exist yet.</div>
+ 
+    <form id="loginForm" novalidate>
+      <div class="field" id="field-email">
+        <label for="email">Email</label>
+        <input id="email" type="email" placeholder="you@example.com">
+        <div class="error-msg">Enter a valid email address.</div>
+      </div>
+ 
+      <div class="field" id="field-password">
+        <label for="password">Password</label>
+        <input id="password" type="password" placeholder="Your password">
+        <div class="error-msg">Enter your password.</div>
+        <div class="field-foot"><a href="#">Forgot password?</a></div>
+      </div>
+ 
+      <button type="submit" class="submit-btn">Log In</button>
+    </form>
+ 
+    <div class="form-foot">Don't have an archive yet? <a href="start.html">Start one for free</a></div>
+  </div>
+</div>
+ 
+<footer>
+  <div>© 2026 Mini Archive. Every miniature has a story.</div>
+  <div><a href="index.html">Home</a></div>
+</footer>
+ 
+<script>
+  // NOTE: front-end mock only — no request is sent, no real auth exists yet.
+  // This just demonstrates the intended validation/error UX.
+  const form = document.getElementById("loginForm");
+  const topError = document.getElementById("topError");
+ 
+  function setInvalid(fieldId, invalid){
+    document.getElementById(fieldId).classList.toggle("invalid", invalid);
+  }
+ 
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    topError.style.display = "none";
+ 
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value;
+    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const passwordValid = password.length > 0;
+ 
+    setInvalid("field-email", !emailValid);
+    setInvalid("field-password", !passwordValid);
+ 
+    if (emailValid && passwordValid){
+      topError.style.display = "block";
+    }
+  });
+</script>
+ 
+</body>
+</html>
