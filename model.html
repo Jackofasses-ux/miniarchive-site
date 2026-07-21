@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Captain Cassian — Mini Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
+    --gold:#c9a24b; --gold-bright:#e8c877;
+    --cream:#ece6d8; --cream-dim:#a89f8c; --mono:#8a8072;
+    --green:#8fae7a;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif; font-weight:300; line-height:1.6; }
+  a{ color:inherit; text-decoration:none; }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+ 
+  .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.22em; text-transform:uppercase; color: var(--gold); }
+  .rule-row{ display:flex; align-items:center; gap:14px; margin:18px 0 28px; }
+  .rule-row .line{ height:1px; background: var(--hairline); flex:1; }
+  .rule-row .diamond{ width:6px; height:6px; background: var(--gold); transform:rotate(45deg); flex-shrink:0; }
+ 
+  header{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 56px; background: rgba(12,11,9,0.88); backdrop-filter: blur(8px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{ width:30px; height:30px; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; }
+  .brand-mark svg{ width:16px; height:16px; fill: var(--gold); }
+  .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
+  nav{ display:flex; align-items:center; gap:40px; }
+  nav ul{ display:flex; gap:34px; list-style:none; }
+  nav ul li a{ font-size:0.85rem; color: var(--cream-dim); position:relative; padding-bottom:4px; }
+  nav ul li a::after{ content:''; position:absolute; left:0; bottom:0; width:0; height:1px; background: var(--gold-bright); transition:width .35s ease; }
+  nav ul li a:hover{ color: var(--cream); }
+  nav ul li a:hover::after{ width:100%; }
+  .btn-gold{
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color:#0c0b09; background: var(--gold); padding:11px 22px; border:1px solid var(--gold); transition: background .25s ease;
+  }
+  .btn-gold:hover{ background: var(--gold-bright); }
+ 
+  main{ max-width:1280px; margin:0 auto; padding: 60px 56px 40px; }
+ 
+  .profile-grid{ display:grid; grid-template-columns: 1fr 460px; gap: 60px; align-items:start; }
+ 
+  .title-block h1{
+    font-family:'Cormorant Garamond', serif; font-weight:500;
+    font-size: clamp(2.6rem, 5vw, 3.6rem); line-height:1.05;
+  }
+  .title-block h1 .accent{ color: var(--gold); font-style: italic; font-weight:400; }
+  .title-block .desc{ margin-top: 20px; max-width: 520px; color: var(--cream-dim); font-size: 0.98rem; }
+ 
+  .info-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 36px; max-width: 480px; }
+  .info-box{ border:1px solid var(--hairline); background: var(--bg-raised); padding: 16px 18px; }
+  .info-box .label{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--mono); }
+  .info-box .value{ font-family:'Cormorant Garamond', serif; font-size:1.2rem; font-weight:600; color: var(--gold-bright); margin-top:4px; }
+ 
+  .nfc-box{
+    margin-top: 16px; max-width: 480px;
+    border:1px solid var(--hairline); background: var(--bg-raised);
+    padding: 18px 20px; display:flex; align-items:center; justify-content:space-between; gap:14px;
+  }
+  .nfc-box .left{ display:flex; align-items:center; gap:14px; }
+  .nfc-box svg{ width:20px; height:20px; stroke: var(--gold); }
+  .nfc-box .label{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); }
+  .nfc-box .value{ font-size:0.92rem; color: var(--cream); margin-top:2px; }
+  .nfc-box .arrow{ color: var(--gold); }
+  .nfc-box.unverified .value{ color: var(--cream-dim); }
+  .nfc-box.unverified svg{ stroke: var(--mono); }
+ 
+  /* Photo viewer */
+  .photo-viewer{ border:1px solid var(--hairline); background: var(--bg-raised); }
+  .photo-frame{
+    height: 480px; position:relative;
+    background: linear-gradient(150deg, #23201a, #131110);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .photo-frame svg{ width:60px; height:60px; opacity:0.25; }
+  .photo-frame .view-label{
+    position:absolute; bottom:16px; left:50%; transform:translateX(-50%);
+    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.14em;
+    text-transform:uppercase; color: var(--mono);
+  }
+  .view-tabs{ display:flex; border-top:1px solid var(--hairline); }
+  .view-tabs button{
+    flex:1; padding:14px; background:transparent; border:none; border-right:1px solid var(--hairline);
+    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase;
+    color: var(--cream-dim); cursor:pointer; transition: all .2s ease;
+  }
+  .view-tabs button:last-child{ border-right:none; }
+  .view-tabs button.active{ background: var(--gold); color:#0c0b09; }
+  .view-tabs button:hover:not(.active){ color: var(--cream); }
+ 
+  section.block{ padding: 80px 56px; max-width:1280px; margin:0 auto; }
+  section.block:first-of-type{ padding-top: 40px; }
+ 
+  /* Timeline */
+  .timeline-item{ display:grid; grid-template-columns: 160px 1fr; gap: 30px; padding: 30px 0; border-top:1px solid var(--hairline); }
+  .timeline-item:last-child{ border-bottom:1px solid var(--hairline); }
+  .timeline-item .t-meta{ font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); letter-spacing:0.05em; }
+  .timeline-item h3{ font-family:'Cormorant Garamond', serif; font-size:1.5rem; font-weight:600; }
+  .timeline-item .t-desc{ margin-top:10px; color: var(--cream-dim); font-size:0.92rem; max-width: 640px; }
+  .chip-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+  .chip{ border:1px solid var(--hairline); background: var(--bg-raised); padding: 8px 14px; font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.05em; color: var(--cream-dim); text-transform:uppercase; }
+ 
+  /* Paint recipe */
+  .recipe-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 40px; }
+  .recipe-card{ border:1px solid var(--hairline); background: var(--bg-raised); padding: 22px; }
+  .recipe-card .step-meta{ display:flex; justify-content:space-between; align-items:flex-start; }
+  .recipe-card .step-label{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--mono); }
+  .recipe-card .swatch{ width:22px; height:22px; border:1px solid var(--hairline); flex-shrink:0; }
+  .recipe-card h3{ font-family:'Cormorant Garamond', serif; font-size:1.25rem; font-weight:600; margin-top:8px; }
+  .recipe-card .paint-name{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color: var(--gold); margin-top:10px; }
+  .recipe-card .note{ margin-top:10px; color: var(--cream-dim); font-size:0.85rem; }
+ 
+  /* History */
+  .history-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 40px; }
+  .history-card{ border:1px solid var(--hairline); background: var(--bg-raised); padding: 24px; }
+  .history-card h3{ font-family:'Cormorant Garamond', serif; font-size:1.2rem; font-weight:600; margin-bottom: 16px; }
+  .history-row{ display:flex; justify-content:space-between; align-items:center; padding: 10px 0; border-bottom:1px solid var(--hairline); font-size: 0.88rem; }
+  .history-row:last-child{ border-bottom:none; }
+  .tag{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.05em; padding:3px 8px; border:1px solid var(--hairline); text-transform:uppercase; }
+  .tag.win{ color: var(--green); border-color: rgba(143,174,122,0.4); }
+  .tag.ongoing{ color: var(--gold-bright); border-color: rgba(201,162,75,0.4); }
+ 
+  /* Certificate */
+  .cert-box{
+    max-width: 640px; margin: 40px auto 0;
+    border:1px solid var(--hairline);
+    background: radial-gradient(circle at 30% 20%, #1b170f, #0c0b09 70%);
+    padding: 50px; text-align:center; position:relative;
+  }
+  .cert-box::before, .cert-box::after{ content:''; position:absolute; width:22px; height:22px; border-top:1px solid var(--gold); border-left:1px solid var(--gold); }
+  .cert-box::before{ top:14px; left:14px; }
+  .cert-box::after{ bottom:14px; right:14px; border-top:none; border-left:none; border-bottom:1px solid var(--gold); border-right:1px solid var(--gold); }
+  .cert-box .shield{ width:46px; height:46px; margin:0 auto 16px; border:1px solid var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .cert-box .shield svg{ width:20px; height:20px; fill: var(--gold); }
+  .cert-box .cert-title{ font-family:'Cormorant Garamond', serif; font-size:1.5rem; font-weight:600; }
+  .cert-fields{ display:grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 30px; text-align:left; }
+  .cert-fields .label{ font-family:'IBM Plex Mono', monospace; font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); }
+  .cert-fields .value{ margin-top:3px; font-family:'Cormorant Garamond', serif; font-size:1.1rem; font-weight:600; }
+  .cert-verified{ margin-top: 28px; font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.08em; color: var(--green); }
+ 
+  footer{ border-top:1px solid var(--hairline); padding:32px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); }
+ 
+  @media (max-width: 1000px){
+    header{ padding:18px 24px; }
+    nav ul{ display:none; }
+    main{ padding: 40px 24px 20px; }
+    .profile-grid{ grid-template-columns: 1fr; }
+    section.block{ padding: 50px 24px; }
+    .recipe-grid, .history-grid{ grid-template-columns: 1fr; }
+    .timeline-item{ grid-template-columns: 1fr; gap:8px; }
+    .cert-fields{ grid-template-columns: 1fr; }
+    footer{ flex-direction:column; gap:14px; text-align:center; }
+  }
+  :focus-visible{ outline:1px solid var(--gold-bright); outline-offset:3px; }
+</style>
+</head>
+<body>
+ 
+<header>
+  <div class="brand">
+    <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
+    <div class="brand-name">MINI ARCHIVE</div>
+  </div>
+  <nav>
+    <ul>
+      <li><a href="collection.html">Collection</a></li>
+      <li><a href="index.html#how">How it works</a></li>
+      <li><a href="index.html#provenance">Provenance</a></li>
+      <li><a href="index.html#about">About</a></li>
+    </ul>
+    <a class="btn-gold" href="collection.html">← Back to Collection</a>
+  </nav>
+</header>
+ 
+<main>
+  <div class="eyebrow" id="eyebrowId">Miniature Profile · —</div>
+  <div class="profile-grid">
+    <div>
+      <div class="title-block">
+        <h1 id="modelTitle"></h1>
+        <p class="desc" id="modelDesc"></p>
+      </div>
+ 
+      <div class="info-grid" id="infoGrid"></div>
+      <div class="nfc-box" id="nfcBox"></div>
+    </div>
+ 
+    <div class="photo-viewer">
+      <div class="photo-frame">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
+        <div class="view-label" id="viewLabel">FRONT VIEW</div>
+      </div>
+      <div class="view-tabs" id="viewTabs">
+        <button class="active" data-view="front">Front</button>
+        <button data-view="left">Left</button>
+        <button data-view="rear">Rear</button>
+        <button data-view="right">Right</button>
+      </div>
+    </div>
+  </div>
+</main>
+ 
+<section class="block">
+  <div class="eyebrow">Section I</div>
+  <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;">Creation Timeline</h2>
+  <div id="timelineList"></div>
+</section>
+ 
+<section class="block">
+  <div class="eyebrow">Section II</div>
+  <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;">Paint Recipe</h2>
+  <div class="recipe-grid" id="recipeGrid"></div>
+</section>
+ 
+<section class="block">
+  <div class="eyebrow">Section III</div>
+  <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;">Model History</h2>
+  <div class="history-grid" id="historyGrid"></div>
+</section>
+ 
+<section class="block">
+  <div class="eyebrow">Section IV</div>
+  <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;">Certificate of Authenticity</h2>
+  <div class="cert-box" id="certBox"></div>
+</section>
+ 
+<footer>
+  <div>© 2026 Mini Archive. Every miniature has a story.</div>
+  <div><a href="collection.html">← Back to Collection</a></div>
+</footer>
+ 
+<script>
+  // ---------------------------------------------------------------
+  // DUMMY DATA — replace this object with a fetch() to your real
+  // data source later (Sheet API, then a real DB). Everything below
+  // renders purely off this object, so swapping the source later
+  // shouldn't require touching the render functions.
+  // ---------------------------------------------------------------
+  const MODEL = {
+    id: "MA-0001",
+    name: "Captain Cassian",
+    manufacturer: "Games Workshop",
+    scale: "1:56",
+    completed: "28 Mar 2024",
+    painter: "E. Stegosaurus",
+    owner: "A. Harwick",
+    hours: 35.0,
+    baseSize: "32mm",
+    description: "A commission piece rendered in 35 painstaking hours — chapter captain of the Iron Vigil, bearing the honours of two crusades and the Painter's Choice Award, NovaCon 2024.",
+    verified: true,
+    timeline: [
+      { title: "Assembly", date: "12 Mar 2024", hours: "2.5 hours", desc: "Removed mold lines, pinned the cloak to the torso with a 0.8mm brass rod. Gap-filled the left shoulder pauldron joint with green stuff.", chips: ["Mold line removal", "Pin cloak to torso", "Gap fill — pauldron", "Dry fit check"] },
+      { title: "Surface Preparation", date: "14 Mar 2024", hours: "1 hour", desc: "Zenithal prime applied in three passes — black from below, grey from 45°, white from directly above.", chips: ["Zenithal prime", "3-pass build"] },
+      { title: "The First Brushstroke", date: "16 Mar 2024", hours: "4 hours", desc: "The armour receives its first colour — Kantor Blue, thinned to near-glaze consistency. Two patient coats.", chips: ["Armour — Kantor Blue", "Skin — Ratskin Flesh", "Leather — Rhinox Hide", "Cloak — Incubi Darkness"] },
+      { title: "Shadow & Depth", date: "19 Mar 2024", hours: "3 hours", desc: "Targeted Nuln Oil Gloss into all recesses — undiluted at joints, diluted 1:3 on flat plates to preserve the pre-shading gradient.", chips: ["Nuln Oil — joints", "Nuln Oil — flat plates", "Reikland — skin"] },
+      { title: "Completed", date: "28 Mar 2024", hours: "—", desc: "Gloss varnish on lenses and gems. Satin coat over armour plates. Matte finish on the cloak and base. Captain Cassian is complete.", chips: ["Gloss varnish", "Satin varnish", "Matte varnish", "Tufts & static grass"] },
+    ],
+    recipe: [
+      { step: "Step 1 · Primer", title: "The Foundation", paint: "Black Surface Primer — Vallejo", swatch: "#1a1a1a", note: "Establish a light source before the brush ever touches colour." },
+      { step: "Step 2 · Basecoat", title: "Armour Blue", paint: "Kantor Blue — Citadel", swatch: "#2c4d78", note: "Deep saturated foundation that reads as authority under cold lighting." },
+      { step: "Step 3 · Shade", title: "Shadow Pass", paint: "Nuln Oil Gloss — Citadel", swatch: "#141a24", note: "Snap the recesses dark and give the armour a worn, metallic skin." },
+      { step: "Step 4 · Layer", title: "Mid-tone Rebuild", paint: "Caledor Sky — Citadel", swatch: "#3f6ea5", note: "Recover the zenithal gradient lost to the shade wash." },
+      { step: "Step 5 · Highlight", title: "Edge & Specular", paint: "Sky Blue + White (1:1) — Vallejo", swatch: "#9ec4de", note: "Sell the illusion of cold metal catching overhead light." },
+      { step: "Step 6 · Technical", title: "NMM Gold", paint: "Retributor Armour + custom mixes — Citadel", swatch: "#c9a24b", note: "Elevate the chapter eagle from decoration to focal point." },
+    ],
+    campaigns: [
+      { name: "The Siege of Vanthar Prime", meta: "2024 · 8 battles", tag: "Victory", tagClass: "win" },
+      { name: "Crusade of the Crimson Dawn", meta: "2024 · 3 battles", tag: "Ongoing", tagClass: "ongoing" },
+    ],
+    achievements: [
+      "Best in Show — NovaCon Miniatures Open 2024",
+      "Veteran of 10 Battles — Campaign milestone",
+      "Painter's Choice Award — Mini Archive internal award",
+    ],
+    ownership: {
+      client: "Commission Client — A. Harwick",
+      since: "Mar 2024 → Present",
+      status: "Single-owner — verified",
+    },
+  };
+ 
+  function renderProfile(m){
+    document.getElementById("eyebrowId").textContent = `Miniature Profile · ${m.id}`;
+    document.title = `${m.name} — Mini Archive`;
+ 
+    const parts = m.name.split(" ");
+    const last = parts.pop();
+    document.getElementById("modelTitle").innerHTML = `${parts.join(" ")} <span class="accent">${last}</span>`;
+    document.getElementById("modelDesc").textContent = m.description;
+ 
+    document.getElementById("infoGrid").innerHTML = `
+      <div class="info-box"><div class="label">Manufacturer</div><div class="value">${m.manufacturer}</div></div>
+      <div class="info-box"><div class="label">Scale</div><div class="value">${m.scale}</div></div>
+      <div class="info-box"><div class="label">Completed</div><div class="value">${m.completed}</div></div>
+      <div class="info-box"><div class="label">Painter</div><div class="value">${m.painter}</div></div>
+      <div class="info-box"><div class="label">Total Hours</div><div class="value">${m.hours.toFixed(1)} hrs</div></div>
+      <div class="info-box"><div class="label">Base Size</div><div class="value">${m.baseSize}</div></div>
+    `;
+ 
+    const nfcBox = document.getElementById("nfcBox");
+    if (m.verified){
+      nfcBox.classList.remove("unverified");
+      nfcBox.innerHTML = `
+        <div class="left">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>
+          <div><div class="label">NFC Verified</div><div class="value">Scan to view model history</div></div>
+        </div>
+        <div class="arrow">→</div>
+      `;
+    } else {
+      nfcBox.classList.add("unverified");
+      nfcBox.innerHTML = `
+        <div class="left">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>
+          <div><div class="label">Not Verified</div><div class="value">No NFC tag registered</div></div>
+        </div>
+      `;
+    }
+ 
+    document.getElementById("timelineList").innerHTML = m.timeline.map(t => `
+      <div class="timeline-item">
+        <div class="t-meta">${t.date}<br>${t.hours}</div>
+        <div>
+          <h3>${t.title}</h3>
+          <p class="t-desc">${t.desc}</p>
+          <div class="chip-row">${t.chips.map(c => `<div class="chip">${c}</div>`).join("")}</div>
+        </div>
+      </div>
+    `).join("");
+ 
+    document.getElementById("recipeGrid").innerHTML = m.recipe.map(r => `
+      <div class="recipe-card">
+        <div class="step-meta"><div class="step-label">${r.step}</div><div class="swatch" style="background:${r.swatch}"></div></div>
+        <h3>${r.title}</h3>
+        <div class="paint-name">${r.paint}</div>
+        <p class="note">${r.note}</p>
+      </div>
+    `).join("");
+ 
+    document.getElementById("historyGrid").innerHTML = `
+      <div class="history-card">
+        <h3>Campaigns</h3>
+        ${m.campaigns.map(c => `<div class="history-row"><span>${c.name}<br><span style="color:var(--mono);font-size:0.75rem;">${c.meta}</span></span><span class="tag ${c.tagClass}">${c.tag}</span></div>`).join("")}
+      </div>
+      <div class="history-card">
+        <h3>Achievements</h3>
+        ${m.achievements.map(a => `<div class="history-row">${a}</div>`).join("")}
+      </div>
+      <div class="history-card">
+        <h3>Ownership Record</h3>
+        <div class="history-row">${m.ownership.client}</div>
+        <div class="history-row" style="color:var(--mono); font-size:0.8rem;">${m.ownership.since}</div>
+        <div class="history-row"><span class="tag win">${m.ownership.status}</span></div>
+      </div>
+    `;
+ 
+    document.getElementById("certBox").innerHTML = `
+      <div class="shield"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
+      <div class="eyebrow">MINI ARCHIVE</div>
+      <div class="cert-title">Certificate of Authenticity</div>
+      <div class="cert-fields">
+        <div><div class="label">Model Name</div><div class="value">${m.name}</div></div>
+        <div><div class="label">Unique Model ID</div><div class="value">${m.id}</div></div>
+        <div><div class="label">Painter</div><div class="value">${m.painter}</div></div>
+        <div><div class="label">Completion Date</div><div class="value">${m.completed}</div></div>
+        <div><div class="label">Total Hours</div><div class="value">${m.hours.toFixed(1)} hours</div></div>
+        <div><div class="label">Scale</div><div class="value">${m.scale} — ${m.baseSize} base</div></div>
+      </div>
+      <div class="cert-verified">✓ ${m.verified ? "Painter Verified" : "Awaiting Verification"}</div>
+    `;
+  }
+ 
+  // Photo view tab switching (placeholder frame only — swap in real photo URLs later)
+  document.getElementById("viewTabs").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    document.querySelectorAll("#viewTabs button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("viewLabel").textContent = `${btn.dataset.view.toUpperCase()} VIEW`;
+  });
+ 
+  renderProfile(MODEL);
+</script>
+ 
+</body>
+</html>
