@@ -275,29 +275,22 @@
     });
  
     if (signUpError){
+      console.error("Supabase signUp error:", signUpError);
       submitBtn.disabled = false;
       submitBtn.textContent = "Create My Archive";
-      showTopError(signUpError.message);
+      showTopError(signUpError.message || `Signup failed (${signUpError.status || "unknown error"}). Check the console for details.`);
       return;
     }
  
-    const userId = signUpData.user?.id;
- 
-    // 2. Create the matching profile row
-    if (userId){
-      const { error: profileError } = await supabaseClient.from("profiles").insert({
-        id: userId,
-        username: archiveName,
-        display_name: `${firstName} ${lastName}`,
-      });
- 
-      if (profileError){
-        submitBtn.disabled = false;
-        submitBtn.textContent = "Create My Archive";
-        showTopError(`Account created, but profile setup failed: ${profileError.message}`);
-        return;
-      }
-    }
+    // Email confirmation is required, so there's no active session yet —
+    // we can't create the profiles row now (RLS would block it since
+    // auth.uid() is null until the user confirms). Stash the details and
+    // finish profile creation once they land back on the site, logged in,
+    // after clicking the confirmation link. See index.html for that step.
+    localStorage.setItem("pendingProfile", JSON.stringify({
+      username: archiveName,
+      display_name: `${firstName} ${lastName}`,
+    }));
  
     formState.style.display = "none";
     successState.style.display = "block";
@@ -306,3 +299,4 @@
  
 </body>
 </html>
+ 
