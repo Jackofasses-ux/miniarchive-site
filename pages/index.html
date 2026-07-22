@@ -19,11 +19,11 @@
     --cream-dim: #a89f8c;
     --mono: #8a8072;
   }
- 
+
   *{ margin:0; padding:0; box-sizing:border-box; }
- 
+
   html{ scroll-behavior: smooth; }
- 
+
   body{
     background: var(--bg);
     color: var(--cream);
@@ -32,13 +32,13 @@
     line-height: 1.6;
     overflow-x: hidden;
   }
- 
+
   @media (prefers-reduced-motion: reduce){
     *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   }
- 
+
   a{ color: inherit; text-decoration: none; }
- 
+
   .eyebrow{
     font-family: 'IBM Plex Mono', monospace;
     font-size: 0.72rem;
@@ -46,7 +46,7 @@
     text-transform: uppercase;
     color: var(--gold);
   }
- 
+
   .rule-row{
     display:flex; align-items:center; gap: 14px;
     margin: 18px 0 28px;
@@ -56,7 +56,7 @@
     width: 6px; height: 6px; background: var(--gold);
     transform: rotate(45deg); flex-shrink: 0;
   }
- 
+
   /* ---------- Header ---------- */
   header{
     position: sticky; top:0; z-index: 50;
@@ -96,7 +96,7 @@
   }
   nav ul li a:hover{ color: var(--cream); }
   nav ul li a:hover::after{ width: 100%; }
- 
+
   .btn-gold{
     font-family:'IBM Plex Mono', monospace;
     font-size: 0.72rem;
@@ -109,7 +109,7 @@
     transition: background 0.25s ease, color 0.25s ease;
   }
   .btn-gold:hover{ background: var(--gold-bright); }
- 
+
   .login-link{
     font-family:'IBM Plex Mono', monospace;
     font-size: 0.72rem;
@@ -120,8 +120,9 @@
   }
   .login-link:hover{ color: var(--gold-bright); }
   #authArea{ display:flex; align-items:center; gap:20px; position:relative; }
-  .user-menu-btn{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.08em; color: var(--cream-dim); background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:6px; }
-  .user-menu-btn:hover{ color: var(--gold-bright); }
+  .user-menu-btn{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); border:1px solid var(--gold); padding:11px 20px; cursor:pointer; display:flex; align-items:center; gap:8px; transition: background 0.25s ease; }
+  .user-menu-btn:hover{ background: var(--gold-bright); color:#0c0b09; }
+  .user-menu-btn svg{ stroke:#0c0b09; }
   .user-menu-btn svg{ width:10px; height:10px; }
   .dropdown{
     position:absolute; top: calc(100% + 14px); right:0; min-width:200px;
@@ -137,7 +138,7 @@
   .user-chip{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.08em; color: var(--cream-dim); }
   .logout-link{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); cursor:pointer; background:none; border:none; padding:0; }
   .logout-link:hover{ color: var(--gold-bright); }
- 
+
   .btn-ghost{
     font-family:'IBM Plex Mono', monospace;
     font-size: 0.72rem;
@@ -149,7 +150,7 @@
     transition: border-color 0.25s ease, color 0.25s ease;
   }
   .btn-ghost:hover{ border-color: var(--gold); color: var(--gold-bright); }
- 
+
   /* ---------- Hero ---------- */
   .hero{
     padding: 120px 56px 100px;
@@ -178,7 +179,7 @@
     from{ background-position: 100% 0; }
     to{ background-position: 0% 0; }
   }
- 
+
   .hero p.lede{
     margin-top: 28px;
     max-width: 520px;
@@ -186,9 +187,9 @@
     font-size: 1.05rem;
     font-weight: 300;
   }
- 
+
   .hero-actions{ display:flex; gap:16px; margin-top: 44px; }
- 
+
   /* ---------- Ticker strip ---------- */
   .ticker{
     border-top: 1px solid var(--hairline);
@@ -203,7 +204,7 @@
     flex-wrap: wrap;
   }
   .ticker span b{ color: var(--gold); font-weight: 500; }
- 
+
   /* ---------- Section shell ---------- */
   section.block{
     padding: 100px 56px;
@@ -215,7 +216,7 @@
     font-weight: 500;
     font-size: 2.4rem;
   }
- 
+
   /* ---------- Collection preview ---------- */
   .grid-3{
     display:grid;
@@ -263,12 +264,12 @@
     color: var(--mono);
     text-transform: uppercase;
   }
- 
+
   .view-all-row{
     margin-top: 40px;
     display:flex; justify-content:center;
   }
- 
+
   /* ---------- How it works ---------- */
   .how-grid{
     display:grid;
@@ -289,7 +290,7 @@
     margin: 10px 0 10px;
   }
   .how-item p{ color: var(--cream-dim); font-size: 0.92rem; }
- 
+
   /* ---------- Provenance / certificate teaser ---------- */
   .cert-teaser{
     display:grid;
@@ -329,7 +330,7 @@
     letter-spacing: 0.1em;
     margin-top: 8px;
   }
- 
+
   /* ---------- CTA band ---------- */
   .cta-band{
     text-align:center;
@@ -343,7 +344,7 @@
   }
   .cta-band p{ color: var(--cream-dim); margin-top: 16px; }
   .cta-band .hero-actions{ justify-content:center; margin-top: 34px; }
- 
+
   /* ---------- Footer ---------- */
   footer{
     border-top: 1px solid var(--hairline);
@@ -356,7 +357,7 @@
   }
   footer a:hover{ color: var(--gold); }
   footer .foot-links{ display:flex; gap: 26px; }
- 
+
   /* ---------- Responsive ---------- */
   @media (max-width: 900px){
     header{ padding: 18px 24px; }
@@ -368,7 +369,7 @@
     .cert-teaser{ grid-template-columns: 1fr; gap: 40px; }
     footer{ flex-direction: column; gap: 16px; text-align:center; }
   }
- 
+
   :focus-visible{
     outline: 1px solid var(--gold-bright);
     outline-offset: 3px;
@@ -376,7 +377,7 @@
 </style>
 </head>
 <body>
- 
+
 <header>
   <a class="brand" href="index.html">
     <div class="brand-mark">
@@ -397,7 +398,7 @@
     </div>
   </nav>
 </header>
- 
+
 <section class="hero">
   <div class="eyebrow">A LIVING RECORD OF PAINTED MINIATURES</div>
   <h1>Every miniature<br><span class="accent">has a story.</span></h1>
@@ -407,21 +408,21 @@
     <a class="btn-ghost" href="#how">How it works</a>
   </div>
 </section>
- 
+
 <div class="ticker">
   <span><b>01</b> — Model created</span>
   <span><b>02</b> — Every step logged</span>
   <span><b>03</b> — Photographed, front to back</span>
   <span><b>04</b> — Archived for good</span>
 </div>
- 
+
 <section class="block" id="collection">
   <div class="section-head">
     <div class="eyebrow">Section I</div>
     <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
     <h2>From the Collection</h2>
   </div>
- 
+
   <div class="grid-3">
     <div class="mini-card">
       <div class="thumb">
@@ -454,12 +455,12 @@
       </div>
     </div>
   </div>
- 
+
   <div class="view-all-row">
     <a class="btn-ghost" href="collection.html">View Full Collection →</a>
   </div>
 </section>
- 
+
 <section class="block" id="how">
   <div class="section-head">
     <div class="eyebrow">Section II</div>
@@ -484,7 +485,7 @@
     </div>
   </div>
 </section>
- 
+
 <section class="block" id="provenance">
   <div class="section-head">
     <div class="eyebrow">Section III</div>
@@ -505,7 +506,7 @@
     </div>
   </div>
 </section>
- 
+
 <section class="cta-band" id="about">
   <div class="eyebrow">START YOUR ARCHIVE</div>
   <h2>Give the hours you put in somewhere to live.</h2>
@@ -514,7 +515,7 @@
     <a class="btn-gold" href="start.html">Start an Archive</a>
   </div>
 </section>
- 
+
 <footer>
   <div>© 2026 Mini Archive. Every miniature has a story.</div>
   <div class="foot-links">
@@ -523,7 +524,7 @@
     <a href="#provenance">Provenance</a>
   </div>
 </footer>
- 
+
 <script>
   // Confirmation emails redirect here with an access token in the URL.
   // Supabase's client picks that up automatically and establishes a session.
@@ -532,28 +533,28 @@
   const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
- 
+
   (async () => {
     const { data: { session } } = await supabaseClient.auth.getSession();
- 
+
     if (session){
       renderLoggedInNav(session);
     }
- 
+
     if (!session) return;
- 
+
     const pendingRaw = localStorage.getItem("pendingProfile");
     if (!pendingRaw) return;
- 
+
     const pending = JSON.parse(pendingRaw);
- 
+
     // Don't try to insert again if a profile already exists for this user.
     const { data: existing } = await supabaseClient
       .from("profiles")
       .select("id")
       .eq("id", session.user.id)
       .maybeSingle();
- 
+
     if (!existing){
       const { error } = await supabaseClient.from("profiles").insert({
         id: session.user.id,
@@ -566,24 +567,24 @@
         renderLoggedInNav(session);
       }
     }
- 
+
     localStorage.removeItem("pendingProfile");
     // Clean the access token out of the URL bar.
     window.history.replaceState({}, document.title, window.location.pathname);
   })();
- 
+
   async function renderLoggedInNav(session){
     const authArea = document.getElementById("authArea");
     if (!authArea) return;
- 
+
     const { data: profile } = await supabaseClient
       .from("profiles")
       .select("username, display_name")
       .eq("id", session.user.id)
       .maybeSingle();
- 
+
     const label = profile?.username || profile?.display_name || session.user.email;
- 
+
     authArea.innerHTML = `
       <button class="user-menu-btn" id="userMenuBtn">${label} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
       <div class="dropdown" id="userDropdown">
@@ -593,18 +594,18 @@
         <button id="logoutBtn">Log out</button>
       </div>
     `;
- 
+
     const btn = document.getElementById("userMenuBtn");
     const dropdown = document.getElementById("userDropdown");
     btn.addEventListener("click", (e) => { e.stopPropagation(); dropdown.classList.toggle("open"); });
     document.addEventListener("click", () => dropdown.classList.remove("open"));
- 
+
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await supabaseClient.auth.signOut();
       window.location.reload();
     });
   }
 </script>
- 
+
 </body>
 </html>
