@@ -25,11 +25,11 @@
     font-family:'Jost', sans-serif; font-weight:300; line-height:1.6;
   }
   a{ color:inherit; text-decoration:none; }
- 
+
   @media (prefers-reduced-motion: reduce){
     *{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   }
- 
+
   .eyebrow{
     font-family:'IBM Plex Mono', monospace;
     font-size:0.72rem; letter-spacing:0.22em;
@@ -38,7 +38,7 @@
   .rule-row{ display:flex; align-items:center; gap:14px; margin:18px 0 28px; }
   .rule-row .line{ height:1px; background: var(--hairline); flex:1; }
   .rule-row .diamond{ width:6px; height:6px; background: var(--gold); transform:rotate(45deg); flex-shrink:0; }
- 
+
   header{
     position: sticky; top:0; z-index:50;
     display:flex; align-items:center; justify-content:space-between;
@@ -67,8 +67,9 @@
   .login-link{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); transition: color .2s ease; }
   .login-link:hover{ color: var(--gold-bright); }
   #authArea{ display:flex; align-items:center; gap:20px; position:relative; }
-  .user-menu-btn{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.08em; color: var(--cream-dim); background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:6px; }
-  .user-menu-btn:hover{ color: var(--gold-bright); }
+  .user-menu-btn{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); border:1px solid var(--gold); padding:11px 20px; cursor:pointer; display:flex; align-items:center; gap:8px; transition: background 0.25s ease; }
+  .user-menu-btn:hover{ background: var(--gold-bright); color:#0c0b09; }
+  .user-menu-btn svg{ stroke:#0c0b09; }
   .user-menu-btn svg{ width:10px; height:10px; }
   .dropdown{
     position:absolute; top: calc(100% + 14px); right:0; min-width:200px;
@@ -84,10 +85,10 @@
   .user-chip{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.08em; color: var(--cream-dim); }
   .logout-link{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); cursor:pointer; background:none; border:none; padding:0; }
   .logout-link:hover{ color: var(--gold-bright); }
- 
+
   .page-head{ padding: 70px 56px 20px; max-width:1280px; margin:0 auto; }
   .page-head h1{ font-family:'Cormorant Garamond', serif; font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight:500; }
- 
+
   .controls{
     max-width:1280px; margin: 0 auto; padding: 0 56px 20px;
     display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;
@@ -104,7 +105,7 @@
     font-family:'Jost', sans-serif; font-size:0.92rem; width:100%;
   }
   .search-box input::placeholder{ color: var(--mono); }
- 
+
   .filters{ display:flex; gap:10px; flex-wrap:wrap; }
   .filter-btn{
     font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.08em; text-transform:uppercase;
@@ -113,12 +114,12 @@
   }
   .filter-btn:hover{ border-color: var(--gold); color: var(--cream); }
   .filter-btn.active{ background: var(--gold); border-color: var(--gold); color:#0c0b09; }
- 
+
   .result-count{
     max-width:1280px; margin: 0 auto; padding: 0 56px 10px;
     font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color: var(--mono); letter-spacing:0.05em;
   }
- 
+
   .grid{
     max-width:1280px; margin: 0 auto; padding: 10px 56px 100px;
     display:grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
@@ -147,26 +148,26 @@
   .status-tag.finished{ color:#8fae7a; border-color: rgba(143,174,122,0.4); }
   .status-tag.wip{ color: var(--gold-bright); border-color: rgba(201,162,75,0.4); }
   .status-tag.queued{ color: var(--mono); }
- 
+
   .mini-card .info{ padding:16px 18px 20px; }
   .mini-card .info .name{ font-family:'Cormorant Garamond', serif; font-size:1.15rem; font-weight:600; }
   .mini-card .info .meta{
     margin-top:5px; font-family:'IBM Plex Mono', monospace; font-size:0.64rem;
     letter-spacing:0.05em; color: var(--mono); text-transform:uppercase;
   }
- 
+
   .empty-state{
     grid-column: 1 / -1; text-align:center; padding: 70px 20px;
     color: var(--cream-dim);
   }
   .empty-state .eyebrow{ display:block; margin-bottom: 10px; }
- 
+
   footer{
     border-top:1px solid var(--hairline); padding:32px 56px;
     display:flex; align-items:center; justify-content:space-between;
     font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono);
   }
- 
+
   @media (max-width: 1100px){ .grid{ grid-template-columns: repeat(3, 1fr); } }
   @media (max-width: 800px){
     header{ padding:18px 24px; }
@@ -176,12 +177,12 @@
     footer{ flex-direction:column; gap:14px; text-align:center; padding:24px; }
   }
   @media (max-width: 500px){ .grid{ grid-template-columns: 1fr; } }
- 
+
   :focus-visible{ outline:1px solid var(--gold-bright); outline-offset:3px; }
 </style>
 </head>
 <body>
- 
+
 <header>
   <a class="brand" href="index.html">
     <div class="brand-mark">
@@ -202,13 +203,13 @@
     </div>
   </nav>
 </header>
- 
+
 <div class="page-head">
   <div class="eyebrow">The Collection</div>
   <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
   <h1>Every model, catalogued.</h1>
 </div>
- 
+
 <div class="controls">
   <div class="search-box">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
@@ -221,16 +222,16 @@
     <button class="filter-btn" data-filter="queued">Queued</button>
   </div>
 </div>
- 
+
 <div class="result-count" id="resultCount"></div>
- 
+
 <div class="grid" id="grid"></div>
- 
+
 <footer>
   <div>© 2026 Mini Archive. Every miniature has a story.</div>
   <div><a href="index.html">← Back home</a></div>
 </footer>
- 
+
 <script>
   // ---- Mock data (stand-in for the future Sheet/DB-backed API) ----
   const MOCK_MINIS = [
@@ -243,19 +244,19 @@
     { id: "MA-0007", name: "Custodian Guard", painter: "E. Stegosaurus", manufacturer: "Games Workshop", hours: 40.0, status: "finished" },
     { id: "MA-0008", name: "Genestealer Cultist", painter: "J. Marchetti", manufacturer: "Games Workshop", hours: 0, status: "queued" },
   ];
- 
+
   const grid = document.getElementById("grid");
   const searchInput = document.getElementById("searchInput");
   const resultCount = document.getElementById("resultCount");
   const filterBtns = document.querySelectorAll(".filter-btn");
   let activeFilter = "all";
- 
+
   const shieldIcon = `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>`;
- 
+
   function statusLabel(status){
     return { finished: "Finished", wip: "In Progress", queued: "Queued" }[status] || status;
   }
- 
+
   function render(){
     const query = searchInput.value.trim().toLowerCase();
     const filtered = MOCK_MINIS.filter(m => {
@@ -263,9 +264,9 @@
       const matchesQuery = !query || m.name.toLowerCase().includes(query) || m.painter.toLowerCase().includes(query);
       return matchesFilter && matchesQuery;
     });
- 
+
     resultCount.textContent = `${filtered.length} model${filtered.length === 1 ? "" : "s"}`;
- 
+
     if (filtered.length === 0){
       grid.innerHTML = `<div class="empty-state">
         <span class="eyebrow">No matches</span>
@@ -273,7 +274,7 @@
       </div>`;
       return;
     }
- 
+
     grid.innerHTML = filtered.map(m => `
       <div class="mini-card" onclick="window.location.href='model.html'">
         <div class="thumb">
@@ -288,7 +289,7 @@
       </div>
     `).join("");
   }
- 
+
   searchInput.addEventListener("input", render);
   filterBtns.forEach(btn => {
     btn.addEventListener("click", () => {
@@ -298,31 +299,31 @@
       render();
     });
   });
- 
+
   render();
- 
+
   // ---- Auth nav state ----
   const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
- 
+
   (async () => {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) renderLoggedInNav(session);
   })();
- 
+
   async function renderLoggedInNav(session){
     const authArea = document.getElementById("authArea");
     if (!authArea) return;
- 
+
     const { data: profile } = await supabaseClient
       .from("profiles")
       .select("username, display_name")
       .eq("id", session.user.id)
       .maybeSingle();
- 
+
     const label = profile?.username || profile?.display_name || session.user.email;
- 
+
     authArea.innerHTML = `
       <button class="user-menu-btn" id="userMenuBtn">${label} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
       <div class="dropdown" id="userDropdown">
@@ -332,18 +333,18 @@
         <button id="logoutBtn">Log out</button>
       </div>
     `;
- 
+
     const btn = document.getElementById("userMenuBtn");
     const dropdown = document.getElementById("userDropdown");
     btn.addEventListener("click", (e) => { e.stopPropagation(); dropdown.classList.toggle("open"); });
     document.addEventListener("click", () => dropdown.classList.remove("open"));
- 
+
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await supabaseClient.auth.signOut();
       window.location.reload();
     });
   }
 </script>
- 
+
 </body>
 </html>
