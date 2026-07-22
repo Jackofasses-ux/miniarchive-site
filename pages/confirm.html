@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Confirmed — Mini Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
+    --gold:#c9a24b; --gold-bright:#e8c877;
+    --cream:#ece6d8; --cream-dim:#a89f8c; --mono:#8a8072;
+    --green:#8fae7a; --error:#c97b6a;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{
+    background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif; font-weight:300; line-height:1.6;
+    min-height:100vh; display:flex; flex-direction:column;
+  }
+  a{ color:inherit; text-decoration:none; }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+
+  .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.22em; text-transform:uppercase; color: var(--gold); }
+
+  header{ display:flex; align-items:center; justify-content:space-between; padding:22px 56px; border-bottom:1px solid var(--hairline); }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{ width:30px; height:30px; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; }
+  .brand-mark svg{ width:16px; height:16px; fill: var(--gold); }
+  .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
+
+  .center-wrap{ flex:1; display:flex; align-items:center; justify-content:center; padding: 60px 24px; }
+
+  .cert-box{
+    width:100%; max-width: 480px;
+    border:1px solid var(--hairline);
+    background: radial-gradient(circle at 30% 20%, #1b170f, #0c0b09 70%);
+    padding: 50px 44px; text-align:center; position:relative;
+    opacity: 0; transform: translateY(8px);
+    animation: rise 0.6s ease forwards;
+  }
+  @keyframes rise{ to{ opacity:1; transform:translateY(0); } }
+  .cert-box::before, .cert-box::after{ content:''; position:absolute; width:22px; height:22px; border-top:1px solid var(--gold); border-left:1px solid var(--gold); }
+  .cert-box::before{ top:14px; left:14px; }
+  .cert-box::after{ bottom:14px; right:14px; border-top:none; border-left:none; border-bottom:1px solid var(--gold); border-right:1px solid var(--gold); }
+
+  .shield{
+    width:52px; height:52px; margin:0 auto 22px; border:1px solid var(--gold); border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .shield svg{ width:22px; height:22px; fill: var(--gold); }
+
+  .cert-box h1{ font-family:'Cormorant Garamond', serif; font-size:1.9rem; font-weight:600; margin-top: 4px; }
+  .cert-box .sub{ margin-top:12px; color: var(--cream-dim); font-size:0.94rem; }
+
+  .cert-fields{ margin-top: 30px; text-align:left; border-top:1px solid var(--hairline); padding-top: 24px; }
+  .cert-fields .row{ display:flex; justify-content:space-between; padding: 8px 0; font-size:0.86rem; }
+  .cert-fields .row .label{ font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.06em; text-transform:uppercase; color: var(--mono); }
+  .cert-fields .row .value{ color: var(--cream); }
+
+  .cta-row{ margin-top: 34px; display:flex; gap:14px; justify-content:center; flex-wrap:wrap; }
+  .btn-gold{
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color: #0c0b09; background: var(--gold); padding: 13px 24px; border:1px solid var(--gold);
+    transition: background 0.25s ease;
+  }
+  .btn-gold:hover{ background: var(--gold-bright); }
+  .btn-ghost{
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color: var(--cream); padding: 13px 24px; border:1px solid var(--hairline); transition: border-color .25s ease, color .25s ease;
+  }
+  .btn-ghost:hover{ border-color: var(--gold); color: var(--gold-bright); }
+
+  .state-loading, .state-error{ text-align:center; }
+  .state-loading .spinner{
+    width:26px; height:26px; margin: 0 auto 18px;
+    border: 2px solid var(--hairline); border-top-color: var(--gold);
+    border-radius: 50%; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  .state-loading p, .state-error p{ color: var(--cream-dim); font-size:0.92rem; }
+  .state-error .icon{ color: var(--error); font-size:1.6rem; margin-bottom: 14px; }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); }
+
+  @media (max-width: 600px){
+    header{ padding:18px 24px; }
+    .cert-box{ padding: 40px 26px; }
+    footer{ flex-direction:column; gap:14px; text-align:center; padding:24px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="brand" href="index.html">
+    <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
+    <div class="brand-name">MINI ARCHIVE</div>
+  </a>
+</header>
+
+<div class="center-wrap">
+
+  <div id="loadingState" class="state-loading">
+    <div class="spinner"></div>
+    <p>Confirming your account…</p>
+  </div>
+
+  <div id="successState" class="cert-box" style="display:none;">
+    <div class="shield"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
+    <div class="eyebrow">Account Confirmed</div>
+    <h1>Your archive is ready.</h1>
+    <div class="sub">Welcome to Mini Archive — every miniature has a story, and yours starts now.</div>
+
+    <div class="cert-fields">
+      <div class="row"><span class="label">Archive Name</span><span class="value" id="fieldArchiveName">—</span></div>
+      <div class="row"><span class="label">Account</span><span class="value" id="fieldEmail">—</span></div>
+    </div>
+
+    <div class="cta-row">
+      <a class="btn-gold" href="add-model.html">Log Your First Model</a>
+      <a class="btn-ghost" href="collection.html">Browse the Collection</a>
+    </div>
+  </div>
+
+  <div id="errorState" class="state-error" style="display:none;">
+    <div class="icon">!</div>
+    <h1 style="font-family:'Cormorant Garamond', serif; font-size:1.6rem; font-weight:600; margin-bottom:10px;">Couldn't confirm this link</h1>
+    <p id="errorMessage">This confirmation link may have expired or already been used.</p>
+    <div class="cta-row">
+      <a class="btn-gold" href="login.html">Go to Log In</a>
+      <a class="btn-ghost" href="start.html">Start an Archive</a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div>© 2026 Mini Archive. Every miniature has a story.</div>
+  <div><a href="index.html">Home</a></div>
+</footer>
+
+<script>
+  const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function showState(id){
+    ["loadingState", "successState", "errorState"].forEach(s => {
+      document.getElementById(s).style.display = (s === id) ? (s === "loadingState" ? "block" : "block") : "none";
+    });
+  }
+
+  (async () => {
+    // Supabase's client auto-processes the access token in the URL hash
+    // and establishes a session. Give it a beat, then check.
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (!session){
+      showState("errorState");
+      document.getElementById("errorMessage").textContent = "This confirmation link may have expired or already been used. Try logging in — if your account was already confirmed, it'll just work.";
+      return;
+    }
+
+    // Finish profile creation if it wasn't done yet (first-time confirmation).
+    const pendingRaw = localStorage.getItem("pendingProfile");
+    let archiveName = null;
+
+    if (pendingRaw){
+      const pending = JSON.parse(pendingRaw);
+      archiveName = pending.username;
+
+      const { data: existing } = await supabaseClient
+        .from("profiles")
+        .select("id")
+        .eq("id", session.user.id)
+        .maybeSingle();
+
+      if (!existing){
+        const { error } = await supabaseClient.from("profiles").insert({
+          id: session.user.id,
+          username: pending.username,
+          display_name: pending.display_name,
+        });
+        if (error){
+          console.error("Profile creation failed:", error);
+          showState("errorState");
+          document.getElementById("errorMessage").textContent = "Your email was confirmed, but we couldn't finish setting up your archive. Please try logging in — if the problem continues, contact support.";
+          return;
+        }
+      }
+      localStorage.removeItem("pendingProfile");
+    } else {
+      // No pending data (e.g. link opened on a different device/browser) —
+      // fetch whatever profile already exists for this user instead.
+      const { data: profile } = await supabaseClient
+        .from("profiles")
+        .select("username")
+        .eq("id", session.user.id)
+        .maybeSingle();
+      archiveName = profile?.username || null;
+    }
+
+    document.getElementById("fieldArchiveName").textContent = archiveName || "—";
+    document.getElementById("fieldEmail").textContent = session.user.email;
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+    showState("successState");
+  })();
+</script>
+
+</body>
+</html>
