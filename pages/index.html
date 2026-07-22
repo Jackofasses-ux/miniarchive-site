@@ -119,7 +119,21 @@
     transition: color 0.2s ease;
   }
   .login-link:hover{ color: var(--gold-bright); }
-  #authArea{ display:flex; align-items:center; gap:20px; }
+  #authArea{ display:flex; align-items:center; gap:20px; position:relative; }
+  .user-menu-btn{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.08em; color: var(--cream-dim); background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:6px; }
+  .user-menu-btn:hover{ color: var(--gold-bright); }
+  .user-menu-btn svg{ width:10px; height:10px; }
+  .dropdown{
+    position:absolute; top: calc(100% + 14px); right:0; min-width:200px;
+    background: var(--bg-raised); border:1px solid var(--hairline); display:none; flex-direction:column; z-index:60;
+  }
+  .dropdown.open{ display:flex; }
+  .dropdown a, .dropdown button{
+    text-align:left; padding: 13px 18px; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.06em;
+    text-transform:uppercase; color: var(--cream-dim); border-bottom:1px solid var(--hairline); background:none; border-left:none; border-right:none; border-top:none; cursor:pointer;
+  }
+  .dropdown a:last-child, .dropdown button:last-child{ border-bottom:none; }
+  .dropdown a:hover, .dropdown button:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
   .user-chip{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.08em; color: var(--cream-dim); }
   .logout-link{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); cursor:pointer; background:none; border:none; padding:0; }
   .logout-link:hover{ color: var(--gold-bright); }
@@ -571,9 +585,19 @@
     const label = profile?.username || profile?.display_name || session.user.email;
  
     authArea.innerHTML = `
-      <a class="user-chip" href="collection.html">${label}</a>
-      <button class="logout-link" id="logoutBtn">Log out</button>
+      <button class="user-menu-btn" id="userMenuBtn">${label} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="dropdown" id="userDropdown">
+        <a href="collection.html?mine=true">My Collection</a>
+        <a href="add-model.html">Add a Model</a>
+        <a href="account.html">Account Settings</a>
+        <button id="logoutBtn">Log out</button>
+      </div>
     `;
+ 
+    const btn = document.getElementById("userMenuBtn");
+    const dropdown = document.getElementById("userDropdown");
+    btn.addEventListener("click", (e) => { e.stopPropagation(); dropdown.classList.toggle("open"); });
+    document.addEventListener("click", () => dropdown.classList.remove("open"));
  
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await supabaseClient.auth.signOut();
