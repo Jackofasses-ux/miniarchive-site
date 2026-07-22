@@ -233,23 +233,16 @@
 </footer>
 
 <script>
-  // ---- Mock data (stand-in for the future Sheet/DB-backed API) ----
-  const MOCK_MINIS = [
-    { id: "MA-0001", name: "Captain Cassian", painter: "E. Stegosaurus", manufacturer: "Games Workshop", hours: 35.0, status: "finished" },
-    { id: "MA-0002", name: "Magnus the Red", painter: "E. Stegosaurus", manufacturer: "Forge World", hours: 18.5, status: "wip" },
-    { id: "MA-0003", name: "Christmas Gitz", painter: "E. Stegosaurus", manufacturer: "Games Workshop", hours: 0, status: "queued" },
-    { id: "MA-0004", name: "Sacred Rose Celestine", painter: "E. Stegosaurus", manufacturer: "Games Workshop", hours: 22.0, status: "finished" },
-    { id: "MA-0005", name: "Nighthaunt Lord", painter: "A. Harwick", manufacturer: "Games Workshop", hours: 9.0, status: "wip" },
-    { id: "MA-0006", name: "Ork Warboss", painter: "A. Harwick", manufacturer: "Games Workshop", hours: 12.5, status: "finished" },
-    { id: "MA-0007", name: "Custodian Guard", painter: "E. Stegosaurus", manufacturer: "Games Workshop", hours: 40.0, status: "finished" },
-    { id: "MA-0008", name: "Genestealer Cultist", painter: "J. Marchetti", manufacturer: "Games Workshop", hours: 0, status: "queued" },
-  ];
+  const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
   const grid = document.getElementById("grid");
   const searchInput = document.getElementById("searchInput");
   const resultCount = document.getElementById("resultCount");
   const filterBtns = document.querySelectorAll(".filter-btn");
   let activeFilter = "all";
+  let ALL_MINIS = [];
 
   const shieldIcon = `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>`;
 
@@ -257,9 +250,62 @@
     return { finished: "Finished", wip: "In Progress", queued: "Queued" }[status] || status;
   }
 
+  async function loadMinis(){
+    const isMine = new URLSearchParams(window.location.search).get("mine") === "true";
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (isMine && !session){
+      window.location.href = "login.html";
+      return;
+    }
+
+    let query = supabaseClient
+      .from("miniatures")
+      .select(`
+        id, archive_id, title, manufacturer, status, hours_worked, owner_profile_id,
+        photos ( image_url, photo_type ),
+        profiles:owner_profile_id ( username, display_name )
+      `)
+      .order("created_at", { ascending: false });
+
+    if (isMine){
+      query = query.eq("owner_profile_id", session.user.id);
+      document.querySelector(".page-head h1").textContent = "Your models, catalogued.";
+      document.querySelector(".eyebrow").textContent = "My Collection";
+    } else {
+      query = query.eq("visibility", "public");
+    }
+
+    const { data, error } = await query;
+
+    if (error){
+      console.error("Failed to load miniatures:", error);
+      grid.innerHTML = `<div class="empty-state"><span class="eyebrow">Couldn't load the collection</span>Something went wrong fetching models. Check the console for details.</div>`;
+      return;
+    }
+
+    ALL_MINIS = (data || []).map(m => {
+      const frontPhoto = (m.photos || []).find(p => p.photo_type === "front");
+      const anyPhoto = frontPhoto || (m.photos || [])[0];
+      const painterLabel = m.profiles?.username || m.profiles?.display_name || "Unknown";
+      return {
+        id: m.id,
+        code: m.archive_id,
+        name: m.title,
+        manufacturer: m.manufacturer || "—",
+        painter: painterLabel,
+        hours: m.hours_worked || 0,
+        status: m.status || "wip",
+        thumbUrl: anyPhoto?.image_url || null,
+      };
+    });
+
+    render();
+  }
+
   function render(){
     const query = searchInput.value.trim().toLowerCase();
-    const filtered = MOCK_MINIS.filter(m => {
+    const filtered = ALL_MINIS.filter(m => {
       const matchesFilter = activeFilter === "all" || m.status === activeFilter;
       const matchesQuery = !query || m.name.toLowerCase().includes(query) || m.painter.toLowerCase().includes(query);
       return matchesFilter && matchesQuery;
@@ -268,19 +314,19 @@
     resultCount.textContent = `${filtered.length} model${filtered.length === 1 ? "" : "s"}`;
 
     if (filtered.length === 0){
-      grid.innerHTML = `<div class="empty-state">
-        <span class="eyebrow">No matches</span>
-        Nothing fits that search yet. Try a different name or painter.
-      </div>`;
+      const isMine = new URLSearchParams(window.location.search).get("mine") === "true";
+      grid.innerHTML = isMine
+        ? `<div class="empty-state"><span class="eyebrow">No models yet</span>You haven't logged anything yet. <a href="add-model.html" style="color:var(--gold-bright);">Add your first model →</a></div>`
+        : `<div class="empty-state"><span class="eyebrow">No matches</span>Nothing fits that search yet. Try a different name or painter.</div>`;
       return;
     }
 
     grid.innerHTML = filtered.map(m => `
-      <div class="mini-card" onclick="window.location.href='model.html'">
+      <div class="mini-card" onclick="window.location.href='model.html?id=${m.id}'">
         <div class="thumb">
-          <span class="id-tag">${m.id}</span>
+          <span class="id-tag">${m.code}</span>
           <span class="status-tag ${m.status}">${statusLabel(m.status)}</span>
-          ${shieldIcon}
+          ${m.thumbUrl ? `<img src="${m.thumbUrl}" alt="${m.name}" style="width:100%;height:100%;object-fit:cover;">` : shieldIcon}
         </div>
         <div class="info">
           <div class="name">${m.name}</div>
@@ -300,13 +346,9 @@
     });
   });
 
-  render();
+  loadMinis();
 
   // ---- Auth nav state ----
-  const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
   (async () => {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (session) renderLoggedInNav(session);
