@@ -19,9 +19,9 @@
   body{ background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif; font-weight:300; line-height:1.6; min-height:100vh; }
   a{ color:inherit; text-decoration:none; }
   @media (prefers-reduced-motion: reduce){ *{ animation-duration:.01ms !important; transition-duration:.01ms !important; } }
- 
+
   .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.22em; text-transform:uppercase; color: var(--gold); }
- 
+
   header{ display:flex; align-items:center; justify-content:space-between; padding:22px 56px; border-bottom:1px solid var(--hairline); position:relative; z-index:50; }
   .brand{ display:flex; align-items:center; gap:12px; }
   .brand-mark{ width:30px; height:30px; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; }
@@ -42,17 +42,17 @@
   .dropdown a, .dropdown button{ text-align:left; padding: 13px 18px; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color: var(--cream-dim); border-bottom:1px solid var(--hairline); background:none; border-left:none; border-right:none; border-top:none; cursor:pointer; }
   .dropdown a:last-child, .dropdown button:last-child{ border-bottom:none; }
   .dropdown a:hover, .dropdown button:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
- 
+
   main{ max-width: 880px; margin: 0 auto; padding: 60px 24px 100px; }
   main h1{ font-family:'Cormorant Garamond', serif; font-weight:500; font-size: clamp(2rem, 4.5vw, 2.8rem); }
   main .lede{ margin-top:14px; color: var(--cream-dim); font-size:0.95rem; max-width: 560px; }
- 
+
   .top-error{ margin-top: 24px; border:1px solid rgba(201,123,106,0.4); background: rgba(201,123,106,0.08); padding: 14px 16px; font-size:0.85rem; color: var(--error); display:none; }
   .top-success{ margin-top: 24px; border:1px solid rgba(143,174,122,0.4); background: rgba(143,174,122,0.08); padding: 14px 16px; font-size:0.85rem; color: var(--green); display:none; }
- 
+
   fieldset{ border:none; margin-top: 44px; }
   fieldset .legend{ font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase; color: var(--gold); margin-bottom: 22px; }
- 
+
   .field-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .field{ margin-top: 20px; }
   .field.full{ grid-column: 1 / -1; }
@@ -70,7 +70,7 @@
   .field .error-msg{ margin-top:6px; font-size:0.78rem; color: var(--error); display:none; }
   .field.invalid input, .field.invalid select{ border-color: var(--error); }
   .field.invalid .error-msg{ display:block; }
- 
+
   .photo-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 22px; }
   .photo-slot{ text-align:center; }
   .photo-slot .drop{
@@ -86,19 +86,19 @@
   .photo-slot .view-label{ margin-top:8px; font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--cream-dim); }
   .photo-slot .view-label .req{ color: var(--gold); }
   .photo-slot input[type="file"]{ display:none; }
- 
+
   .submit-row{ margin-top: 46px; display:flex; align-items:center; gap:18px; }
   .progress-note{ font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color: var(--mono); }
- 
+
   footer{ border-top:1px solid var(--hairline); padding:28px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); margin-top: 60px; }
- 
+
   .auth-gate{ max-width: 480px; margin: 100px auto; text-align:center; padding: 0 24px; }
   .auth-gate h1{ font-family:'Cormorant Garamond', serif; font-size:1.8rem; font-weight:600; }
   .auth-gate p{ margin-top:14px; color: var(--cream-dim); }
   .auth-gate .cta-row{ margin-top: 26px; display:flex; gap:14px; justify-content:center; }
   .btn-ghost{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color: var(--cream); padding: 13px 24px; border:1px solid var(--hairline); }
   .btn-ghost:hover{ border-color: var(--gold); color: var(--gold-bright); }
- 
+
   @media (max-width: 700px){
     header{ padding:18px 24px; }
     .field-grid{ grid-template-columns: 1fr; }
@@ -108,7 +108,7 @@
 </style>
 </head>
 <body>
- 
+
 <header>
   <a class="brand" href="index.html">
     <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
@@ -121,7 +121,7 @@
     </div>
   </nav>
 </header>
- 
+
 <div id="authGate" class="auth-gate" style="display:none;">
   <div class="eyebrow">Add a Model</div>
   <h1>You need an archive to log a model.</h1>
@@ -131,17 +131,17 @@
     <a class="btn-ghost" href="start.html">Start an Archive</a>
   </div>
 </div>
- 
+
 <main id="formWrap" style="display:none;">
   <div class="eyebrow">Add a Model</div>
   <h1>Log a new miniature.</h1>
   <p class="lede">Name and four angle photos are the minimum. Everything else can be filled in now or left for later.</p>
- 
+
   <div class="top-error" id="topError"></div>
   <div class="top-success" id="topSuccess"></div>
- 
+
   <form id="modelForm" novalidate>
- 
+
     <fieldset>
       <div class="legend">Required</div>
       <div class="field-grid">
@@ -151,7 +151,7 @@
           <div class="error-msg">Give the model a name.</div>
         </div>
       </div>
- 
+
       <div class="photo-grid" id="photoGrid">
         <div class="photo-slot">
           <label class="drop" for="photo-front">
@@ -188,7 +188,7 @@
       </div>
       <div class="error-msg" id="photoError" style="display:none; margin-top:12px;">All four angle photos are required.</div>
     </fieldset>
- 
+
     <fieldset>
       <div class="legend">Optional Detail</div>
       <div class="field-grid">
@@ -237,45 +237,45 @@
         </div>
       </div>
     </fieldset>
- 
+
     <div class="submit-row">
       <button type="submit" class="btn-gold" id="submitBtn">Log This Model</button>
       <span class="progress-note" id="progressNote"></span>
     </div>
   </form>
 </main>
- 
+
 <footer>
   <div>© 2026 Mini Archive. Every miniature has a story.</div>
   <div><a href="collection.html">← Back to Collection</a></div>
 </footer>
- 
+
 <script>
   const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
- 
+
   let currentSession = null;
- 
+
   (async () => {
     const { data: { session } } = await supabaseClient.auth.getSession();
     currentSession = session;
- 
+
     if (!session){
       document.getElementById("authGate").style.display = "block";
       return;
     }
- 
+
     document.getElementById("formWrap").style.display = "block";
     renderLoggedInNav(session);
   })();
- 
+
   async function renderLoggedInNav(session){
     const authArea = document.getElementById("authArea");
     if (!authArea) return;
     const { data: profile } = await supabaseClient.from("profiles").select("username, display_name").eq("id", session.user.id).maybeSingle();
     const label = profile?.username || profile?.display_name || session.user.email;
- 
+
     authArea.innerHTML = `
       <button class="user-menu-btn" id="userMenuBtn">${label} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
       <div class="dropdown" id="userDropdown">
@@ -294,17 +294,17 @@
       window.location.href = "index.html";
     });
   }
- 
+
   // ---- Photo slot previews ----
   const selectedFiles = {}; // view -> File
- 
+
   document.querySelectorAll('#photoGrid input[type="file"]').forEach(input => {
     input.addEventListener("change", (e) => {
       const file = e.target.files[0];
       const view = input.dataset.view;
       if (!file) return;
       selectedFiles[view] = file;
- 
+
       const dropLabel = input.previousElementSibling;
       dropLabel.classList.add("filled");
       const reader = new FileReader();
@@ -314,58 +314,63 @@
       reader.readAsDataURL(file);
     });
   });
- 
+
   // ---- Form submit ----
   const form = document.getElementById("modelForm");
   const submitBtn = document.getElementById("submitBtn");
   const progressNote = document.getElementById("progressNote");
   const topError = document.getElementById("topError");
   const topSuccess = document.getElementById("topSuccess");
- 
+
   function setInvalid(fieldId, invalid){
     const el = document.getElementById(fieldId);
     if (el) el.classList.toggle("invalid", invalid);
   }
- 
+
   function showTopError(message){
     topSuccess.style.display = "none";
     topError.textContent = message;
     topError.style.display = "block";
   }
- 
+
   async function generateArchiveId(){
+    const year = new Date().getFullYear();
+    const prefix = `MA-${year}-`;
+
     const { count } = await supabaseClient
       .from("miniatures")
-      .select("id", { count: "exact", head: true });
+      .select("id", { count: "exact", head: true })
+      .like("archive_id", `${prefix}%`);
+
     const next = (count || 0) + 1;
-    return `MA-${String(next).padStart(4, "0")}`;
+    return `${prefix}${String(next).padStart(8, "0")}`;
   }
- 
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     topError.style.display = "none";
     topSuccess.style.display = "none";
- 
+
     const title = document.getElementById("title").value.trim();
     const requiredViews = ["front", "left", "rear", "right"];
     const missingPhotos = requiredViews.filter(v => !selectedFiles[v]);
- 
+
     setInvalid("field-title", !title);
     document.getElementById("photoError").style.display = missingPhotos.length ? "block" : "none";
- 
+
     if (!title || missingPhotos.length){
       showTopError("Please fix the highlighted fields before submitting.");
       return;
     }
- 
+
     submitBtn.disabled = true;
     submitBtn.textContent = "Logging…";
- 
+
     try {
       // 1. Create the miniature record
       progressNote.textContent = "Creating record…";
       const archiveId = await generateArchiveId();
- 
+
       const payload = {
         archive_id: archiveId,
         owner_profile_id: currentSession.user.id,
@@ -380,35 +385,35 @@
         completed_at: document.getElementById("completedAt").value || null,
         description: document.getElementById("description").value.trim() || null,
       };
- 
+
       const { data: inserted, error: insertError } = await supabaseClient
         .from("miniatures")
         .insert(payload)
         .select()
         .single();
- 
+
       if (insertError) throw insertError;
- 
+
       // 2. Upload each photo and record it
       let uploadedCount = 0;
       for (const view of requiredViews){
         uploadedCount++;
         progressNote.textContent = `Uploading photo ${uploadedCount} of 4…`;
- 
+
         const file = selectedFiles[view];
         const ext = file.name.split(".").pop();
         const path = `${inserted.id}/${view}.${ext}`;
- 
+
         const { error: uploadError } = await supabaseClient.storage
           .from("model-photos")
           .upload(path, file, { upsert: true });
- 
+
         if (uploadError) throw uploadError;
- 
+
         const { data: urlData } = supabaseClient.storage
           .from("model-photos")
           .getPublicUrl(path);
- 
+
         const { error: photoInsertError } = await supabaseClient
           .from("photos")
           .insert({
@@ -417,10 +422,10 @@
             photo_type: view,
             sort_order: requiredViews.indexOf(view),
           });
- 
+
         if (photoInsertError) throw photoInsertError;
       }
- 
+
       progressNote.textContent = "";
       topSuccess.textContent = `"${title}" has been logged (${archiveId}). You can add more detail — timeline, paint recipe — later.`;
       topSuccess.style.display = "block";
@@ -430,7 +435,7 @@
         el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg><span class="plus-label">Add Photo</span>`;
       });
       Object.keys(selectedFiles).forEach(k => delete selectedFiles[k]);
- 
+
     } catch (err){
       console.error("Add model failed:", err);
       progressNote.textContent = "";
@@ -441,6 +446,6 @@
     }
   });
 </script>
- 
+
 </body>
 </html>
