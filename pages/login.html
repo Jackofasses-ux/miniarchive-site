@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
@@ -98,7 +99,7 @@
     <h1>Log in to your archive</h1>
     <div class="sub">Pick up right where you left off.</div>
  
-    <div class="top-error" id="topError">That email and password combination doesn't match an archive. This is a design mock — no accounts exist yet.</div>
+    <div class="top-error" id="topError"></div>
  
     <form id="loginForm" novalidate>
       <div class="field" id="field-email">
@@ -127,16 +128,19 @@
 </footer>
  
 <script>
-  // NOTE: front-end mock only — no request is sent, no real auth exists yet.
-  // This just demonstrates the intended validation/error UX.
+  const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+ 
   const form = document.getElementById("loginForm");
   const topError = document.getElementById("topError");
+  const submitBtn = form.querySelector(".submit-btn");
  
   function setInvalid(fieldId, invalid){
     document.getElementById(fieldId).classList.toggle("invalid", invalid);
   }
  
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
     topError.style.display = "none";
  
@@ -148,9 +152,25 @@
     setInvalid("field-email", !emailValid);
     setInvalid("field-password", !passwordValid);
  
-    if (emailValid && passwordValid){
+    if (!(emailValid && passwordValid)) return;
+ 
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Logging in…";
+ 
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+ 
+    submitBtn.disabled = false;
+    submitBtn.textContent = "Log In";
+ 
+    if (error){
+      topError.textContent = error.message;
       topError.style.display = "block";
+      return;
     }
+ 
+    // Successful login — redirect to the collection page for now.
+    // Later this could go to a dedicated "my collection" or dashboard view.
+    window.location.href = "collection.html";
   });
 </script>
  
