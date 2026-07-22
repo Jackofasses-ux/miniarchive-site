@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account Settings — Mini Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
+    --gold:#c9a24b; --gold-bright:#e8c877;
+    --cream:#ece6d8; --cream-dim:#a89f8c; --mono:#8a8072;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif; font-weight:300; line-height:1.6; min-height:100vh; }
+  a{ color:inherit; text-decoration:none; }
+  .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.22em; text-transform:uppercase; color: var(--gold); }
+ 
+  header{ display:flex; align-items:center; justify-content:space-between; padding:22px 56px; border-bottom:1px solid var(--hairline); position:relative; z-index:50; }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{ width:30px; height:30px; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; }
+  .brand-mark svg{ width:16px; height:16px; fill: var(--gold); }
+  .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
+  nav{ display:flex; align-items:center; gap:40px; }
+  #authArea{ display:flex; align-items:center; gap:20px; position:relative; }
+  .login-link{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); }
+  .login-link:hover{ color: var(--gold-bright); }
+  .btn-gold{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); padding:11px 22px; border:1px solid var(--gold); }
+  .user-menu-btn{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.08em; color: var(--cream-dim); background:none; border:none; cursor:pointer; display:flex; align-items:center; gap:6px; }
+  .user-menu-btn:hover{ color: var(--gold-bright); }
+  .user-menu-btn svg{ width:10px; height:10px; }
+  .dropdown{
+    position:absolute; top: calc(100% + 14px); right:0; min-width:200px;
+    background: var(--bg-raised); border:1px solid var(--hairline); display:none; flex-direction:column;
+  }
+  .dropdown.open{ display:flex; }
+  .dropdown a, .dropdown button{
+    text-align:left; padding: 13px 18px; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.06em;
+    text-transform:uppercase; color: var(--cream-dim); border-bottom:1px solid var(--hairline); background:none; border-left:none; border-right:none; border-top:none; cursor:pointer;
+  }
+  .dropdown a:last-child, .dropdown button:last-child{ border-bottom:none; }
+  .dropdown a:hover, .dropdown button:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
+ 
+  .center-wrap{ max-width:640px; margin: 0 auto; padding: 100px 24px; text-align:center; }
+  .center-wrap h1{ font-family:'Cormorant Garamond', serif; font-size:2.4rem; font-weight:500; margin-top: 16px; }
+  .center-wrap p{ margin-top:18px; color: var(--cream-dim); }
+  .box{ margin-top: 40px; border:1px solid var(--hairline); background: var(--bg-raised); padding: 36px; text-align:left; }
+  .box .label{ font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); }
+  .box ul{ margin-top:14px; padding-left: 20px; color: var(--cream-dim); font-size:0.92rem; }
+  .box li{ margin-bottom:8px; }
+ 
+  footer{ border-top:1px solid var(--hairline); padding:28px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); }
+ 
+  @media (max-width: 700px){ header{ padding:18px 24px; } footer{ flex-direction:column; gap:14px; text-align:center; } }
+</style>
+</head>
+<body>
+ 
+<header>
+  <a class="brand" href="index.html">
+    <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
+    <div class="brand-name">MINI ARCHIVE</div>
+  </a>
+  <nav>
+    <div id="authArea">
+      <a class="login-link" href="login.html">Log in</a>
+      <a class="btn-gold" href="start.html">Start an Archive</a>
+    </div>
+  </nav>
+</header>
+ 
+<div class="center-wrap">
+  <div class="eyebrow">Account Settings</div>
+  <h1>Coming soon.</h1>
+  <p>This is where you will manage your profile, archive name, and account details.</p>
+ 
+  <div class="box">
+    <div class="label">Planned for this page</div>
+    <ul>
+      <li>Update archive name, display name, and email</li>
+      <li>Change password</li>
+      <li>Free / paid tier and usage (models logged vs. limit)</li>
+    </ul>
+  </div>
+</div>
+ 
+<footer>
+  <div>© 2026 Mini Archive. Every miniature has a story.</div>
+  <div><a href="collection.html">← Back to Collection</a></div>
+</footer>
+ 
+<script>
+  const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+ 
+  (async () => {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) renderLoggedInNav(session);
+  })();
+ 
+  async function renderLoggedInNav(session){
+    const authArea = document.getElementById("authArea");
+    if (!authArea) return;
+    const { data: profile } = await supabaseClient.from("profiles").select("username, display_name").eq("id", session.user.id).maybeSingle();
+    const label = profile?.username || profile?.display_name || session.user.email;
+ 
+    authArea.innerHTML = `
+      <button class="user-menu-btn" id="userMenuBtn">${label} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="dropdown" id="userDropdown">
+        <a href="collection.html?mine=true">My Collection</a>
+        <a href="add-model.html">Add a Model</a>
+        <a href="account.html">Account Settings</a>
+        <button id="logoutBtn">Log out</button>
+      </div>
+    `;
+ 
+    const btn = document.getElementById("userMenuBtn");
+    const dropdown = document.getElementById("userDropdown");
+    btn.addEventListener("click", (e) => { e.stopPropagation(); dropdown.classList.toggle("open"); });
+    document.addEventListener("click", () => dropdown.classList.remove("open"));
+ 
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await supabaseClient.auth.signOut();
+      window.location.href = "index.html";
+    });
+  }
+</script>
+ 
+</body>
+</html>
