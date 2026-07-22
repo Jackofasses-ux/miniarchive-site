@@ -13,12 +13,15 @@
     --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
     --gold:#c9a24b; --gold-bright:#e8c877;
     --cream:#ece6d8; --cream-dim:#a89f8c; --mono:#8a8072;
+    --error:#c97b6a; --green:#8fae7a;
   }
   *{ margin:0; padding:0; box-sizing:border-box; }
   body{ background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif; font-weight:300; line-height:1.6; min-height:100vh; }
   a{ color:inherit; text-decoration:none; }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+ 
   .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.22em; text-transform:uppercase; color: var(--gold); }
-
+ 
   header{ display:flex; align-items:center; justify-content:space-between; padding:22px 56px; border-bottom:1px solid var(--hairline); position:relative; z-index:50; }
   .brand{ display:flex; align-items:center; gap:12px; }
   .brand-mark{ width:30px; height:30px; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; }
@@ -28,38 +31,84 @@
   #authArea{ display:flex; align-items:center; gap:20px; position:relative; }
   .login-link{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); }
   .login-link:hover{ color: var(--gold-bright); }
-  .btn-gold{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); padding:11px 22px; border:1px solid var(--gold); }
+  .btn-gold{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); padding:11px 22px; border:1px solid var(--gold); cursor:pointer; transition: background .25s ease; }
+  .btn-gold:hover{ background: var(--gold-bright); }
+  .btn-gold:disabled{ opacity:0.5; cursor:not-allowed; }
   .user-menu-btn{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); border:1px solid var(--gold); padding:11px 20px; cursor:pointer; display:flex; align-items:center; gap:8px; transition: background 0.25s ease; }
-  .user-menu-btn:hover{ background: var(--gold-bright); color:#0c0b09; }
-  .user-menu-btn svg{ stroke:#0c0b09; }
-  .user-menu-btn svg{ width:10px; height:10px; }
-  .dropdown{
-    position:absolute; top: calc(100% + 14px); right:0; min-width:200px;
-    background: var(--bg-raised); border:1px solid var(--hairline); display:none; flex-direction:column;
-  }
+  .user-menu-btn:hover{ background: var(--gold-bright); }
+  .user-menu-btn svg{ width:10px; height:10px; stroke:#0c0b09; }
+  .dropdown{ position:absolute; top: calc(100% + 14px); right:0; min-width:200px; background: var(--bg-raised); border:1px solid var(--hairline); display:none; flex-direction:column; z-index:60; }
   .dropdown.open{ display:flex; }
-  .dropdown a, .dropdown button{
-    text-align:left; padding: 13px 18px; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.06em;
-    text-transform:uppercase; color: var(--cream-dim); border-bottom:1px solid var(--hairline); background:none; border-left:none; border-right:none; border-top:none; cursor:pointer;
-  }
+  .dropdown a, .dropdown button{ text-align:left; padding: 13px 18px; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color: var(--cream-dim); border-bottom:1px solid var(--hairline); background:none; border-left:none; border-right:none; border-top:none; cursor:pointer; }
   .dropdown a:last-child, .dropdown button:last-child{ border-bottom:none; }
   .dropdown a:hover, .dropdown button:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
-
-  .center-wrap{ max-width:640px; margin: 0 auto; padding: 100px 24px; text-align:center; }
-  .center-wrap h1{ font-family:'Cormorant Garamond', serif; font-size:2.4rem; font-weight:500; margin-top: 16px; }
-  .center-wrap p{ margin-top:18px; color: var(--cream-dim); }
-  .box{ margin-top: 40px; border:1px solid var(--hairline); background: var(--bg-raised); padding: 36px; text-align:left; }
-  .box .label{ font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); }
-  .box ul{ margin-top:14px; padding-left: 20px; color: var(--cream-dim); font-size:0.92rem; }
-  .box li{ margin-bottom:8px; }
-
-  footer{ border-top:1px solid var(--hairline); padding:28px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); }
-
-  @media (max-width: 700px){ header{ padding:18px 24px; } footer{ flex-direction:column; gap:14px; text-align:center; } }
+ 
+  main{ max-width: 880px; margin: 0 auto; padding: 60px 24px 100px; }
+  main h1{ font-family:'Cormorant Garamond', serif; font-weight:500; font-size: clamp(2rem, 4.5vw, 2.8rem); }
+  main .lede{ margin-top:14px; color: var(--cream-dim); font-size:0.95rem; max-width: 560px; }
+ 
+  .top-error{ margin-top: 24px; border:1px solid rgba(201,123,106,0.4); background: rgba(201,123,106,0.08); padding: 14px 16px; font-size:0.85rem; color: var(--error); display:none; }
+  .top-success{ margin-top: 24px; border:1px solid rgba(143,174,122,0.4); background: rgba(143,174,122,0.08); padding: 14px 16px; font-size:0.85rem; color: var(--green); display:none; }
+ 
+  fieldset{ border:none; margin-top: 44px; }
+  fieldset .legend{ font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase; color: var(--gold); margin-bottom: 22px; }
+ 
+  .field-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .field{ margin-top: 20px; }
+  .field.full{ grid-column: 1 / -1; }
+  .field label{ display:block; font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); margin-bottom:8px; }
+  .field .req{ color: var(--gold); }
+  .field input, .field select, .field textarea{
+    width:100%; background: var(--bg-raised); border:1px solid var(--hairline);
+    padding: 12px 14px; color: var(--cream); font-family:'Jost', sans-serif; font-size:0.94rem;
+    transition: border-color .2s ease;
+  }
+  .field textarea{ resize: vertical; min-height: 90px; }
+  .field select{ appearance:none; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23a89f8c" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>'); background-repeat:no-repeat; background-position: right 14px center; background-size: 14px; }
+  .field input:focus, .field select:focus, .field textarea:focus{ outline:none; border-color: var(--gold); }
+  .field .hint{ margin-top:6px; font-size:0.78rem; color: var(--mono); }
+  .field .error-msg{ margin-top:6px; font-size:0.78rem; color: var(--error); display:none; }
+  .field.invalid input, .field.invalid select{ border-color: var(--error); }
+  .field.invalid .error-msg{ display:block; }
+ 
+  .photo-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 22px; }
+  .photo-slot{ text-align:center; }
+  .photo-slot .drop{
+    border: 1px dashed var(--hairline); background: var(--bg-raised);
+    height: 130px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px;
+    cursor:pointer; transition: border-color .2s ease; overflow:hidden; position:relative;
+  }
+  .photo-slot .drop:hover{ border-color: var(--gold); }
+  .photo-slot .drop.filled{ border-style: solid; border-color: var(--gold); }
+  .photo-slot .drop img{ width:100%; height:100%; object-fit:cover; }
+  .photo-slot .drop svg{ width:20px; height:20px; stroke: var(--mono); }
+  .photo-slot .drop .plus-label{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; color: var(--mono); text-transform:uppercase; letter-spacing:0.06em; }
+  .photo-slot .view-label{ margin-top:8px; font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--cream-dim); }
+  .photo-slot .view-label .req{ color: var(--gold); }
+  .photo-slot input[type="file"]{ display:none; }
+ 
+  .submit-row{ margin-top: 46px; display:flex; align-items:center; gap:18px; }
+  .progress-note{ font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color: var(--mono); }
+ 
+  footer{ border-top:1px solid var(--hairline); padding:28px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); margin-top: 60px; }
+ 
+  .auth-gate{ max-width: 480px; margin: 100px auto; text-align:center; padding: 0 24px; }
+  .auth-gate h1{ font-family:'Cormorant Garamond', serif; font-size:1.8rem; font-weight:600; }
+  .auth-gate p{ margin-top:14px; color: var(--cream-dim); }
+  .auth-gate .cta-row{ margin-top: 26px; display:flex; gap:14px; justify-content:center; }
+  .btn-ghost{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color: var(--cream); padding: 13px 24px; border:1px solid var(--hairline); }
+  .btn-ghost:hover{ border-color: var(--gold); color: var(--gold-bright); }
+ 
+  @media (max-width: 700px){
+    header{ padding:18px 24px; }
+    .field-grid{ grid-template-columns: 1fr; }
+    .photo-grid{ grid-template-columns: 1fr 1fr; }
+    footer{ flex-direction:column; gap:14px; text-align:center; }
+  }
 </style>
 </head>
 <body>
-
+ 
 <header>
   <a class="brand" href="index.html">
     <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
@@ -72,43 +121,161 @@
     </div>
   </nav>
 </header>
-
-<div class="center-wrap">
+ 
+<div id="authGate" class="auth-gate" style="display:none;">
   <div class="eyebrow">Add a Model</div>
-  <h1>Coming soon.</h1>
-  <p>This is where you'll log a new miniature — name, photos, painter, owner, and any optional detail you want to add.</p>
-
-  <div class="box">
-    <div class="label">Planned for this form</div>
-    <ul>
-      <li>Required: model name, front/left/rear/right photos, painter, owner</li>
-      <li>Optional: manufacturer, scale, base size, description</li>
-      <li>Optional detail sections added later: timeline, paint recipe, campaigns</li>
-    </ul>
+  <h1>You need an archive to log a model.</h1>
+  <p>Log in to your existing archive, or start a free one — it only takes a minute.</p>
+  <div class="cta-row">
+    <a class="btn-gold" href="login.html">Log In</a>
+    <a class="btn-ghost" href="start.html">Start an Archive</a>
   </div>
 </div>
-
+ 
+<main id="formWrap" style="display:none;">
+  <div class="eyebrow">Add a Model</div>
+  <h1>Log a new miniature.</h1>
+  <p class="lede">Name and four angle photos are the minimum. Everything else can be filled in now or left for later.</p>
+ 
+  <div class="top-error" id="topError"></div>
+  <div class="top-success" id="topSuccess"></div>
+ 
+  <form id="modelForm" novalidate>
+ 
+    <fieldset>
+      <div class="legend">Required</div>
+      <div class="field-grid">
+        <div class="field full" id="field-title">
+          <label for="title">Model Name <span class="req">*</span></label>
+          <input id="title" type="text" placeholder="e.g. Captain Cassian">
+          <div class="error-msg">Give the model a name.</div>
+        </div>
+      </div>
+ 
+      <div class="photo-grid" id="photoGrid">
+        <div class="photo-slot">
+          <label class="drop" for="photo-front">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
+            <span class="plus-label">Add Photo</span>
+          </label>
+          <input type="file" id="photo-front" accept="image/*" data-view="front">
+          <div class="view-label">Front <span class="req">*</span></div>
+        </div>
+        <div class="photo-slot">
+          <label class="drop" for="photo-left">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
+            <span class="plus-label">Add Photo</span>
+          </label>
+          <input type="file" id="photo-left" accept="image/*" data-view="left">
+          <div class="view-label">Left <span class="req">*</span></div>
+        </div>
+        <div class="photo-slot">
+          <label class="drop" for="photo-rear">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
+            <span class="plus-label">Add Photo</span>
+          </label>
+          <input type="file" id="photo-rear" accept="image/*" data-view="rear">
+          <div class="view-label">Rear <span class="req">*</span></div>
+        </div>
+        <div class="photo-slot">
+          <label class="drop" for="photo-right">
+            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
+            <span class="plus-label">Add Photo</span>
+          </label>
+          <input type="file" id="photo-right" accept="image/*" data-view="right">
+          <div class="view-label">Right <span class="req">*</span></div>
+        </div>
+      </div>
+      <div class="error-msg" id="photoError" style="display:none; margin-top:12px;">All four angle photos are required.</div>
+    </fieldset>
+ 
+    <fieldset>
+      <div class="legend">Optional Detail</div>
+      <div class="field-grid">
+        <div class="field">
+          <label for="manufacturer">Manufacturer</label>
+          <input id="manufacturer" type="text" placeholder="e.g. Games Workshop">
+        </div>
+        <div class="field">
+          <label for="scale">Scale</label>
+          <input id="scale" type="text" placeholder="e.g. 1:56">
+        </div>
+        <div class="field">
+          <label for="baseSize">Base Size (mm)</label>
+          <input id="baseSize" type="number" placeholder="e.g. 32">
+        </div>
+        <div class="field">
+          <label for="hoursWorked">Hours Worked</label>
+          <input id="hoursWorked" type="number" step="0.5" placeholder="e.g. 12.5">
+        </div>
+        <div class="field">
+          <label for="status">Status</label>
+          <select id="status">
+            <option value="wip">In Progress</option>
+            <option value="finished">Finished</option>
+            <option value="queued">Queued</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="visibility">Visibility</label>
+          <select id="visibility">
+            <option value="public">Public</option>
+            <option value="private">Private</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="startedAt">Started</label>
+          <input id="startedAt" type="date">
+        </div>
+        <div class="field">
+          <label for="completedAt">Completed</label>
+          <input id="completedAt" type="date">
+        </div>
+        <div class="field full">
+          <label for="description">Description</label>
+          <textarea id="description" placeholder="A few lines about this piece…"></textarea>
+        </div>
+      </div>
+    </fieldset>
+ 
+    <div class="submit-row">
+      <button type="submit" class="btn-gold" id="submitBtn">Log This Model</button>
+      <span class="progress-note" id="progressNote"></span>
+    </div>
+  </form>
+</main>
+ 
 <footer>
   <div>© 2026 Mini Archive. Every miniature has a story.</div>
   <div><a href="collection.html">← Back to Collection</a></div>
 </footer>
-
+ 
 <script>
   const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+ 
+  let currentSession = null;
+ 
   (async () => {
     const { data: { session } } = await supabaseClient.auth.getSession();
-    if (session) renderLoggedInNav(session);
+    currentSession = session;
+ 
+    if (!session){
+      document.getElementById("authGate").style.display = "block";
+      return;
+    }
+ 
+    document.getElementById("formWrap").style.display = "block";
+    renderLoggedInNav(session);
   })();
-
+ 
   async function renderLoggedInNav(session){
     const authArea = document.getElementById("authArea");
     if (!authArea) return;
     const { data: profile } = await supabaseClient.from("profiles").select("username, display_name").eq("id", session.user.id).maybeSingle();
     const label = profile?.username || profile?.display_name || session.user.email;
-
+ 
     authArea.innerHTML = `
       <button class="user-menu-btn" id="userMenuBtn">${label} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
       <div class="dropdown" id="userDropdown">
@@ -118,18 +285,162 @@
         <button id="logoutBtn">Log out</button>
       </div>
     `;
-
     const btn = document.getElementById("userMenuBtn");
     const dropdown = document.getElementById("userDropdown");
     btn.addEventListener("click", (e) => { e.stopPropagation(); dropdown.classList.toggle("open"); });
     document.addEventListener("click", () => dropdown.classList.remove("open"));
-
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await supabaseClient.auth.signOut();
       window.location.href = "index.html";
     });
   }
+ 
+  // ---- Photo slot previews ----
+  const selectedFiles = {}; // view -> File
+ 
+  document.querySelectorAll('#photoGrid input[type="file"]').forEach(input => {
+    input.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      const view = input.dataset.view;
+      if (!file) return;
+      selectedFiles[view] = file;
+ 
+      const dropLabel = input.previousElementSibling;
+      dropLabel.classList.add("filled");
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        dropLabel.innerHTML = `<img src="${ev.target.result}" alt="${view} preview">`;
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+ 
+  // ---- Form submit ----
+  const form = document.getElementById("modelForm");
+  const submitBtn = document.getElementById("submitBtn");
+  const progressNote = document.getElementById("progressNote");
+  const topError = document.getElementById("topError");
+  const topSuccess = document.getElementById("topSuccess");
+ 
+  function setInvalid(fieldId, invalid){
+    const el = document.getElementById(fieldId);
+    if (el) el.classList.toggle("invalid", invalid);
+  }
+ 
+  function showTopError(message){
+    topSuccess.style.display = "none";
+    topError.textContent = message;
+    topError.style.display = "block";
+  }
+ 
+  async function generateArchiveId(){
+    const { count } = await supabaseClient
+      .from("miniatures")
+      .select("id", { count: "exact", head: true });
+    const next = (count || 0) + 1;
+    return `MA-${String(next).padStart(4, "0")}`;
+  }
+ 
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    topError.style.display = "none";
+    topSuccess.style.display = "none";
+ 
+    const title = document.getElementById("title").value.trim();
+    const requiredViews = ["front", "left", "rear", "right"];
+    const missingPhotos = requiredViews.filter(v => !selectedFiles[v]);
+ 
+    setInvalid("field-title", !title);
+    document.getElementById("photoError").style.display = missingPhotos.length ? "block" : "none";
+ 
+    if (!title || missingPhotos.length){
+      showTopError("Please fix the highlighted fields before submitting.");
+      return;
+    }
+ 
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Logging…";
+ 
+    try {
+      // 1. Create the miniature record
+      progressNote.textContent = "Creating record…";
+      const archiveId = await generateArchiveId();
+ 
+      const payload = {
+        archive_id: archiveId,
+        owner_profile_id: currentSession.user.id,
+        title,
+        manufacturer: document.getElementById("manufacturer").value.trim() || null,
+        scale: document.getElementById("scale").value.trim() || null,
+        base_size: document.getElementById("baseSize").value ? parseInt(document.getElementById("baseSize").value, 10) : null,
+        hours_worked: document.getElementById("hoursWorked").value ? parseFloat(document.getElementById("hoursWorked").value) : null,
+        status: document.getElementById("status").value,
+        visibility: document.getElementById("visibility").value,
+        started_at: document.getElementById("startedAt").value || null,
+        completed_at: document.getElementById("completedAt").value || null,
+        description: document.getElementById("description").value.trim() || null,
+      };
+ 
+      const { data: inserted, error: insertError } = await supabaseClient
+        .from("miniatures")
+        .insert(payload)
+        .select()
+        .single();
+ 
+      if (insertError) throw insertError;
+ 
+      // 2. Upload each photo and record it
+      let uploadedCount = 0;
+      for (const view of requiredViews){
+        uploadedCount++;
+        progressNote.textContent = `Uploading photo ${uploadedCount} of 4…`;
+ 
+        const file = selectedFiles[view];
+        const ext = file.name.split(".").pop();
+        const path = `${inserted.id}/${view}.${ext}`;
+ 
+        const { error: uploadError } = await supabaseClient.storage
+          .from("model-photos")
+          .upload(path, file, { upsert: true });
+ 
+        if (uploadError) throw uploadError;
+ 
+        const { data: urlData } = supabaseClient.storage
+          .from("model-photos")
+          .getPublicUrl(path);
+ 
+        const { error: photoInsertError } = await supabaseClient
+          .from("photos")
+          .insert({
+            miniature_id: inserted.id,
+            image_url: urlData.publicUrl,
+            photo_type: view,
+            sort_order: requiredViews.indexOf(view),
+          });
+ 
+        if (photoInsertError) throw photoInsertError;
+      }
+ 
+      progressNote.textContent = "";
+      topSuccess.textContent = `"${title}" has been logged (${archiveId}). You can add more detail — timeline, paint recipe — later.`;
+      topSuccess.style.display = "block";
+      form.reset();
+      document.querySelectorAll("#photoGrid .drop").forEach(el => {
+        el.classList.remove("filled");
+        el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg><span class="plus-label">Add Photo</span>`;
+      });
+      Object.keys(selectedFiles).forEach(k => delete selectedFiles[k]);
+ 
+    } catch (err){
+      console.error("Add model failed:", err);
+      progressNote.textContent = "";
+      showTopError(err.message || "Something went wrong. Check the console for details.");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Log This Model";
+    }
+  });
 </script>
-
+ 
 </body>
 </html>
