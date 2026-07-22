@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root{
     --bg: #0c0b09;
@@ -65,6 +66,10 @@
   .btn-gold:hover{ background: var(--gold-bright); }
   .login-link{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); transition: color .2s ease; }
   .login-link:hover{ color: var(--gold-bright); }
+  #authArea{ display:flex; align-items:center; gap:20px; }
+  .user-chip{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.08em; color: var(--cream-dim); }
+  .logout-link{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); cursor:pointer; background:none; border:none; padding:0; }
+  .logout-link:hover{ color: var(--gold-bright); }
  
   .page-head{ padding: 70px 56px 20px; max-width:1280px; margin:0 auto; }
   .page-head h1{ font-family:'Cormorant Garamond', serif; font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight:500; }
@@ -177,8 +182,10 @@
       <li><a href="index.html#provenance">Provenance</a></li>
       <li><a href="index.html#about">About</a></li>
     </ul>
-    <a class="login-link" href="login.html">Log in</a>
-    <a class="btn-gold" href="start.html">Start an Archive</a>
+    <div id="authArea">
+      <a class="login-link" href="login.html">Log in</a>
+      <a class="btn-gold" href="start.html">Start an Archive</a>
+    </div>
   </nav>
 </header>
  
@@ -279,6 +286,39 @@
   });
  
   render();
+ 
+  // ---- Auth nav state ----
+  const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+ 
+  (async () => {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) renderLoggedInNav(session);
+  })();
+ 
+  async function renderLoggedInNav(session){
+    const authArea = document.getElementById("authArea");
+    if (!authArea) return;
+ 
+    const { data: profile } = await supabaseClient
+      .from("profiles")
+      .select("username, display_name")
+      .eq("id", session.user.id)
+      .maybeSingle();
+ 
+    const label = profile?.username || profile?.display_name || session.user.email;
+ 
+    authArea.innerHTML = `
+      <a class="user-chip" href="collection.html">${label}</a>
+      <button class="logout-link" id="logoutBtn">Log out</button>
+    `;
+ 
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await supabaseClient.auth.signOut();
+      window.location.reload();
+    });
+  }
 </script>
  
 </body>
