@@ -215,12 +215,6 @@
     <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
     <input id="searchInput" type="text" placeholder="Search by name or painter…" autocomplete="off">
   </div>
-  <div class="filters" id="filters">
-    <button class="filter-btn active" data-filter="all">All</button>
-    <button class="filter-btn" data-filter="finished">Finished</button>
-    <button class="filter-btn" data-filter="wip">In Progress</button>
-    <button class="filter-btn" data-filter="queued">Queued</button>
-  </div>
 </div>
 
 <div class="result-count" id="resultCount"></div>
@@ -240,21 +234,16 @@
   const grid = document.getElementById("grid");
   const searchInput = document.getElementById("searchInput");
   const resultCount = document.getElementById("resultCount");
-  const filterBtns = document.querySelectorAll(".filter-btn");
-  let activeFilter = "all";
   let ALL_MINIS = [];
+  let isMineView = false;
 
   const shieldIcon = `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>`;
 
-  function statusLabel(status){
-    return { finished: "Finished", wip: "In Progress", queued: "Queued" }[status] || status;
-  }
-
   async function loadMinis(){
-    const isMine = new URLSearchParams(window.location.search).get("mine") === "true";
+    isMineView = new URLSearchParams(window.location.search).get("mine") === "true";
     const { data: { session } } = await supabaseClient.auth.getSession();
 
-    if (isMine && !session){
+    if (isMineView && !session){
       window.location.href = "login.html";
       return;
     }
@@ -268,12 +257,12 @@
       `)
       .order("created_at", { ascending: false });
 
-    if (isMine){
+    if (isMineView){
       query = query.eq("owner_profile_id", session.user.id);
       document.querySelector(".page-head h1").textContent = "Your models, catalogued.";
       document.querySelector(".eyebrow").textContent = "My Collection";
     } else {
-      query = query.eq("visibility", "public");
+      query = query.eq("visibility", "public").eq("status", "completed");
     }
 
     const { data, error } = await query;
@@ -295,7 +284,7 @@
         manufacturer: m.manufacturer || "—",
         painter: painterLabel,
         hours: m.hours_worked || 0,
-        status: m.status || "wip",
+        status: m.status,
         thumbUrl: anyPhoto?.image_url || null,
       };
     });
@@ -306,45 +295,40 @@
   function render(){
     const query = searchInput.value.trim().toLowerCase();
     const filtered = ALL_MINIS.filter(m => {
-      const matchesFilter = activeFilter === "all" || m.status === activeFilter;
-      const matchesQuery = !query || m.name.toLowerCase().includes(query) || m.painter.toLowerCase().includes(query);
-      return matchesFilter && matchesQuery;
+      return !query || m.name.toLowerCase().includes(query) || m.painter.toLowerCase().includes(query);
     });
 
     resultCount.textContent = `${filtered.length} model${filtered.length === 1 ? "" : "s"}`;
 
     if (filtered.length === 0){
-      const isMine = new URLSearchParams(window.location.search).get("mine") === "true";
-      grid.innerHTML = isMine
+      grid.innerHTML = isMineView
         ? `<div class="empty-state"><span class="eyebrow">No models yet</span>You haven't logged anything yet. <a href="add-model.html" style="color:var(--gold-bright);">Add your first model →</a></div>`
         : `<div class="empty-state"><span class="eyebrow">No matches</span>Nothing fits that search yet. Try a different name or painter.</div>`;
       return;
     }
 
-    grid.innerHTML = filtered.map(m => `
-      <div class="mini-card" onclick="window.location.href='model.html?id=${m.id}'">
-        <div class="thumb">
-          <span class="id-tag">${m.code}</span>
-          <span class="status-tag ${m.status}">${statusLabel(m.status)}</span>
-          ${m.thumbUrl ? `<img src="${m.thumbUrl}" alt="${m.name}" style="width:100%;height:100%;object-fit:cover;">` : shieldIcon}
+    grid.innerHTML = filtered.map(m => {
+      const isDraft = m.status === "in_progress";
+      const linkTarget = isDraft ? `publish-model.html?id=${m.id}` : `model.html?id=${m.id}`;
+      const tag = isDraft
+        ? `<span class="status-tag wip">Draft</span>`
+        : `<span class="id-tag">${m.code}</span>`;
+      return `
+        <div class="mini-card" onclick="window.location.href='${linkTarget}'">
+          <div class="thumb">
+            ${tag}
+            ${m.thumbUrl ? `<img src="${m.thumbUrl}" alt="${m.name}" style="width:100%;height:100%;object-fit:cover;">` : shieldIcon}
+          </div>
+          <div class="info">
+            <div class="name">${m.name}</div>
+            <div class="meta">${isDraft ? "On your workbench — click to publish" : `${m.manufacturer} · ${m.painter}`}</div>
+          </div>
         </div>
-        <div class="info">
-          <div class="name">${m.name}</div>
-          <div class="meta">${m.manufacturer} · ${m.painter}</div>
-        </div>
-      </div>
-    `).join("");
+      `;
+    }).join("");
   }
 
   searchInput.addEventListener("input", render);
-  filterBtns.forEach(btn => {
-    btn.addEventListener("click", () => {
-      filterBtns.forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      activeFilter = btn.dataset.filter;
-      render();
-    });
-  });
 
   loadMinis();
 
