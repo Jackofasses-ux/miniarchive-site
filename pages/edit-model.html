@@ -118,6 +118,19 @@
   .owner-visible-row .hint{ margin-top:8px; margin-left:26px; font-size:0.8rem; color: var(--cream-dim); max-width: 480px; }
 
   .submit-row{ margin-top: 46px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .btn-delete{
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color: var(--error); padding: 11px 22px; border:1px solid rgba(201,123,106,0.4); background:none; cursor:pointer;
+    transition: background .2s ease;
+  }
+  .btn-delete:hover{ background: rgba(201,123,106,0.1); }
+  .btn-delete:disabled{ opacity:0.5; cursor:not-allowed; }
+  .delete-confirm{
+    margin-top: 20px; border:1px solid rgba(201,123,106,0.4); background: rgba(201,123,106,0.06);
+    padding: 18px 20px;
+  }
+  .delete-confirm p{ font-size:0.9rem; color: var(--cream); }
+  .delete-confirm-actions{ margin-top: 14px; display:flex; gap:12px; }
   .progress-note{ font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color: var(--mono); }
 
   .state-loading, .state-error, .gate{ max-width: 480px; margin: 100px auto; text-align:center; padding: 0 24px; }
@@ -320,7 +333,16 @@
     <div class="submit-row">
       <button type="submit" class="btn-ghost" id="draftBtn">Save Draft</button>
       <button type="button" class="btn-gold" id="publishBtn">Publish to Archive</button>
+      <button type="button" class="btn-delete" id="deleteBtn" style="display:none;">Delete Draft</button>
       <span class="progress-note" id="progressNote"></span>
+    </div>
+
+    <div class="delete-confirm" id="deleteConfirm" style="display:none;">
+      <p>Delete this draft permanently? Its photos and details can't be recovered.</p>
+      <div class="delete-confirm-actions">
+        <button type="button" class="btn-delete" id="confirmDeleteBtn">Yes, Delete It</button>
+        <button type="button" class="btn-ghost" id="cancelDeleteBtn">Cancel</button>
+      </div>
     </div>
   </form>
 </main>
@@ -716,10 +738,47 @@
     saveDraft();
   });
 
+  // ---- Delete draft (drafts only — published models are permanent) ----
+  const deleteBtn = document.getElementById("deleteBtn");
+  const deleteConfirm = document.getElementById("deleteConfirm");
+  const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
+  const cancelDeleteBtn = document.getElementById("cancelDeleteBtn");
+
+  deleteBtn.addEventListener("click", () => {
+    deleteConfirm.style.display = "block";
+  });
+  cancelDeleteBtn.addEventListener("click", () => {
+    deleteConfirm.style.display = "none";
+  });
+  confirmDeleteBtn.addEventListener("click", async () => {
+    if (currentStatus === "completed" || !modelId) return; // safety guard — never delete a published model
+
+    confirmDeleteBtn.disabled = true;
+    cancelDeleteBtn.disabled = true;
+    confirmDeleteBtn.textContent = "Deleting…";
+
+    try {
+      await supabaseClient.from("photos").delete().eq("miniature_id", modelId);
+      const { error } = await supabaseClient.from("miniatures").delete().eq("id", modelId).eq("status", "in_progress");
+      if (error) throw error;
+
+      window.location.href = "collection.html?mine=true";
+    } catch (err){
+      console.error("Delete draft failed:", err);
+      showTopError(err.message || "Couldn't delete this draft. Check the console for details.");
+      confirmDeleteBtn.disabled = false;
+      cancelDeleteBtn.disabled = false;
+      confirmDeleteBtn.textContent = "Yes, Delete It";
+      deleteConfirm.style.display = "none";
+    }
+  });
+
   function applyStatusUI(){
     const chip = document.getElementById("statusChip");
+    const deleteBtn = document.getElementById("deleteBtn");
     if (!modelId){
       chip.style.display = "none";
+      deleteBtn.style.display = "none";
     } else if (currentStatus === "completed"){
       chip.textContent = "Published";
       chip.className = "status-chip completed";
@@ -727,12 +786,14 @@
       draftBtn.style.display = "none";
       publishBtn.textContent = "Save Changes";
       document.getElementById("photoError").style.display = "none";
+      deleteBtn.style.display = "none"; // published models are permanent — never deletable
     } else {
       chip.textContent = "Draft";
       chip.className = "status-chip draft";
       chip.style.display = "inline-block";
       draftBtn.style.display = "inline-block";
       publishBtn.textContent = "Publish to Archive";
+      deleteBtn.style.display = "inline-block";
     }
   }
 
