@@ -193,6 +193,11 @@
       <div class="legend">Optional Detail</div>
       <div class="field-grid">
         <div class="field">
+          <label for="painterName">Painter</label>
+          <input id="painterName" type="text" placeholder="e.g. E. Stegosaurus">
+          <div class="hint">Leave blank if that's you — it'll just show as unattributed for now.</div>
+        </div>
+        <div class="field">
           <label for="manufacturer">Manufacturer</label>
           <input id="manufacturer" type="text" placeholder="e.g. Games Workshop">
         </div>
@@ -423,6 +428,7 @@
         archive_id: archiveId,
         owner_profile_id: currentSession.user.id,
         title,
+        painter_name: document.getElementById("painterName").value.trim() || null,
         manufacturer: document.getElementById("manufacturer").value.trim() || null,
         scale: document.getElementById("scale").value.trim() || null,
         base_size: document.getElementById("baseSize").value ? parseInt(document.getElementById("baseSize").value, 10) : null,
