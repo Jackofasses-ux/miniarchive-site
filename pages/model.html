@@ -486,11 +486,13 @@
   }
 
   async function loadRealModel(id){
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
     const { data, error } = await supabaseClient
       .from("miniatures")
       .select(`
         id, archive_id, title, manufacturer, scale, base_size, description, status, hours_worked,
-        started_at, completed_at, owner_profile_id, painter_name,
+        started_at, completed_at, owner_profile_id, painter_name, owner_visible,
         photos ( image_url, photo_type ),
         profiles:owner_profile_id ( username, display_name )
       `)
@@ -510,7 +512,11 @@
     PHOTOS_BY_VIEW = {};
     (data.photos || []).forEach(p => { PHOTOS_BY_VIEW[p.photo_type] = p.image_url; });
 
-    const ownerLabel = data.profiles?.username || data.profiles?.display_name || "Unknown";
+    const isOwnerViewing = session && session.user.id === data.owner_profile_id;
+    const realOwnerName = data.profiles?.username || data.profiles?.display_name || "Unknown";
+    const ownerLabel = (data.owner_visible || isOwnerViewing)
+      ? realOwnerName + (isOwnerViewing && !data.owner_visible ? " (hidden from others)" : "")
+      : "Private";
     const painterLabel = data.painter_name || "Unattributed";
 
     renderProfile({
