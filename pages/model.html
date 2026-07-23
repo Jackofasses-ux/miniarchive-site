@@ -320,11 +320,15 @@
     document.getElementById("modelTitle").innerHTML = `${parts.join(" ")} <span class="accent">${last}</span>`;
     document.getElementById("modelDesc").textContent = m.description;
 
+    const painterDisplay = m.painterUsername
+      ? `<a href="profile.html?username=${encodeURIComponent(m.painterUsername)}" style="color:var(--gold-bright); text-decoration:underline;">${m.painter}</a>`
+      : m.painter;
+
     document.getElementById("infoGrid").innerHTML = `
       <div class="info-box"><div class="label">Manufacturer</div><div class="value">${m.manufacturer}</div></div>
       <div class="info-box"><div class="label">Scale</div><div class="value">${m.scale}</div></div>
       <div class="info-box"><div class="label">Completed</div><div class="value">${m.completed}</div></div>
-      <div class="info-box"><div class="label">Painter</div><div class="value">${m.painter}</div></div>
+      <div class="info-box"><div class="label">Painter</div><div class="value">${painterDisplay}</div></div>
       <div class="info-box"><div class="label">Total Hours</div><div class="value">${m.hours.toFixed(1)} hrs</div></div>
       <div class="info-box"><div class="label">Base Size</div><div class="value">${m.baseSize}</div></div>
     `;
@@ -375,9 +379,13 @@
     const achievementsHtml = (m.achievements && m.achievements.length)
       ? m.achievements.map(a => `<div class="history-row">${a}</div>`).join("")
       : `<div class="history-row" style="color:var(--mono);">None logged</div>`;
+    const ownerDisplay = m.ownerUsername
+      ? `<a href="profile.html?username=${encodeURIComponent(m.ownerUsername)}" style="color:var(--gold-bright); text-decoration:underline;">${m.owner}</a>`
+      : (m.owner || "Not recorded");
+
     const ownershipHtml = m.ownership
       ? `<div class="history-row">${m.ownership.client}</div><div class="history-row" style="color:var(--mono); font-size:0.8rem;">${m.ownership.since}</div><div class="history-row"><span class="tag win">${m.ownership.status}</span></div>`
-      : `<div class="history-row" style="color:var(--mono);">${m.owner || "Not recorded"}</div>`;
+      : `<div class="history-row" style="color:var(--mono);">${ownerDisplay}</div>`;
 
     document.getElementById("historyGrid").innerHTML = `
       <div class="history-card">
@@ -500,9 +508,10 @@
       .from("miniatures")
       .select(`
         id, archive_id, title, manufacturer, scale, base_size, description, status, hours_worked,
-        started_at, completed_at, owner_profile_id, painter_name, owner_visible,
+        started_at, completed_at, owner_profile_id, painter_name, painter_profile_id, owner_visible,
         photos ( image_url, photo_type ),
-        profiles:owner_profile_id ( username, display_name )
+        owner:profiles!owner_profile_id ( username, display_name ),
+        painter_profile:profiles!painter_profile_id ( username )
       `)
       .eq("id", id)
       .maybeSingle();
@@ -521,11 +530,15 @@
     (data.photos || []).forEach(p => { PHOTOS_BY_VIEW[p.photo_type] = p.image_url; });
 
     const isOwnerViewing = session && session.user.id === data.owner_profile_id;
-    const realOwnerName = data.profiles?.username || data.profiles?.display_name || "Unknown";
-    const ownerLabel = (data.owner_visible || isOwnerViewing)
+    const realOwnerName = data.owner?.username || data.owner?.display_name || "Unknown";
+    const ownerVisibleToViewer = data.owner_visible || isOwnerViewing;
+    const ownerLabel = ownerVisibleToViewer
       ? realOwnerName + (isOwnerViewing && !data.owner_visible ? " (hidden from others)" : "")
       : "Private";
+    const ownerUsername = (ownerVisibleToViewer && data.owner?.username) ? data.owner.username : null;
+
     const painterLabel = data.painter_name || "Unattributed";
+    const painterUsername = data.painter_profile?.username || null;
 
     renderProfile({
       id: data.archive_id,
@@ -534,7 +547,9 @@
       scale: data.scale || "—",
       completed: formatDate(data.completed_at),
       painter: painterLabel,
+      painterUsername: painterUsername,
       owner: ownerLabel,
+      ownerUsername: ownerUsername,
       hours: data.hours_worked || 0,
       baseSize: data.base_size ? `${data.base_size}mm` : "—",
       description: data.description || "No description added yet.",
