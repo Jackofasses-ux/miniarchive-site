@@ -393,7 +393,8 @@
     submitBtn.textContent = "Logging…";
 
     try {
-      // 1. Create the miniature record
+      // 1. Create the master miniature record first — everything else
+      // (photos) depends on this row existing.
       progressNote.textContent = "Creating record…";
       const archiveId = await generateArchiveId();
 
@@ -420,40 +421,48 @@
 
       if (insertError) throw insertError;
 
-      // 2. Upload each photo (via the R2 Worker) and record it
-      let uploadedCount = 0;
-      for (const view of requiredViews){
-        uploadedCount++;
-        progressNote.textContent = `Uploading photo ${uploadedCount} of 4…`;
+      // 2. Upload each photo (via the R2 Worker) and record it as a
+      // dependent row. If any photo step fails, roll back the miniature
+      // record we just created rather than leaving a broken model behind.
+      try {
+        let uploadedCount = 0;
+        for (const view of requiredViews){
+          uploadedCount++;
+          progressNote.textContent = `Uploading photo ${uploadedCount} of 4…`;
 
-        const file = selectedFiles[view];
+          const file = selectedFiles[view];
 
-        const uploadForm = new FormData();
-        uploadForm.append("file", file);
-        uploadForm.append("miniature_id", inserted.id);
-        uploadForm.append("view", view);
+          const uploadForm = new FormData();
+          uploadForm.append("file", file);
+          uploadForm.append("miniature_id", inserted.id);
+          uploadForm.append("view", view);
 
-        const uploadRes = await fetch(WORKER_UPLOAD_URL, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${currentSession.access_token}`,
-          },
-          body: uploadForm,
-        });
-
-        const uploadResult = await uploadRes.json();
-        if (!uploadRes.ok) throw new Error(uploadResult.error || "Photo upload failed");
-
-        const { error: photoInsertError } = await supabaseClient
-          .from("photos")
-          .insert({
-            miniature_id: inserted.id,
-            image_url: uploadResult.url,
-            photo_type: view,
-            sort_order: requiredViews.indexOf(view),
+          const uploadRes = await fetch(WORKER_UPLOAD_URL, {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${currentSession.access_token}`,
+            },
+            body: uploadForm,
           });
 
-        if (photoInsertError) throw photoInsertError;
+          const uploadResult = await uploadRes.json();
+          if (!uploadRes.ok) throw new Error(uploadResult.error || "Photo upload failed");
+
+          const { error: photoInsertError } = await supabaseClient
+            .from("photos")
+            .insert({
+              miniature_id: inserted.id,
+              image_url: uploadResult.url,
+              photo_type: view,
+              sort_order: requiredViews.indexOf(view),
+            });
+
+          if (photoInsertError) throw photoInsertError;
+        }
+      } catch (photoErr){
+        await supabaseClient.from("photos").delete().eq("miniature_id", inserted.id);
+        await supabaseClient.from("miniatures").delete().eq("id", inserted.id);
+        throw photoErr;
       }
 
       progressNote.textContent = "";
