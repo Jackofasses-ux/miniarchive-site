@@ -158,7 +158,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
             <span class="plus-label">Add Photo</span>
           </label>
-          <input type="file" id="photo-front" accept="image/*" data-view="front">
+          <input type="file" id="photo-front" accept="image/jpeg,image/png,image/webp" data-view="front">
           <div class="view-label">Front <span class="req">*</span></div>
         </div>
         <div class="photo-slot">
@@ -166,7 +166,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
             <span class="plus-label">Add Photo</span>
           </label>
-          <input type="file" id="photo-left" accept="image/*" data-view="left">
+          <input type="file" id="photo-left" accept="image/jpeg,image/png,image/webp" data-view="left">
           <div class="view-label">Left <span class="req">*</span></div>
         </div>
         <div class="photo-slot">
@@ -174,7 +174,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
             <span class="plus-label">Add Photo</span>
           </label>
-          <input type="file" id="photo-rear" accept="image/*" data-view="rear">
+          <input type="file" id="photo-rear" accept="image/jpeg,image/png,image/webp" data-view="rear">
           <div class="view-label">Rear <span class="req">*</span></div>
         </div>
         <div class="photo-slot">
@@ -182,7 +182,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
             <span class="plus-label">Add Photo</span>
           </label>
-          <input type="file" id="photo-right" accept="image/*" data-view="right">
+          <input type="file" id="photo-right" accept="image/jpeg,image/png,image/webp" data-view="right">
           <div class="view-label">Right <span class="req">*</span></div>
         </div>
       </div>
@@ -270,6 +270,14 @@
     renderLoggedInNav(session);
   })();
 
+  const MAX_PHOTO_BYTES = 20 * 1024 * 1024; // 20MB per photo
+  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+  function formatBytes(bytes){
+    if (!bytes) return "0MB";
+    return `${(bytes / (1024 * 1024)).toFixed(0)}MB`;
+  }
+
   async function renderLoggedInNav(session){
     const authArea = document.getElementById("authArea");
     if (!authArea) return;
@@ -303,6 +311,23 @@
       const file = e.target.files[0];
       const view = input.dataset.view;
       if (!file) return;
+
+      if (!ALLOWED_TYPES.includes(file.type)){
+        const isHeic = /\.heic$|\.heif$/i.test(file.name) || file.type === "image/heic" || file.type === "image/heif";
+        showTopError(isHeic
+          ? "That's an HEIC photo, which most browsers can't display. On iPhone, go to Settings → Camera → Formats → \"Most Compatible\" to shoot JPEG instead, or convert this photo before uploading."
+          : `That file type isn't supported. Please use JPEG, PNG, or WebP.`
+        );
+        e.target.value = "";
+        return;
+      }
+
+      if (file.size > MAX_PHOTO_BYTES){
+        showTopError(`That photo is too large (${formatBytes(file.size)}). Max size per photo is ${formatBytes(MAX_PHOTO_BYTES)}.`);
+        e.target.value = "";
+        return;
+      }
+
       selectedFiles[view] = file;
 
       const dropLabel = input.previousElementSibling;
@@ -421,6 +446,7 @@
             image_url: urlData.publicUrl,
             photo_type: view,
             sort_order: requiredViews.indexOf(view),
+            file_size_bytes: file.size,
           });
 
         if (photoInsertError) throw photoInsertError;
