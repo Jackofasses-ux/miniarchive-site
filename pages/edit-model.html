@@ -758,6 +758,22 @@
     confirmDeleteBtn.textContent = "Deleting…";
 
     try {
+      // Delete R2 photo files first — the Worker verifies ownership by
+      // looking up this miniature in the database, so this has to happen
+      // before the DB row itself is removed.
+      const deleteRes = await fetch(WORKER_UPLOAD_URL, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${currentSession.access_token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ miniature_id: modelId }),
+      });
+      if (!deleteRes.ok){
+        const result = await deleteRes.json().catch(() => ({}));
+        throw new Error(result.error || "Couldn't delete photos from storage.");
+      }
+
       await supabaseClient.from("photos").delete().eq("miniature_id", modelId);
       const { error } = await supabaseClient.from("miniatures").delete().eq("id", modelId).eq("status", "in_progress");
       if (error) throw error;
