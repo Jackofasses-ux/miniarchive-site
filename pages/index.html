@@ -515,6 +515,7 @@
         photos ( image_url, photo_type )
       `)
       .eq("visibility", "public")
+      .eq("status", "completed")
       .order("created_at", { ascending: false })
       .limit(3);
 
@@ -524,11 +525,10 @@
     }
 
     const shieldIcon = `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>`;
-    const statusLabel = { finished: `${""}`, wip: "in progress", queued: "queued" };
 
     featuredGrid.innerHTML = data.map(m => {
       const frontPhoto = (m.photos || []).find(p => p.photo_type === "front") || (m.photos || [])[0];
-      const metaRight = m.status === "finished" ? `${(m.hours_worked || 0).toFixed(1)} hrs` : (statusLabel[m.status] || m.status);
+      const metaRight = m.hours_worked ? `${m.hours_worked.toFixed(1)} hrs` : "";
       return `
         <div class="mini-card" onclick="window.location.href='model.html?id=${m.id}'">
           <div class="thumb">
@@ -537,7 +537,7 @@
           </div>
           <div class="info">
             <div class="name">${m.title}</div>
-            <div class="meta">${m.manufacturer || "—"} · ${metaRight}</div>
+            <div class="meta">${m.manufacturer || "—"}${metaRight ? " · " + metaRight : ""}</div>
           </div>
         </div>
       `;
