@@ -50,7 +50,7 @@
   .stat-box .label{ margin-top:6px; font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.06em; text-transform:uppercase; color: var(--mono); }
 
   .quick-links{ margin-top: 30px; display:flex; gap:14px; flex-wrap:wrap; }
-  .btn-ghost{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color: var(--cream); padding: 12px 22px; border:1px solid var(--hairline); }
+  .btn-ghost{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color: var(--cream); padding: 12px 22px; border:1px solid var(--hairline); background: transparent; cursor: pointer; }
   .btn-ghost:hover{ border-color: var(--gold); color: var(--gold-bright); }
 
   .section-head{ margin-top: 60px; }
@@ -191,35 +191,14 @@
         <textarea id="bio" placeholder="A few lines about you or your studio…"></textarea>
       </div>
       <div class="field">
-        <div class="field-label-row">
-          <label for="website">Website</label>
-          <label class="field-public-toggle"><input type="checkbox" id="websitePublic" checked> Public</label>
-        </div>
-        <input id="website" type="text" placeholder="https://…">
-      </div>
-      <div class="field">
-        <div class="field-label-row">
-          <label for="instagram">Instagram Handle</label>
-          <label class="field-public-toggle"><input type="checkbox" id="instagramPublic" checked> Public</label>
-        </div>
-        <input id="instagram" type="text" placeholder="e.g. paintordiestudios">
-      </div>
-      <div class="field">
-        <div class="field-label-row">
-          <label for="youtube">YouTube</label>
-          <label class="field-public-toggle"><input type="checkbox" id="youtubePublic" checked> Public</label>
-        </div>
-        <input id="youtube" type="text" placeholder="https://youtube.com/@…">
-      </div>
-      <div class="field">
         <label for="country">Country</label>
         <input id="country" type="text" placeholder="e.g. Canada">
       </div>
     </div>
 
     <div class="field full" style="margin-top:30px;">
-      <label>Other Links</label>
-      <div class="hint" style="margin-bottom:12px;">TikTok, Twitch, Discord, Patreon — add as many as you want.</div>
+      <label>Links</label>
+      <div class="hint" style="margin-bottom:12px;">Website, Instagram, YouTube, TikTok, Twitch, Discord — add as many as you want, in whatever order matters to you.</div>
       <div id="linksList"></div>
       <button type="button" class="btn-ghost" id="addLinkBtn" style="margin-top:8px;">+ Add a Link</button>
     </div>
@@ -285,7 +264,7 @@
 
     const { data: profile, error: profileError } = await supabaseClient
       .from("profiles")
-      .select("username, display_name, bio, website, instagram, youtube, country, avatar_url, tier, website_public, instagram_public, youtube_public")
+      .select("username, display_name, bio, country, avatar_url, tier")
       .eq("id", session.user.id)
       .maybeSingle();
 
@@ -301,13 +280,7 @@
       document.getElementById("username").value = profile.username || "";
       document.getElementById("displayName").value = profile.display_name || "";
       document.getElementById("bio").value = profile.bio || "";
-      document.getElementById("website").value = profile.website || "";
-      document.getElementById("instagram").value = profile.instagram || "";
-      document.getElementById("youtube").value = profile.youtube || "";
       document.getElementById("country").value = profile.country || "";
-      document.getElementById("websitePublic").checked = profile.website_public !== false;
-      document.getElementById("instagramPublic").checked = profile.instagram_public !== false;
-      document.getElementById("youtubePublic").checked = profile.youtube_public !== false;
       document.getElementById("tierValue").textContent = profile.tier === "paid" ? "Paid" : "Free";
       document.getElementById("viewProfileLink").href = `profile.html?username=${encodeURIComponent(profile.username || "")}`;
       if (profile.avatar_url){
@@ -430,13 +403,7 @@
       username: document.getElementById("username").value.trim(),
       display_name: document.getElementById("displayName").value.trim() || null,
       bio: document.getElementById("bio").value.trim() || null,
-      website: document.getElementById("website").value.trim() || null,
-      instagram: document.getElementById("instagram").value.trim() || null,
-      youtube: document.getElementById("youtube").value.trim() || null,
       country: document.getElementById("country").value.trim() || null,
-      website_public: document.getElementById("websitePublic").checked,
-      instagram_public: document.getElementById("instagramPublic").checked,
-      youtube_public: document.getElementById("youtubePublic").checked,
     };
 
     if (!payload.username){
