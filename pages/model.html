@@ -190,6 +190,7 @@
       <li><a href="index.html#provenance">Provenance</a></li>
       <li><a href="index.html#about">About</a></li>
     </ul>
+    <a class="btn-gold" href="edit-model.html" id="editButton" style="display:none;">Edit This Model</a>
     <a class="btn-gold" href="collection.html">← Back to Collection</a>
   </nav>
 </header>
@@ -543,6 +544,13 @@
     (data.photos || []).forEach(p => { PHOTOS_BY_VIEW[p.photo_type] = p.image_url; });
 
     const isOwnerViewing = session && session.user.id === data.owner_profile_id;
+
+    if (isOwnerViewing){
+      const editBtn = document.getElementById("editButton");
+      editBtn.href = `edit-model.html?id=${data.id}`;
+      editBtn.style.display = "inline-block";
+    }
+
     const realOwnerName = data.owner?.username || data.owner?.display_name || "Unknown";
     const ownerVisibleToViewer = data.owner_visible || isOwnerViewing;
     const ownerLabel = ownerVisibleToViewer
