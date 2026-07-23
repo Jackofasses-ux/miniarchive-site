@@ -254,6 +254,7 @@
   const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const WORKER_UPLOAD_URL = "https://mini-archive-uploads.jackofasses.workers.dev";
 
   let currentSession = null;
 
@@ -419,31 +420,35 @@
 
       if (insertError) throw insertError;
 
-      // 2. Upload each photo and record it
+      // 2. Upload each photo (via the R2 Worker) and record it
       let uploadedCount = 0;
       for (const view of requiredViews){
         uploadedCount++;
         progressNote.textContent = `Uploading photo ${uploadedCount} of 4…`;
 
         const file = selectedFiles[view];
-        const ext = file.name.split(".").pop();
-        const path = `${inserted.id}/${view}.${ext}`;
 
-        const { error: uploadError } = await supabaseClient.storage
-          .from("model-photos")
-          .upload(path, file, { upsert: true });
+        const uploadForm = new FormData();
+        uploadForm.append("file", file);
+        uploadForm.append("miniature_id", inserted.id);
+        uploadForm.append("view", view);
 
-        if (uploadError) throw uploadError;
+        const uploadRes = await fetch(WORKER_UPLOAD_URL, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${currentSession.access_token}`,
+          },
+          body: uploadForm,
+        });
 
-        const { data: urlData } = supabaseClient.storage
-          .from("model-photos")
-          .getPublicUrl(path);
+        const uploadResult = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadResult.error || "Photo upload failed");
 
         const { error: photoInsertError } = await supabaseClient
           .from("photos")
           .insert({
             miniature_id: inserted.id,
-            image_url: urlData.publicUrl,
+            image_url: uploadResult.url,
             photo_type: view,
             sort_order: requiredViews.indexOf(view),
             file_size_bytes: file.size,
