@@ -212,6 +212,17 @@
     if (profile.website) links.push(`<a href="${profile.website}" target="_blank" rel="noopener">Website</a>`);
     if (profile.instagram) links.push(`<a href="https://instagram.com/${profile.instagram}" target="_blank" rel="noopener">Instagram</a>`);
     if (profile.youtube) links.push(`<a href="${profile.youtube}" target="_blank" rel="noopener">YouTube</a>`);
+
+    const { data: extraLinks } = await supabaseClient
+      .from("profile_links")
+      .select("platform, url")
+      .eq("profile_id", profile.id)
+      .order("sort_order", { ascending: true });
+
+    (extraLinks || []).forEach(l => {
+      links.push(`<a href="${l.url}" target="_blank" rel="noopener">${l.platform}</a>`);
+    });
+
     document.getElementById("profileLinks").innerHTML = links.join("");
 
     document.getElementById("statSince").textContent = new Date(profile.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" });
