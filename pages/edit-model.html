@@ -131,6 +131,16 @@
   }
   .delete-confirm p{ font-size:0.9rem; color: var(--cream); }
   .delete-confirm-actions{ margin-top: 14px; display:flex; gap:12px; }
+  .edit-confirm{
+    margin-top: 20px; border:1px solid var(--hairline); background: var(--bg-raised);
+    padding: 18px 20px;
+  }
+  .edit-confirm p{ font-size:0.9rem; color: var(--cream); }
+  .edit-diff-list{ margin-top: 14px; display:flex; flex-direction:column; gap:8px; }
+  .edit-diff-row{ display:flex; gap:14px; font-size:0.85rem; padding: 8px 0; border-bottom:1px solid var(--hairline); }
+  .edit-diff-row:last-child{ border-bottom:none; }
+  .edit-diff-field{ font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.06em; text-transform:uppercase; color: var(--mono); min-width:140px; flex-shrink:0; }
+  .edit-diff-values{ color: var(--cream-dim); }
   .progress-note{ font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color: var(--mono); }
 
   .state-loading, .state-error, .gate{ max-width: 480px; margin: 100px auto; text-align:center; padding: 0 24px; }
@@ -350,6 +360,15 @@
 
     <div class="top-error" id="topError"></div>
     <div class="top-success" id="topSuccess"></div>
+
+    <div class="edit-confirm" id="editConfirm" style="display:none;">
+      <p>This model is published — the following changes will be recorded in its edit history. Continue?</p>
+      <div class="edit-diff-list" id="editConfirmList"></div>
+      <div class="delete-confirm-actions">
+        <button type="button" class="btn-gold" id="confirmEditBtn">Yes, Save Changes</button>
+        <button type="button" class="btn-ghost" id="cancelEditBtn">Cancel</button>
+      </div>
+    </div>
 
     <div class="delete-confirm" id="deleteConfirm" style="display:none;">
       <p>Delete this draft permanently? Its photos and details can't be recovered.</p>
@@ -836,16 +855,88 @@
     }
   }
 
+  const EDIT_FIELD_LABELS = {
+    title: "Model Name",
+    painter_name: "Painter",
+    manufacturer: "Manufacturer",
+    scale: "Scale",
+    base_size: "Base Size",
+    hours_worked: "Hours Worked",
+    started_at: "Started",
+    completed_at: "Completed",
+    description: "Description",
+    owner_visible: "Show Ownership Publicly",
+  };
+
+  let originalFieldSnapshot = null; // set when loading an already-published model
+  let pendingSave = null; // { payload, changes } awaiting confirmation
+
+  function normalizeForDiff(v){
+    if (v === null || v === undefined) return "";
+    return String(v);
+  }
+
+  function diffFields(oldObj, newObj){
+    const changes = [];
+    for (const key of Object.keys(newObj)){
+      if (!(key in EDIT_FIELD_LABELS)) continue;
+      const oldVal = normalizeForDiff(oldObj?.[key]);
+      const newVal = normalizeForDiff(newObj[key]);
+      if (oldVal !== newVal){
+        changes.push({ field: key, old: oldVal, new: newVal });
+      }
+    }
+    return changes;
+  }
+
   async function saveCompletedModel(){
     if (!validateBasics()) return;
+
+    const payload = collectFieldPayload();
+    const changes = originalFieldSnapshot ? diffFields(originalFieldSnapshot, payload) : [];
+    const hasAnyNewPhoto = requiredViews.some(v => photoState[v].newFile);
+
+    if (changes.length){
+      pendingSave = { payload, changes };
+      showEditConfirm(changes);
+      return;
+    }
+
+    await performSaveCompleted(payload, [], hasAnyNewPhoto);
+  }
+
+  function showEditConfirm(changes){
+    const box = document.getElementById("editConfirm");
+    const list = document.getElementById("editConfirmList");
+    list.innerHTML = changes.map(c => `
+      <div class="edit-diff-row">
+        <span class="edit-diff-field">${EDIT_FIELD_LABELS[c.field] || c.field}</span>
+        <span class="edit-diff-values">${c.old || "—"} → ${c.new || "—"}</span>
+      </div>
+    `).join("");
+    box.style.display = "block";
+  }
+
+  async function performSaveCompleted(payload, changes, hasAnyNewPhoto){
     publishBtn.disabled = true;
     publishBtn.textContent = "Saving…";
     try {
-      const payload = collectFieldPayload();
       const { error } = await supabaseClient.from("miniatures").update(payload).eq("id", modelId);
       if (error) throw error;
 
-      const hasAnyNewPhoto = requiredViews.some(v => photoState[v].newFile);
+      if (changes.length){
+        const editRows = changes.map(c => ({
+          miniature_id: modelId,
+          editor_profile_id: currentSession.user.id,
+          field_name: c.field,
+          old_value: c.old,
+          new_value: c.new,
+        }));
+        const { error: logError } = await supabaseClient.from("miniature_edits").insert(editRows);
+        if (logError) console.error("Failed to log edit history (save still succeeded):", logError);
+        originalFieldSnapshot = { ...originalFieldSnapshot, ...payload };
+      }
+
       if (hasAnyNewPhoto){
         progressNote.textContent = "Uploading photos…";
         await uploadChangedPhotos(modelId);
@@ -861,6 +952,18 @@
       publishBtn.textContent = "Save Changes";
     }
   }
+
+  document.getElementById("confirmEditBtn").addEventListener("click", async () => {
+    document.getElementById("editConfirm").style.display = "none";
+    if (!pendingSave) return;
+    const hasAnyNewPhoto = requiredViews.some(v => photoState[v].newFile);
+    await performSaveCompleted(pendingSave.payload, pendingSave.changes, hasAnyNewPhoto);
+    pendingSave = null;
+  });
+  document.getElementById("cancelEditBtn").addEventListener("click", () => {
+    document.getElementById("editConfirm").style.display = "none";
+    pendingSave = null;
+  });
 
   publishBtn.addEventListener("click", publishBtnClickRouter);
 
@@ -904,6 +1007,22 @@
     }
 
     currentStatus = data.status;
+
+    if (currentStatus === "completed"){
+      originalFieldSnapshot = {
+        title: data.title,
+        painter_name: data.painter_name,
+        manufacturer: data.manufacturer,
+        scale: data.scale,
+        base_size: data.base_size,
+        hours_worked: data.hours_worked,
+        started_at: data.started_at,
+        completed_at: data.completed_at,
+        description: data.description,
+        owner_visible: data.owner_visible,
+      };
+    }
+
     document.getElementById("pageEyebrow").textContent = "Edit Model";
     document.getElementById("pageTitle").textContent = `Editing “${data.title}”`;
     document.getElementById("pageLede").textContent = currentStatus === "completed"
