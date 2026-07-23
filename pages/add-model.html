@@ -137,7 +137,7 @@
 <main id="formWrap" style="display:none;">
   <div class="eyebrow">Add a Model</div>
   <h1>Log a new miniature.</h1>
-  <p class="lede">Name and four angle photos are the minimum. Everything else can be filled in now or left for later.</p>
+  <p class="lede">Just a name gets it started. Photos and everything else can be added whenever you're ready to publish it to the archive.</p>
 
   <div class="top-error" id="topError"></div>
   <div class="top-success" id="topSuccess"></div>
@@ -153,42 +153,7 @@
           <div class="error-msg">Give the model a name.</div>
         </div>
       </div>
-
-      <div class="photo-grid" id="photoGrid">
-        <div class="photo-slot">
-          <label class="drop" for="photo-front">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="plus-label">Drop or Click</span>
-          </label>
-          <input type="file" id="photo-front" accept="image/jpeg,image/png,image/webp" data-view="front">
-          <div class="view-label">Front <span class="req">*</span></div>
-        </div>
-        <div class="photo-slot">
-          <label class="drop" for="photo-left">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="plus-label">Drop or Click</span>
-          </label>
-          <input type="file" id="photo-left" accept="image/jpeg,image/png,image/webp" data-view="left">
-          <div class="view-label">Left <span class="req">*</span></div>
-        </div>
-        <div class="photo-slot">
-          <label class="drop" for="photo-rear">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="plus-label">Drop or Click</span>
-          </label>
-          <input type="file" id="photo-rear" accept="image/jpeg,image/png,image/webp" data-view="rear">
-          <div class="view-label">Rear <span class="req">*</span></div>
-        </div>
-        <div class="photo-slot">
-          <label class="drop" for="photo-right">
-            <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="plus-label">Drop or Click</span>
-          </label>
-          <input type="file" id="photo-right" accept="image/jpeg,image/png,image/webp" data-view="right">
-          <div class="view-label">Right <span class="req">*</span></div>
-        </div>
-      </div>
-      <div class="error-msg" id="photoError" style="display:none; margin-top:12px;">All four angle photos are required.</div>
+      <p class="hint" style="margin-top:14px;">This creates a private draft on your workbench. You'll add photos and publish it to the archive when it's ready — that's also when it gets its Archive ID.</p>
     </fieldset>
 
     <fieldset>
@@ -215,21 +180,6 @@
           <label for="hoursWorked">Hours Worked</label>
           <input id="hoursWorked" type="number" step="0.5" placeholder="e.g. 12.5">
         </div>
-        <div class="field">
-          <label for="status">Status</label>
-          <select id="status">
-            <option value="wip">In Progress</option>
-            <option value="finished">Finished</option>
-            <option value="queued">Queued</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="visibility">Visibility</label>
-          <select id="visibility">
-            <option value="public">Public</option>
-            <option value="private">Private</option>
-          </select>
-        </div>
         <div class="field" id="field-startedAt">
           <label for="startedAt">Started</label>
           <input id="startedAt" type="text" inputmode="numeric" placeholder="YYYY-MM-DD" maxlength="10">
@@ -248,7 +198,7 @@
     </fieldset>
 
     <div class="submit-row">
-      <button type="submit" class="btn-gold" id="submitBtn">Log This Model</button>
+      <button type="submit" class="btn-gold" id="submitBtn">Create Draft</button>
       <span class="progress-note" id="progressNote"></span>
     </div>
   </form>
@@ -280,14 +230,6 @@
     renderLoggedInNav(session);
   })();
 
-  const MAX_PHOTO_BYTES = 20 * 1024 * 1024; // 20MB per photo
-  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
-
-  function formatBytes(bytes){
-    if (!bytes) return "0MB";
-    return `${(bytes / (1024 * 1024)).toFixed(0)}MB`;
-  }
-
   async function renderLoggedInNav(session){
     const authArea = document.getElementById("authArea");
     if (!authArea) return;
@@ -312,9 +254,6 @@
       window.location.href = "index.html";
     });
   }
-
-  // ---- Photo slot previews ----
-  const selectedFiles = {}; // view -> File
 
   // ---- Date field masking (YYYY-MM-DD, auto-inserts dashes as you type) ----
   function attachDateMask(input){
@@ -341,68 +280,6 @@
     setInvalid("field-title", false);
   });
 
-  function handlePhotoFile(view, file, dropLabel){
-    if (!file) return;
-
-    if (!ALLOWED_TYPES.includes(file.type)){
-      const isHeic = /\.heic$|\.heif$/i.test(file.name) || file.type === "image/heic" || file.type === "image/heif";
-      showTopError(isHeic
-        ? "That's an HEIC photo, which most browsers can't display. On iPhone, go to Settings → Camera → Formats → \"Most Compatible\" to shoot JPEG instead, or convert this photo before uploading."
-        : `That file type isn't supported. Please use JPEG, PNG, or WebP.`
-      );
-      return;
-    }
-
-    if (file.size > MAX_PHOTO_BYTES){
-      showTopError(`That photo is too large (${formatBytes(file.size)}). Max size per photo is ${formatBytes(MAX_PHOTO_BYTES)}.`);
-      return;
-    }
-
-    selectedFiles[view] = file;
-
-    dropLabel.classList.add("filled");
-    dropLabel.classList.remove("invalid");
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      dropLabel.innerHTML = `<img src="${ev.target.result}" alt="${view} preview">`;
-    };
-    reader.readAsDataURL(file);
-  }
-
-  document.querySelectorAll('#photoGrid input[type="file"]').forEach(input => {
-    const view = input.dataset.view;
-    const dropLabel = input.previousElementSibling;
-
-    input.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      handlePhotoFile(view, file, dropLabel);
-      e.target.value = ""; // allow re-selecting the same file if needed
-    });
-
-    // Drag and drop support
-    ["dragenter", "dragover"].forEach(evt => {
-      dropLabel.addEventListener(evt, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dropLabel.classList.add("drag-over");
-      });
-    });
-    ["dragleave", "dragend"].forEach(evt => {
-      dropLabel.addEventListener(evt, (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        dropLabel.classList.remove("drag-over");
-      });
-    });
-    dropLabel.addEventListener("drop", (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      dropLabel.classList.remove("drag-over");
-      const file = e.dataTransfer.files[0];
-      handlePhotoFile(view, file, dropLabel);
-    });
-  });
-
   // ---- Form submit ----
   const form = document.getElementById("modelForm");
   const submitBtn = document.getElementById("submitBtn");
@@ -421,27 +298,12 @@
     topError.style.display = "block";
   }
 
-  async function generateArchiveId(){
-    const year = new Date().getFullYear();
-    const prefix = `MA-${year}-`;
-
-    const { count } = await supabaseClient
-      .from("miniatures")
-      .select("id", { count: "exact", head: true })
-      .like("archive_id", `${prefix}%`);
-
-    const next = (count || 0) + 1;
-    return `${prefix}${String(next).padStart(8, "0")}`;
-  }
-
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     topError.style.display = "none";
     topSuccess.style.display = "none";
 
     const title = document.getElementById("title").value.trim();
-    const requiredViews = ["front", "left", "rear", "right"];
-    const missingPhotos = requiredViews.filter(v => !selectedFiles[v]);
     const startedAtValue = document.getElementById("startedAt").value.trim();
     const completedAtValue = document.getElementById("completedAt").value.trim();
     const datesValid = isValidDateOrEmpty(startedAtValue) && isValidDateOrEmpty(completedAtValue);
@@ -449,38 +311,27 @@
     setInvalid("field-title", !title);
     setInvalid("field-startedAt", !isValidDateOrEmpty(startedAtValue));
     setInvalid("field-completedAt", !isValidDateOrEmpty(completedAtValue));
-    document.getElementById("photoError").style.display = missingPhotos.length ? "block" : "none";
-    requiredViews.forEach(v => {
-      const input = document.getElementById(`photo-${v}`);
-      const dropLabel = input.previousElementSibling;
-      dropLabel.classList.toggle("invalid", missingPhotos.includes(v));
-    });
 
-    if (!title || missingPhotos.length || !datesValid){
+    if (!title || !datesValid){
       showTopError(!datesValid ? "Dates must be a complete YYYY-MM-DD, or left blank." : "Please fix the highlighted fields before submitting.");
       return;
     }
 
     submitBtn.disabled = true;
-    submitBtn.textContent = "Logging…";
+    submitBtn.textContent = "Creating…";
+    progressNote.textContent = "";
 
     try {
-      // 1. Create the master miniature record first — everything else
-      // (photos) depends on this row existing.
-      progressNote.textContent = "Creating record…";
-      const archiveId = await generateArchiveId();
-
       const payload = {
-        archive_id: archiveId,
         owner_profile_id: currentSession.user.id,
         title,
+        status: "in_progress",
+        visibility: "private",
         painter_name: document.getElementById("painterName").value.trim() || null,
         manufacturer: document.getElementById("manufacturer").value.trim() || null,
         scale: document.getElementById("scale").value.trim() || null,
         base_size: document.getElementById("baseSize").value ? parseInt(document.getElementById("baseSize").value, 10) : null,
         hours_worked: document.getElementById("hoursWorked").value ? parseFloat(document.getElementById("hoursWorked").value) : null,
-        status: document.getElementById("status").value,
-        visibility: document.getElementById("visibility").value,
         started_at: document.getElementById("startedAt").value || null,
         completed_at: document.getElementById("completedAt").value || null,
         description: document.getElementById("description").value.trim() || null,
@@ -494,67 +345,16 @@
 
       if (insertError) throw insertError;
 
-      // 2. Upload each photo (via the R2 Worker) and record it as a
-      // dependent row. If any photo step fails, roll back the miniature
-      // record we just created rather than leaving a broken model behind.
-      try {
-        let uploadedCount = 0;
-        for (const view of requiredViews){
-          uploadedCount++;
-          progressNote.textContent = `Uploading photo ${uploadedCount} of 4…`;
-
-          const file = selectedFiles[view];
-
-          const uploadForm = new FormData();
-          uploadForm.append("file", file);
-          uploadForm.append("miniature_id", inserted.id);
-          uploadForm.append("view", view);
-
-          const uploadRes = await fetch(WORKER_UPLOAD_URL, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${currentSession.access_token}`,
-            },
-            body: uploadForm,
-          });
-
-          const uploadResult = await uploadRes.json();
-          if (!uploadRes.ok) throw new Error(uploadResult.error || "Photo upload failed");
-
-          const { error: photoInsertError } = await supabaseClient
-            .from("photos")
-            .insert({
-              miniature_id: inserted.id,
-              image_url: uploadResult.url,
-              photo_type: view,
-              sort_order: requiredViews.indexOf(view),
-            });
-
-          if (photoInsertError) throw photoInsertError;
-        }
-      } catch (photoErr){
-        await supabaseClient.from("photos").delete().eq("miniature_id", inserted.id);
-        await supabaseClient.from("miniatures").delete().eq("id", inserted.id);
-        throw photoErr;
-      }
-
-      progressNote.textContent = "";
-      topSuccess.textContent = `"${title}" has been logged (${archiveId}). You can add more detail — timeline, paint recipe — later.`;
+      topSuccess.innerHTML = `"${title}" is on your workbench. <a href="publish-model.html?id=${inserted.id}" style="color:var(--gold-bright);">Add photos and publish it →</a> whenever it's ready.`;
       topSuccess.style.display = "block";
       form.reset();
-      document.querySelectorAll("#photoGrid .drop").forEach(el => {
-        el.classList.remove("filled");
-        el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg><span class="plus-label">Drop or Click</span>`;
-      });
-      Object.keys(selectedFiles).forEach(k => delete selectedFiles[k]);
 
     } catch (err){
       console.error("Add model failed:", err);
-      progressNote.textContent = "";
       showTopError(err.message || "Something went wrong. Check the console for details.");
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = "Log This Model";
+      submitBtn.textContent = "Create Draft";
     }
   });
 </script>
