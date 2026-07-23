@@ -82,12 +82,20 @@
     height: 480px; position:relative;
     background: linear-gradient(150deg, #23201a, #131110);
     display:flex; align-items:center; justify-content:center;
+    cursor: grab; user-select: none; touch-action: pan-y;
   }
-  .photo-frame svg{ width:60px; height:60px; opacity:0.25; }
+  .photo-frame.dragging{ cursor: grabbing; }
+  .photo-frame svg{ width:60px; height:60px; opacity:0.25; pointer-events:none; }
+  .photo-frame .drag-badge{
+    position:absolute; top:16px; right:16px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.1em;
+    color: var(--mono); border:1px solid var(--hairline); padding:5px 10px;
+    background: rgba(12,11,9,0.6); pointer-events:none; transition: opacity 0.3s ease;
+  }
   .photo-frame .view-label{
     position:absolute; bottom:16px; left:50%; transform:translateX(-50%);
     font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.14em;
-    text-transform:uppercase; color: var(--mono);
+    text-transform:uppercase; color: var(--mono); pointer-events:none;
   }
   .view-tabs{ display:flex; border-top:1px solid var(--hairline); }
   .view-tabs button{
@@ -197,8 +205,9 @@
     </div>
 
     <div class="photo-viewer">
-      <div class="photo-frame">
+      <div class="photo-frame" id="photoFrame">
         <svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
+        <div class="drag-badge" id="dragBadge">↔ DRAG</div>
         <div class="view-label" id="viewLabel">FRONT VIEW</div>
       </div>
       <div class="view-tabs" id="viewTabs">
@@ -393,8 +402,10 @@
     `;
   }
 
-  // ---- Photo view tab switching ----
+  // ---- Photo view tab switching + drag-to-rotate ----
   let PHOTOS_BY_VIEW = {}; // populated after fetch, e.g. { front: "https://...", left: "https://..." }
+  const VIEW_ORDER = ["front", "right", "rear", "left"]; // rotation order when dragging
+  let currentViewIndex = 0;
 
   function setPhotoView(view){
     const frame = document.querySelector(".photo-frame");
@@ -409,15 +420,60 @@
       frame.style.backgroundImage = "";
       frame.querySelector("svg").style.display = "block";
     }
+    document.querySelectorAll("#viewTabs button").forEach(b => {
+      b.classList.toggle("active", b.dataset.view === view);
+    });
+    currentViewIndex = VIEW_ORDER.indexOf(view);
+    if (currentViewIndex === -1) currentViewIndex = 0;
   }
 
   document.getElementById("viewTabs").addEventListener("click", (e) => {
     const btn = e.target.closest("button");
     if (!btn) return;
-    document.querySelectorAll("#viewTabs button").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
     setPhotoView(btn.dataset.view);
   });
+
+  // ---- Drag-to-rotate on the photo frame itself ----
+  (() => {
+    const frame = document.getElementById("photoFrame");
+    const dragBadge = document.getElementById("dragBadge");
+    const DRAG_STEP_PX = 70; // horizontal distance needed to advance one view
+    let dragging = false;
+    let startX = 0;
+    let hasMoved = false;
+
+    function onPointerDown(e){
+      dragging = true;
+      hasMoved = false;
+      startX = e.clientX;
+      frame.classList.add("dragging");
+      frame.setPointerCapture(e.pointerId);
+    }
+
+    function onPointerMove(e){
+      if (!dragging) return;
+      const deltaX = e.clientX - startX;
+      if (Math.abs(deltaX) >= DRAG_STEP_PX){
+        hasMoved = true;
+        const direction = deltaX > 0 ? -1 : 1; // drag right = previous view, drag left = next view
+        const nextIndex = (currentViewIndex + direction + VIEW_ORDER.length) % VIEW_ORDER.length;
+        setPhotoView(VIEW_ORDER[nextIndex]);
+        startX = e.clientX; // reset so continued dragging keeps cycling
+        if (dragBadge) dragBadge.style.opacity = "0";
+      }
+    }
+
+    function onPointerUp(e){
+      dragging = false;
+      frame.classList.remove("dragging");
+      try { frame.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+
+    frame.addEventListener("pointerdown", onPointerDown);
+    frame.addEventListener("pointermove", onPointerMove);
+    frame.addEventListener("pointerup", onPointerUp);
+    frame.addEventListener("pointercancel", onPointerUp);
+  })();
 
   // ---- Load real data if ?id= is present, else fall back to the dummy MODEL above ----
   const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
