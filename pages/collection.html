@@ -262,7 +262,7 @@
     let query = supabaseClient
       .from("miniatures")
       .select(`
-        id, archive_id, title, manufacturer, status, hours_worked, owner_profile_id,
+        id, archive_id, title, manufacturer, status, hours_worked, owner_profile_id, painter_name,
         photos ( image_url, photo_type ),
         profiles:owner_profile_id ( username, display_name )
       `)
@@ -287,7 +287,7 @@
     ALL_MINIS = (data || []).map(m => {
       const frontPhoto = (m.photos || []).find(p => p.photo_type === "front");
       const anyPhoto = frontPhoto || (m.photos || [])[0];
-      const painterLabel = m.profiles?.username || m.profiles?.display_name || "Unknown";
+      const painterLabel = m.painter_name || "Unattributed";
       return {
         id: m.id,
         code: m.archive_id,
