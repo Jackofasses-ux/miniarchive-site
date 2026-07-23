@@ -120,6 +120,7 @@
     <div class="profile-info">
       <h1 id="profileName">—</h1>
       <div class="handle" id="profileHandle"></div>
+      <div class="handle" id="profileCountry" style="display:none;"></div>
       <p class="bio" id="profileBio" style="display:none;"></p>
       <div class="profile-links" id="profileLinks"></div>
     </div>
@@ -185,7 +186,7 @@
 
     const { data: profile, error } = await supabaseClient
       .from("profiles")
-      .select("id, username, display_name, bio, website, instagram, youtube, avatar_url, created_at")
+      .select("id, username, display_name, bio, website, instagram, youtube, country, avatar_url, created_at")
       .eq("username", username)
       .maybeSingle();
 
@@ -198,6 +199,11 @@
 
     document.getElementById("profileName").textContent = profile.display_name || profile.username;
     document.getElementById("profileHandle").textContent = `@${profile.username}`;
+    if (profile.country){
+      const countryEl = document.getElementById("profileCountry");
+      countryEl.textContent = profile.country;
+      countryEl.style.display = "block";
+    }
 
     if (profile.bio){
       const bioEl = document.getElementById("profileBio");
