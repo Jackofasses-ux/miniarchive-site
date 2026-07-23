@@ -155,7 +155,10 @@
   .cert-fields{ display:grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 30px; text-align:left; }
   .cert-fields .label{ font-family:'IBM Plex Mono', monospace; font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); }
   .cert-fields .value{ margin-top:3px; font-family:'Cormorant Garamond', serif; font-size:1.1rem; font-weight:600; }
-  .cert-verified{ margin-top: 28px; font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.08em; color: var(--green); }
+  .cert-verified{ margin-top: 28px; font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.08em; }
+  .cert-verified.state-verified{ color: var(--green); }
+  .cert-verified.state-pending{ color: var(--mono); }
+  .cert-verified.state-rejected{ color: var(--error); }
 
   footer{ border-top:1px solid var(--hairline); padding:32px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); }
 
@@ -402,6 +405,16 @@
       </div>
     `;
 
+    // m.verified can be true (verified), false/undefined (pending — the
+    // current default for everything, since no verification system exists
+    // yet), or "rejected" (reserved for when one does).
+    let verifyIcon = "✕", verifyClass = "state-pending", verifyText = "Awaiting Verification";
+    if (m.verified === true){
+      verifyIcon = "✓"; verifyClass = "state-verified"; verifyText = "Painter Verified";
+    } else if (m.verified === "rejected"){
+      verifyIcon = "✕"; verifyClass = "state-rejected"; verifyText = "Verification Rejected";
+    }
+
     document.getElementById("certBox").innerHTML = `
       <div class="shield"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
       <div class="eyebrow">MINI ARCHIVE</div>
@@ -414,7 +427,7 @@
         <div><div class="label">Total Hours</div><div class="value">${m.hours.toFixed(1)} hours</div></div>
         <div><div class="label">Scale</div><div class="value">${m.scale} — ${m.baseSize} base</div></div>
       </div>
-      <div class="cert-verified">✓ ${m.verified ? "Painter Verified" : "Awaiting Verification"}</div>
+      <div class="cert-verified ${verifyClass}">${verifyIcon} ${verifyText}</div>
     `;
   }
 
