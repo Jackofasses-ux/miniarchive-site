@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profile — Mini Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
+    --gold:#c9a24b; --gold-bright:#e8c877;
+    --cream:#ece6d8; --cream-dim:#a89f8c; --mono:#8a8072;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif; font-weight:300; line-height:1.6; min-height:100vh; }
+  a{ color:inherit; text-decoration:none; }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+
+  .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.22em; text-transform:uppercase; color: var(--gold); }
+
+  header{ display:flex; align-items:center; justify-content:space-between; padding:22px 56px; border-bottom:1px solid var(--hairline); position:relative; z-index:50; }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{ width:30px; height:30px; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; }
+  .brand-mark svg{ width:16px; height:16px; fill: var(--gold); }
+  .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
+  nav{ display:flex; align-items:center; gap:40px; }
+  #authArea{ display:flex; align-items:center; gap:20px; position:relative; }
+  .login-link{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); }
+  .login-link:hover{ color: var(--gold-bright); }
+  .btn-gold{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); padding:11px 22px; border:1px solid var(--gold); }
+  .user-menu-btn{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); border:1px solid var(--gold); padding:11px 20px; cursor:pointer; display:flex; align-items:center; gap:8px; }
+  .user-menu-btn svg{ width:10px; height:10px; stroke:#0c0b09; }
+  .dropdown{ position:absolute; top: calc(100% + 14px); right:0; min-width:200px; background: var(--bg-raised); border:1px solid var(--hairline); display:none; flex-direction:column; z-index:60; }
+  .dropdown.open{ display:flex; }
+  .dropdown a, .dropdown button{ text-align:left; padding: 13px 18px; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color: var(--cream-dim); border-bottom:1px solid var(--hairline); background:none; border:none; cursor:pointer; }
+  .dropdown a:last-child, .dropdown button:last-child{ border-bottom:none; }
+  .dropdown a:hover, .dropdown button:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
+
+  main{ max-width: 1100px; margin: 0 auto; padding: 60px 24px 100px; }
+
+  .profile-header{ display:flex; gap: 32px; align-items:flex-start; flex-wrap:wrap; }
+  .avatar{
+    width:100px; height:100px; border:1px solid var(--gold); border-radius:50%; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center; background: var(--bg-raised); overflow:hidden;
+  }
+  .avatar img{ width:100%; height:100%; object-fit:cover; }
+  .avatar svg{ width:40px; height:40px; opacity:0.4; }
+  .profile-info h1{ font-family:'Cormorant Garamond', serif; font-weight:500; font-size: clamp(2rem, 4.5vw, 2.8rem); }
+  .profile-info .handle{ font-family:'IBM Plex Mono', monospace; font-size:0.85rem; color: var(--mono); margin-top:4px; }
+  .profile-info .bio{ margin-top:16px; color: var(--cream-dim); max-width: 560px; }
+  .profile-links{ margin-top:14px; display:flex; gap:18px; flex-wrap:wrap; }
+  .profile-links a{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color: var(--gold-bright); text-decoration:underline; }
+
+  .stats-row{ margin-top: 40px; display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .stat-box{ border:1px solid var(--hairline); background: var(--bg-raised); padding: 20px; text-align:center; }
+  .stat-box .num{ font-family:'Cormorant Garamond', serif; font-size:1.9rem; font-weight:600; color: var(--gold-bright); }
+  .stat-box .label{ margin-top:6px; font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.06em; text-transform:uppercase; color: var(--mono); }
+
+  .section-head{ margin-top: 60px; }
+  .section-head h2{ font-family:'Cormorant Garamond', serif; font-weight:500; font-size:1.8rem; }
+  .rule-row{ display:flex; align-items:center; gap:14px; margin:14px 0 30px; }
+  .rule-row .line{ height:1px; background: var(--hairline); flex:1; }
+  .rule-row .diamond{ width:6px; height:6px; background: var(--gold); transform:rotate(45deg); flex-shrink:0; }
+
+  .grid-4{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .mini-card{ border:1px solid var(--hairline); background: var(--bg-raised); overflow:hidden; cursor:pointer; transition: border-color .3s ease, transform .3s ease; }
+  .mini-card:hover{ border-color: var(--gold); transform: translateY(-4px); }
+  .mini-card .thumb{ height: 180px; position:relative; background: linear-gradient(160deg, #23201a, #131110); display:flex; align-items:center; justify-content:center; }
+  .mini-card .thumb .id-tag{ position:absolute; top:10px; left:10px; font-family:'IBM Plex Mono', monospace; font-size:0.62rem; color: var(--gold); border:1px solid rgba(201,162,75,0.4); padding:3px 7px; }
+  .mini-card .info{ padding:16px 18px; }
+  .mini-card .info .name{ font-family:'Cormorant Garamond', serif; font-size:1.1rem; font-weight:600; }
+  .mini-card .info .meta{ margin-top:5px; font-family:'IBM Plex Mono', monospace; font-size:0.64rem; color: var(--mono); text-transform:uppercase; }
+
+  .empty-note{ color: var(--cream-dim); font-size:0.9rem; }
+
+  .state-loading, .state-error{ max-width: 480px; margin: 100px auto; text-align:center; padding: 0 24px; }
+  .state-error h1{ font-family:'Cormorant Garamond', serif; font-size:1.8rem; font-weight:600; }
+  .state-error p{ margin-top:14px; color: var(--cream-dim); }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); margin-top: 60px; }
+
+  @media (max-width: 800px){
+    header{ padding:18px 24px; }
+    .stats-row{ grid-template-columns: repeat(2, 1fr); }
+    .grid-4{ grid-template-columns: repeat(2, 1fr); }
+    footer{ flex-direction:column; gap:14px; text-align:center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="brand" href="index.html">
+    <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
+    <div class="brand-name">MINI ARCHIVE</div>
+  </a>
+  <nav>
+    <div id="authArea">
+      <a class="login-link" href="login.html">Log in</a>
+      <a class="btn-gold" href="start.html">Start an Archive</a>
+    </div>
+  </nav>
+</header>
+
+<div id="loadingState" class="state-loading">
+  <p style="color:var(--cream-dim);">Loading profile…</p>
+</div>
+
+<div id="errorState" class="state-error" style="display:none;">
+  <h1>Profile not found.</h1>
+  <p><a href="collection.html" style="color:var(--gold-bright);">← Back to Collection</a></p>
+</div>
+
+<main id="profileWrap" style="display:none;">
+  <div class="profile-header">
+    <div class="avatar" id="avatarBox"><svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
+    <div class="profile-info">
+      <h1 id="profileName">—</h1>
+      <div class="handle" id="profileHandle"></div>
+      <p class="bio" id="profileBio" style="display:none;"></p>
+      <div class="profile-links" id="profileLinks"></div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-box"><div class="num" id="statModels">0</div><div class="label">Models Published</div></div>
+    <div class="stat-box"><div class="num" id="statHours">0</div><div class="label">Painting Hours</div></div>
+    <div class="stat-box"><div class="num" id="statSince">—</div><div class="label">Member Since</div></div>
+    <div class="stat-box"><div class="num" id="statLatest">—</div><div class="label">Latest Model</div></div>
+  </div>
+
+  <div class="section-head">
+    <div class="eyebrow">Owned Collection</div>
+    <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+    <h2>Published Models</h2>
+  </div>
+  <div class="grid-4" id="ownedGrid"></div>
+
+  <div class="section-head" id="paintedSectionHead" style="display:none;">
+    <div class="eyebrow">Credited Work</div>
+    <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+    <h2>Models Painted</h2>
+  </div>
+  <div class="grid-4" id="paintedGrid"></div>
+</main>
+
+<footer>
+  <div>© 2026 Mini Archive. Every miniature has a story.</div>
+  <div><a href="collection.html">Browse Collection</a></div>
+</footer>
+
+<script>
+  const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const shieldIcon = `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1" style="width:100%;height:100%;opacity:0.3;"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>`;
+
+  function renderMiniCard(m){
+    const frontPhoto = (m.photos || []).find(p => p.photo_type === "front") || (m.photos || [])[0];
+    return `
+      <div class="mini-card" onclick="window.location.href='model.html?id=${m.id}'">
+        <div class="thumb">
+          <span class="id-tag">${m.archive_id}</span>
+          ${frontPhoto ? `<img src="${frontPhoto.image_url}" alt="${m.title}" style="width:100%;height:100%;object-fit:cover;">` : shieldIcon}
+        </div>
+        <div class="info">
+          <div class="name">${m.title}</div>
+          <div class="meta">${m.manufacturer || "—"}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function loadProfile(){
+    const username = new URLSearchParams(window.location.search).get("username");
+    if (!username){
+      document.getElementById("loadingState").style.display = "none";
+      document.getElementById("errorState").style.display = "block";
+      return;
+    }
+
+    const { data: profile, error } = await supabaseClient
+      .from("profiles")
+      .select("id, username, display_name, bio, website, instagram, youtube, avatar_url, created_at")
+      .eq("username", username)
+      .maybeSingle();
+
+    document.getElementById("loadingState").style.display = "none";
+
+    if (error || !profile){
+      document.getElementById("errorState").style.display = "block";
+      return;
+    }
+
+    document.getElementById("profileName").textContent = profile.display_name || profile.username;
+    document.getElementById("profileHandle").textContent = `@${profile.username}`;
+
+    if (profile.bio){
+      const bioEl = document.getElementById("profileBio");
+      bioEl.textContent = profile.bio;
+      bioEl.style.display = "block";
+    }
+    if (profile.avatar_url){
+      document.getElementById("avatarBox").innerHTML = `<img src="${profile.avatar_url}" alt="${profile.username}">`;
+    }
+
+    const links = [];
+    if (profile.website) links.push(`<a href="${profile.website}" target="_blank" rel="noopener">Website</a>`);
+    if (profile.instagram) links.push(`<a href="https://instagram.com/${profile.instagram}" target="_blank" rel="noopener">Instagram</a>`);
+    if (profile.youtube) links.push(`<a href="${profile.youtube}" target="_blank" rel="noopener">YouTube</a>`);
+    document.getElementById("profileLinks").innerHTML = links.join("");
+
+    document.getElementById("statSince").textContent = new Date(profile.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+
+    // Owned + published models
+    const { data: owned } = await supabaseClient
+      .from("miniatures")
+      .select("id, archive_id, title, manufacturer, hours_worked, created_at, photos ( image_url, photo_type )")
+      .eq("owner_profile_id", profile.id)
+      .eq("visibility", "public")
+      .eq("status", "completed")
+      .order("created_at", { ascending: false });
+
+    const ownedList = owned || [];
+    document.getElementById("statModels").textContent = ownedList.length;
+    document.getElementById("statHours").textContent = ownedList.reduce((sum, m) => sum + (m.hours_worked || 0), 0).toFixed(0);
+    document.getElementById("statLatest").textContent = ownedList[0]?.title || "—";
+
+    document.getElementById("ownedGrid").innerHTML = ownedList.length
+      ? ownedList.map(renderMiniCard).join("")
+      : `<p class="empty-note">No published models yet.</p>`;
+
+    // Models credited as painter (may include ones they don't own)
+    const { data: painted } = await supabaseClient
+      .from("miniatures")
+      .select("id, archive_id, title, manufacturer, photos ( image_url, photo_type )")
+      .eq("painter_profile_id", profile.id)
+      .eq("visibility", "public")
+      .eq("status", "completed")
+      .order("created_at", { ascending: false });
+
+    const paintedList = (painted || []).filter(m => !ownedList.some(o => o.id === m.id));
+    if (paintedList.length){
+      document.getElementById("paintedSectionHead").style.display = "block";
+      document.getElementById("paintedGrid").innerHTML = paintedList.map(renderMiniCard).join("");
+    }
+
+    document.getElementById("profileWrap").style.display = "block";
+  }
+
+  async function renderLoggedInNav(session){
+    const authArea = document.getElementById("authArea");
+    const { data: profile } = await supabaseClient.from("profiles").select("username, display_name").eq("id", session.user.id).maybeSingle();
+    const label = profile?.username || profile?.display_name || session.user.email;
+
+    authArea.innerHTML = `
+      <button class="user-menu-btn" id="userMenuBtn">${label} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="dropdown" id="userDropdown">
+        <a href="collection.html?mine=true">My Collection</a>
+        <a href="edit-model.html">Add a Model</a>
+        <a href="account.html">Account Settings</a>
+        <button id="logoutBtn">Log out</button>
+      </div>
+    `;
+    const btn = document.getElementById("userMenuBtn");
+    const dropdown = document.getElementById("userDropdown");
+    btn.addEventListener("click", (e) => { e.stopPropagation(); dropdown.classList.toggle("open"); });
+    document.addEventListener("click", () => dropdown.classList.remove("open"));
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await supabaseClient.auth.signOut();
+      window.location.href = "index.html";
+    });
+  }
+
+  (async () => {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) renderLoggedInNav(session);
+  })();
+
+  loadProfile();
+</script>
+
+</body>
+</html>
