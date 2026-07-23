@@ -146,6 +146,13 @@
     padding:3px 7px; border:1px solid var(--hairline); color: var(--cream-dim);
   }
   .status-tag.finished{ color:#8fae7a; border-color: rgba(143,174,122,0.4); }
+  .mini-card .thumb .card-edit-link{
+    position:absolute; bottom:10px; right:10px; z-index:5;
+    width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+    background: rgba(12,11,9,0.75); border:1px solid var(--hairline); color: var(--cream-dim);
+    font-size:0.85rem; text-decoration:none; transition: border-color .2s ease, color .2s ease;
+  }
+  .mini-card .thumb .card-edit-link:hover{ border-color: var(--gold); color: var(--gold-bright); }
   .status-tag.wip{ color: var(--gold-bright); border-color: rgba(201,162,75,0.4); }
   .status-tag.queued{ color: var(--mono); }
 
@@ -313,10 +320,14 @@
       const tag = isDraft
         ? `<span class="status-tag wip">Draft</span>`
         : `<span class="id-tag">${m.code}</span>`;
+      const editShortcut = (isMineView && !isDraft)
+        ? `<a href="edit-model.html?id=${m.id}" onclick="event.stopPropagation()" class="card-edit-link" title="Edit this model">✎</a>`
+        : "";
       return `
         <div class="mini-card" onclick="window.location.href='${linkTarget}'">
           <div class="thumb">
             ${tag}
+            ${editShortcut}
             ${m.thumbUrl ? `<img src="${m.thumbUrl}" alt="${m.name}" style="width:100%;height:100%;object-fit:cover;">` : shieldIcon}
           </div>
           <div class="info">
