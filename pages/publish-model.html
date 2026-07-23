@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Publish Model — Mini Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
+    --gold:#c9a24b; --gold-bright:#e8c877;
+    --cream:#ece6d8; --cream-dim:#a89f8c; --mono:#8a8072;
+    --error:#c97b6a; --green:#8fae7a;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif; font-weight:300; line-height:1.6; min-height:100vh; }
+  a{ color:inherit; text-decoration:none; }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:.01ms !important; transition-duration:.01ms !important; } }
+
+  .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.22em; text-transform:uppercase; color: var(--gold); }
+
+  header{ display:flex; align-items:center; justify-content:space-between; padding:22px 56px; border-bottom:1px solid var(--hairline); position:relative; z-index:50; }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{ width:30px; height:30px; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; }
+  .brand-mark svg{ width:16px; height:16px; fill: var(--gold); }
+  .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
+  nav{ display:flex; align-items:center; gap:40px; }
+  #authArea{ display:flex; align-items:center; gap:20px; position:relative; }
+  .btn-gold{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); padding:11px 22px; border:1px solid var(--gold); cursor:pointer; transition: background .25s ease; }
+  .btn-gold:hover{ background: var(--gold-bright); }
+  .btn-gold:disabled{ opacity:0.5; cursor:not-allowed; }
+  .user-menu-btn{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); border:1px solid var(--gold); padding:11px 20px; cursor:pointer; display:flex; align-items:center; gap:8px; }
+  .user-menu-btn svg{ width:10px; height:10px; stroke:#0c0b09; }
+  .dropdown{ position:absolute; top: calc(100% + 14px); right:0; min-width:200px; background: var(--bg-raised); border:1px solid var(--hairline); display:none; flex-direction:column; z-index:60; }
+  .dropdown.open{ display:flex; }
+  .dropdown a, .dropdown button{ text-align:left; padding: 13px 18px; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.06em; text-transform:uppercase; color: var(--cream-dim); border-bottom:1px solid var(--hairline); background:none; border:none; cursor:pointer; }
+  .dropdown a:last-child, .dropdown button:last-child{ border-bottom:none; }
+  .dropdown a:hover, .dropdown button:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
+
+  main{ max-width: 880px; margin: 0 auto; padding: 60px 24px 100px; }
+  main h1{ font-family:'Cormorant Garamond', serif; font-weight:500; font-size: clamp(1.9rem, 4vw, 2.6rem); }
+  main .lede{ margin-top:12px; color: var(--cream-dim); font-size:0.95rem; max-width: 560px; }
+
+  .top-error{ margin-top: 24px; border:1px solid rgba(201,123,106,0.4); background: rgba(201,123,106,0.08); padding: 14px 16px; font-size:0.85rem; color: var(--error); display:none; }
+  .top-success{ margin-top: 24px; border:1px solid rgba(143,174,122,0.4); background: rgba(143,174,122,0.08); padding: 14px 16px; font-size:0.85rem; color: var(--green); display:none; }
+
+  .legend{ font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase; color: var(--gold); margin: 44px 0 18px; }
+
+  .photo-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .photo-slot{ text-align:center; }
+  .photo-slot .drop{
+    border: 1px dashed var(--hairline); background: var(--bg-raised);
+    height: 150px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px;
+    cursor:pointer; transition: border-color .2s ease; overflow:hidden; position:relative;
+  }
+  .photo-slot .drop:hover{ border-color: var(--gold); }
+  .photo-slot .drop.filled{ border-style: solid; border-color: var(--gold); }
+  .photo-slot .drop.invalid{ border-color: var(--error); }
+  .photo-slot .drop.drag-over{ border-color: var(--gold-bright); background: rgba(201,162,75,0.08); }
+  .photo-slot .drop img{ width:100%; height:100%; object-fit:cover; }
+  .photo-slot .drop svg{ width:20px; height:20px; stroke: var(--mono); }
+  .photo-slot .drop .plus-label{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; color: var(--mono); text-transform:uppercase; letter-spacing:0.06em; }
+  .photo-slot .view-label{ margin-top:8px; font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--cream-dim); }
+  .photo-slot .view-label .req{ color: var(--gold); }
+  .photo-slot input[type="file"]{ display:none; }
+  .photo-error{ margin-top:12px; font-size:0.78rem; color: var(--error); display:none; }
+
+  .visibility-row{ margin-top: 34px; display:flex; align-items:center; gap: 16px; }
+  .visibility-row label{ font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); }
+  .visibility-row select{
+    background: var(--bg-raised); border:1px solid var(--hairline); color: var(--cream);
+    padding: 10px 14px; font-family:'Jost', sans-serif; font-size:0.9rem;
+  }
+
+  .submit-row{ margin-top: 40px; display:flex; align-items:center; gap:18px; }
+  .progress-note{ font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color: var(--mono); }
+
+  .draft-summary{ margin-top: 30px; border:1px solid var(--hairline); background: var(--bg-raised); padding: 18px 22px; }
+  .draft-summary .label{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); }
+  .draft-summary .value{ font-family:'Cormorant Garamond', serif; font-size:1.4rem; font-weight:600; margin-top:4px; }
+
+  .state-loading, .state-error, .gate{ max-width: 480px; margin: 100px auto; text-align:center; padding: 0 24px; }
+  .state-loading p, .state-error p, .gate p{ margin-top:14px; color: var(--cream-dim); }
+  .gate h1, .state-error h1{ font-family:'Cormorant Garamond', serif; font-size:1.8rem; font-weight:600; }
+  .cta-row{ margin-top: 26px; display:flex; gap:14px; justify-content:center; }
+  .btn-ghost{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color: var(--cream); padding: 13px 24px; border:1px solid var(--hairline); }
+  .btn-ghost:hover{ border-color: var(--gold); color: var(--gold-bright); }
+
+  footer{ border-top:1px solid var(--hairline); padding:28px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); margin-top: 60px; }
+
+  @media (max-width: 700px){
+    header{ padding:18px 24px; }
+    .photo-grid{ grid-template-columns: 1fr 1fr; }
+    footer{ flex-direction:column; gap:14px; text-align:center; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="brand" href="index.html">
+    <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
+    <div class="brand-name">MINI ARCHIVE</div>
+  </a>
+  <nav>
+    <div id="authArea"></div>
+  </nav>
+</header>
+
+<div id="gate" class="gate" style="display:none;">
+  <div class="eyebrow">Publish Model</div>
+  <h1>Log in to continue.</h1>
+  <p>You need to be signed in to publish a model from your workbench.</p>
+  <div class="cta-row"><a class="btn-gold" href="login.html">Log In</a></div>
+</div>
+
+<div id="loadingState" class="state-loading">
+  <p>Loading your draft…</p>
+</div>
+
+<div id="errorState" class="state-error" style="display:none;">
+  <h1>Couldn't find that draft.</h1>
+  <p>It may not exist, or it isn't yours to publish.</p>
+  <div class="cta-row"><a class="btn-gold" href="collection.html?mine=true">Back to My Collection</a></div>
+</div>
+
+<main id="formWrap" style="display:none;">
+  <div class="eyebrow">Publish Model</div>
+  <h1 id="draftTitle">Publishing…</h1>
+  <p class="lede">Add the four required angles and confirm visibility. Publishing assigns this model its permanent Archive ID.</p>
+
+  <div class="top-error" id="topError"></div>
+  <div class="top-success" id="topSuccess"></div>
+
+  <form id="publishForm" novalidate>
+    <div class="legend">Required Photos</div>
+    <div class="photo-grid" id="photoGrid">
+      <div class="photo-slot">
+        <label class="drop" for="photo-front">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="plus-label">Drop or Click</span>
+        </label>
+        <input type="file" id="photo-front" accept="image/jpeg,image/png,image/webp" data-view="front">
+        <div class="view-label">Front <span class="req">*</span></div>
+      </div>
+      <div class="photo-slot">
+        <label class="drop" for="photo-left">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="plus-label">Drop or Click</span>
+        </label>
+        <input type="file" id="photo-left" accept="image/jpeg,image/png,image/webp" data-view="left">
+        <div class="view-label">Left <span class="req">*</span></div>
+      </div>
+      <div class="photo-slot">
+        <label class="drop" for="photo-rear">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="plus-label">Drop or Click</span>
+        </label>
+        <input type="file" id="photo-rear" accept="image/jpeg,image/png,image/webp" data-view="rear">
+        <div class="view-label">Rear <span class="req">*</span></div>
+      </div>
+      <div class="photo-slot">
+        <label class="drop" for="photo-right">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="plus-label">Drop or Click</span>
+        </label>
+        <input type="file" id="photo-right" accept="image/jpeg,image/png,image/webp" data-view="right">
+        <div class="view-label">Right <span class="req">*</span></div>
+      </div>
+    </div>
+    <div class="photo-error" id="photoError">All four angle photos are required to publish.</div>
+
+    <div class="visibility-row">
+      <label for="visibility">Visibility</label>
+      <select id="visibility">
+        <option value="public">Public — visible in the Collection</option>
+        <option value="private">Private — only visible to you</option>
+      </select>
+    </div>
+
+    <div class="submit-row">
+      <button type="submit" class="btn-gold" id="submitBtn">Publish to Archive</button>
+      <span class="progress-note" id="progressNote"></span>
+    </div>
+  </form>
+</main>
+
+<footer>
+  <div>© 2026 Mini Archive. Every miniature has a story.</div>
+  <div><a href="collection.html?mine=true">← Back to My Collection</a></div>
+</footer>
+
+<script>
+  const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const WORKER_UPLOAD_URL = "https://mini-archive-uploads.jackofasses.workers.dev";
+
+  const MAX_PHOTO_BYTES = 20 * 1024 * 1024;
+  const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+  const requiredViews = ["front", "left", "rear", "right"];
+  const selectedFiles = {};
+
+  let currentSession = null;
+  let draftId = null;
+  let draftTitle = "";
+
+  function formatBytes(bytes){
+    return `${(bytes / (1024 * 1024)).toFixed(0)}MB`;
+  }
+
+  async function renderLoggedInNav(session){
+    const authArea = document.getElementById("authArea");
+    const { data: profile } = await supabaseClient.from("profiles").select("username, display_name").eq("id", session.user.id).maybeSingle();
+    const label = profile?.username || profile?.display_name || session.user.email;
+
+    authArea.innerHTML = `
+      <button class="user-menu-btn" id="userMenuBtn">${label} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+      <div class="dropdown" id="userDropdown">
+        <a href="collection.html?mine=true">My Collection</a>
+        <a href="add-model.html">Add a Model</a>
+        <a href="account.html">Account Settings</a>
+        <button id="logoutBtn">Log out</button>
+      </div>
+    `;
+    const btn = document.getElementById("userMenuBtn");
+    const dropdown = document.getElementById("userDropdown");
+    btn.addEventListener("click", (e) => { e.stopPropagation(); dropdown.classList.toggle("open"); });
+    document.addEventListener("click", () => dropdown.classList.remove("open"));
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await supabaseClient.auth.signOut();
+      window.location.href = "index.html";
+    });
+  }
+
+  function handlePhotoFile(view, file, dropLabel){
+    if (!file) return;
+
+    if (!ALLOWED_TYPES.includes(file.type)){
+      const isHeic = /\.heic$|\.heif$/i.test(file.name) || file.type === "image/heic" || file.type === "image/heif";
+      showTopError(isHeic
+        ? "That's an HEIC photo, which most browsers can't display. On iPhone, go to Settings → Camera → Formats → \"Most Compatible\" to shoot JPEG instead, or convert this photo before uploading."
+        : "That file type isn't supported. Please use JPEG, PNG, or WebP."
+      );
+      return;
+    }
+    if (file.size > MAX_PHOTO_BYTES){
+      showTopError(`That photo is too large (${formatBytes(file.size)}). Max size per photo is ${formatBytes(MAX_PHOTO_BYTES)}.`);
+      return;
+    }
+
+    selectedFiles[view] = file;
+    dropLabel.classList.add("filled");
+    dropLabel.classList.remove("invalid");
+    const reader = new FileReader();
+    reader.onload = (ev) => { dropLabel.innerHTML = `<img src="${ev.target.result}" alt="${view} preview">`; };
+    reader.readAsDataURL(file);
+  }
+
+  document.querySelectorAll('#photoGrid input[type="file"]').forEach(input => {
+    const view = input.dataset.view;
+    const dropLabel = input.previousElementSibling;
+
+    input.addEventListener("change", (e) => {
+      handlePhotoFile(view, e.target.files[0], dropLabel);
+      e.target.value = "";
+    });
+    ["dragenter", "dragover"].forEach(evt => dropLabel.addEventListener(evt, (e) => {
+      e.preventDefault(); e.stopPropagation(); dropLabel.classList.add("drag-over");
+    }));
+    ["dragleave", "dragend"].forEach(evt => dropLabel.addEventListener(evt, (e) => {
+      e.preventDefault(); e.stopPropagation(); dropLabel.classList.remove("drag-over");
+    }));
+    dropLabel.addEventListener("drop", (e) => {
+      e.preventDefault(); e.stopPropagation();
+      dropLabel.classList.remove("drag-over");
+      handlePhotoFile(view, e.dataTransfer.files[0], dropLabel);
+    });
+  });
+
+  const topError = document.getElementById("topError");
+  const topSuccess = document.getElementById("topSuccess");
+  const submitBtn = document.getElementById("submitBtn");
+  const progressNote = document.getElementById("progressNote");
+
+  function showTopError(message){
+    topSuccess.style.display = "none";
+    topError.textContent = message;
+    topError.style.display = "block";
+  }
+
+  async function generateArchiveId(){
+    const year = new Date().getFullYear();
+    const prefix = `MA-${year}-`;
+    const { count } = await supabaseClient
+      .from("miniatures")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "completed")
+      .like("archive_id", `${prefix}%`);
+    const next = (count || 0) + 1;
+    return `${prefix}${String(next).padStart(8, "0")}`;
+  }
+
+  document.getElementById("publishForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    topError.style.display = "none";
+    topSuccess.style.display = "none";
+
+    const missingPhotos = requiredViews.filter(v => !selectedFiles[v]);
+    document.getElementById("photoError").style.display = missingPhotos.length ? "block" : "none";
+    requiredViews.forEach(v => {
+      const input = document.getElementById(`photo-${v}`);
+      input.previousElementSibling.classList.toggle("invalid", missingPhotos.includes(v));
+    });
+
+    if (missingPhotos.length){
+      showTopError("All four angle photos are required to publish.");
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Publishing…";
+
+    try {
+      progressNote.textContent = "Generating Archive ID…";
+      const archiveId = await generateArchiveId();
+
+      let uploadedCount = 0;
+      for (const view of requiredViews){
+        uploadedCount++;
+        progressNote.textContent = `Uploading photo ${uploadedCount} of 4…`;
+
+        const file = selectedFiles[view];
+        const uploadForm = new FormData();
+        uploadForm.append("file", file);
+        uploadForm.append("miniature_id", draftId);
+        uploadForm.append("view", view);
+
+        const uploadRes = await fetch(WORKER_UPLOAD_URL, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${currentSession.access_token}` },
+          body: uploadForm,
+        });
+        const uploadResult = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadResult.error || "Photo upload failed");
+
+        const { error: photoErr } = await supabaseClient.from("photos").insert({
+          miniature_id: draftId,
+          image_url: uploadResult.url,
+          photo_type: view,
+          sort_order: requiredViews.indexOf(view),
+        });
+        if (photoErr) throw photoErr;
+      }
+
+      progressNote.textContent = "Finalizing…";
+      const { error: updateError } = await supabaseClient
+        .from("miniatures")
+        .update({
+          archive_id: archiveId,
+          status: "completed",
+          visibility: document.getElementById("visibility").value,
+        })
+        .eq("id", draftId);
+
+      if (updateError) throw updateError;
+
+      progressNote.textContent = "";
+      topSuccess.innerHTML = `Published! "${draftTitle}" is now <b>${archiveId}</b>. <a href="model.html?id=${draftId}" style="color:var(--gold-bright);">View its archive page →</a>`;
+      topSuccess.style.display = "block";
+      submitBtn.textContent = "Published";
+
+    } catch (err){
+      console.error("Publish failed:", err);
+      progressNote.textContent = "";
+      showTopError(err.message || "Something went wrong. Check the console for details.");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Publish to Archive";
+    }
+  });
+
+  (async () => {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    currentSession = session;
+
+    if (!session){
+      document.getElementById("loadingState").style.display = "none";
+      document.getElementById("gate").style.display = "block";
+      return;
+    }
+
+    renderLoggedInNav(session);
+
+    draftId = new URLSearchParams(window.location.search).get("id");
+    if (!draftId){
+      document.getElementById("loadingState").style.display = "none";
+      document.getElementById("errorState").style.display = "block";
+      return;
+    }
+
+    const { data, error } = await supabaseClient
+      .from("miniatures")
+      .select("id, title, owner_profile_id, status")
+      .eq("id", draftId)
+      .maybeSingle();
+
+    if (error || !data || data.owner_profile_id !== session.user.id){
+      document.getElementById("loadingState").style.display = "none";
+      document.getElementById("errorState").style.display = "block";
+      return;
+    }
+
+    if (data.status === "completed"){
+      window.location.href = `model.html?id=${draftId}`;
+      return;
+    }
+
+    draftTitle = data.title;
+    document.getElementById("draftTitle").textContent = `Publish “${data.title}”`;
+    document.getElementById("loadingState").style.display = "none";
+    document.getElementById("formWrap").style.display = "block";
+  })();
+</script>
+
+</body>
+</html>
