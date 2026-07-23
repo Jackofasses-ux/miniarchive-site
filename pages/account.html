@@ -267,11 +267,18 @@
   async function loadDashboard(session){
     document.getElementById("emailValue").textContent = session.user.email;
 
-    const { data: profile } = await supabaseClient
+    const { data: profile, error: profileError } = await supabaseClient
       .from("profiles")
       .select("username, display_name, bio, website, instagram, youtube, country, avatar_url, tier")
       .eq("id", session.user.id)
       .maybeSingle();
+
+    if (profileError){
+      console.error("Failed to load profile:", profileError);
+      const topError = document.getElementById("topError");
+      topError.textContent = `Couldn't load your profile: ${profileError.message}`;
+      topError.style.display = "block";
+    }
 
     if (profile){
       document.getElementById("greeting").textContent = `Welcome back, ${profile.display_name || profile.username}.`;
@@ -291,11 +298,11 @@
 
     const { data: links } = await supabaseClient
       .from("profile_links")
-      .select("id, platform, url")
+      .select("id, platform, url, is_public")
       .eq("profile_id", session.user.id)
       .order("sort_order", { ascending: true });
 
-    (links || []).forEach(l => addLinkRow(l.platform, l.url, l.id));
+    (links || []).forEach(l => addLinkRow(l.platform, l.url, l.id, l.is_public));
 
     const { data: models } = await supabaseClient
       .from("miniatures")
@@ -318,21 +325,25 @@
   const MAX_AVATAR_BYTES = 10 * 1024 * 1024;
 
   // ---- Other links (TikTok, Twitch, Discord, etc.) ----
-  function addLinkRow(platform, url, existingId){
+  function addLinkRow(platform, url, existingId, isPublic){
     const list = document.getElementById("linksList");
     const row = document.createElement("div");
     row.className = "link-row";
     row.dataset.existingId = existingId || "";
+    const checked = isPublic === false ? "" : "checked";
     row.innerHTML = `
       <input type="text" class="platform-input" placeholder="e.g. TikTok" value="${platform || ""}">
       <input type="text" class="url-input" placeholder="https://…" value="${url || ""}">
+      <label style="display:flex; align-items:center; gap:6px; font-size:0.75rem; color:var(--cream-dim); white-space:nowrap; flex-shrink:0;">
+        <input type="checkbox" class="public-checkbox" ${checked} style="accent-color: var(--gold); cursor:pointer;"> Public
+      </label>
       <button type="button" class="remove-link">×</button>
     `;
     row.querySelector(".remove-link").addEventListener("click", () => row.remove());
     list.appendChild(row);
   }
 
-  document.getElementById("addLinkBtn").addEventListener("click", () => addLinkRow("", ""));
+  document.getElementById("addLinkBtn").addEventListener("click", () => addLinkRow("", "", null, true));
 
   document.getElementById("avatarInput").addEventListener("change", async (e) => {
     const file = e.target.files[0];
@@ -426,6 +437,7 @@
       .map((row, i) => ({
         platform: row.querySelector(".platform-input").value.trim(),
         url: row.querySelector(".url-input").value.trim(),
+        is_public: row.querySelector(".public-checkbox").checked,
         sort_order: i,
       }))
       .filter(l => l.platform && l.url);
