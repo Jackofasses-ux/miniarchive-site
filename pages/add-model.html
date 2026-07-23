@@ -225,11 +225,11 @@
         </div>
         <div class="field">
           <label for="startedAt">Started</label>
-          <input id="startedAt" type="date">
+          <input id="startedAt" type="text" inputmode="numeric" placeholder="YYYY-MM-DD" maxlength="10">
         </div>
         <div class="field">
           <label for="completedAt">Completed</label>
-          <input id="completedAt" type="date">
+          <input id="completedAt" type="text" inputmode="numeric" placeholder="YYYY-MM-DD" maxlength="10">
         </div>
         <div class="field full">
           <label for="description">Description</label>
@@ -307,6 +307,24 @@
   // ---- Photo slot previews ----
   const selectedFiles = {}; // view -> File
 
+  // ---- Date field masking (YYYY-MM-DD, auto-inserts dashes as you type) ----
+  function attachDateMask(input){
+    input.addEventListener("input", () => {
+      let digits = input.value.replace(/\D/g, "").slice(0, 8);
+      let formatted = digits.slice(0, 4);
+      if (digits.length > 4) formatted += "-" + digits.slice(4, 6);
+      if (digits.length > 6) formatted += "-" + digits.slice(6, 8);
+      input.value = formatted;
+    });
+  }
+  attachDateMask(document.getElementById("startedAt"));
+  attachDateMask(document.getElementById("completedAt"));
+
+  function isValidDateOrEmpty(value){
+    if (!value) return true;
+    return /^\d{4}-\d{2}-\d{2}$/.test(value);
+  }
+
   document.querySelectorAll('#photoGrid input[type="file"]').forEach(input => {
     input.addEventListener("change", (e) => {
       const file = e.target.files[0];
@@ -380,12 +398,15 @@
     const title = document.getElementById("title").value.trim();
     const requiredViews = ["front", "left", "rear", "right"];
     const missingPhotos = requiredViews.filter(v => !selectedFiles[v]);
+    const startedAtValue = document.getElementById("startedAt").value.trim();
+    const completedAtValue = document.getElementById("completedAt").value.trim();
+    const datesValid = isValidDateOrEmpty(startedAtValue) && isValidDateOrEmpty(completedAtValue);
 
     setInvalid("field-title", !title);
     document.getElementById("photoError").style.display = missingPhotos.length ? "block" : "none";
 
-    if (!title || missingPhotos.length){
-      showTopError("Please fix the highlighted fields before submitting.");
+    if (!title || missingPhotos.length || !datesValid){
+      showTopError(!datesValid ? "Dates must be a complete YYYY-MM-DD, or left blank." : "Please fix the highlighted fields before submitting.");
       return;
     }
 
