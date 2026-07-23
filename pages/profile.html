@@ -215,11 +215,11 @@
 
     const { data: extraLinks } = await supabaseClient
       .from("profile_links")
-      .select("platform, url")
+      .select("platform, url, is_public")
       .eq("profile_id", profile.id)
       .order("sort_order", { ascending: true });
 
-    (extraLinks || []).forEach(l => {
+    (extraLinks || []).filter(l => l.is_public).forEach(l => {
       links.push(`<a href="${l.url}" target="_blank" rel="noopener">${l.platform}</a>`);
     });
 
