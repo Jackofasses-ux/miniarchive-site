@@ -241,8 +241,16 @@
   <div class="history-grid" id="historyGrid"></div>
 </section>
 
-<section class="block">
+<section class="block" id="editHistorySection" style="display:none;">
   <div class="eyebrow">Section IV</div>
+  <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;">Edit History</h2>
+  <p style="color:var(--cream-dim); font-size:0.9rem; margin-top:10px;">Changes made to this record since it was published.</p>
+  <div id="editHistoryList" style="margin-top:24px;"></div>
+</section>
+
+<section class="block">
+  <div class="eyebrow">Section V</div>
   <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
   <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;">Certificate of Authenticity</h2>
   <div class="cert-box" id="certBox"></div>
@@ -539,6 +547,51 @@
     });
 
     setPhotoView("front");
+    loadEditHistory(data.id);
+  }
+
+  const EDIT_FIELD_LABELS = {
+    title: "Model Name",
+    painter_name: "Painter",
+    manufacturer: "Manufacturer",
+    scale: "Scale",
+    base_size: "Base Size",
+    hours_worked: "Hours Worked",
+    started_at: "Started",
+    completed_at: "Completed",
+    description: "Description",
+    owner_visible: "Show Ownership Publicly",
+  };
+
+  async function loadEditHistory(miniatureId){
+    const { data, error } = await supabaseClient
+      .from("miniature_edits")
+      .select(`
+        field_name, old_value, new_value, created_at,
+        profiles:editor_profile_id ( username, display_name )
+      `)
+      .eq("miniature_id", miniatureId)
+      .order("created_at", { ascending: false });
+
+    if (error || !data || !data.length) return; // no history — section stays hidden
+
+    document.getElementById("editHistorySection").style.display = "block";
+    document.getElementById("editHistoryList").innerHTML = data.map(e => {
+      const editorLabel = e.profiles?.username || e.profiles?.display_name || "Unknown";
+      const fieldLabel = EDIT_FIELD_LABELS[e.field_name] || e.field_name;
+      const dateLabel = new Date(e.created_at).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
+      return `
+        <div style="padding:16px 0; border-top:1px solid var(--hairline); display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap;">
+          <div>
+            <div style="font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--gold);">${fieldLabel}</div>
+            <div style="margin-top:6px; color:var(--cream-dim); font-size:0.9rem;">${e.old_value || "—"} → ${e.new_value || "—"}</div>
+          </div>
+          <div style="text-align:right; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color:var(--mono); white-space:nowrap;">
+            ${editorLabel}<br>${dateLabel}
+          </div>
+        </div>
+      `;
+    }).join("");
   }
 
   const urlId = new URLSearchParams(window.location.search).get("id");
