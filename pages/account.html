@@ -78,11 +78,11 @@
   .field input:focus, .field textarea:focus{ outline:none; border-color: var(--gold); }
   .field .hint{ margin-top:6px; font-size:0.78rem; color: var(--mono); }
   .link-row{ display:flex; gap:10px; margin-bottom:10px; align-items:center; }
-  .link-row input{
+  .link-row input, .link-row select{
     background: var(--bg-raised); border:1px solid var(--hairline); color: var(--cream);
     padding: 10px 12px; font-family:'Jost', sans-serif; font-size:0.88rem;
   }
-  .link-row input.platform-input{ width:140px; flex-shrink:0; }
+  .link-row select.platform-select{ width:150px; flex-shrink:0; }
   .link-row input.url-input{ flex:1; }
   .link-row .remove-link{
     background:none; border:1px solid var(--hairline); color: var(--error); cursor:pointer;
@@ -317,20 +317,69 @@
   const MAX_AVATAR_BYTES = 10 * 1024 * 1024;
 
   // ---- Other links (TikTok, Twitch, Discord, etc.) ----
+  const PLATFORM_PRESETS = {
+    "Website": "https://",
+    "Instagram": "https://www.instagram.com/",
+    "TikTok": "https://www.tiktok.com/@",
+    "YouTube": "https://www.youtube.com/@",
+    "Twitch": "https://www.twitch.tv/",
+    "X (Twitter)": "https://x.com/",
+    "Facebook": "https://www.facebook.com/",
+    "Discord": "https://discord.gg/",
+    "Patreon": "https://www.patreon.com/",
+    "Bluesky": "https://bsky.app/profile/",
+    "DeviantArt": "https://www.deviantart.com/",
+    "Pinterest": "https://www.pinterest.com/",
+  };
+
   function addLinkRow(platform, url, existingId, isPublic){
     const list = document.getElementById("linksList");
     const row = document.createElement("div");
     row.className = "link-row";
     row.dataset.existingId = existingId || "";
     const checked = isPublic === false ? "" : "checked";
+
+    const knownPlatform = Object.keys(PLATFORM_PRESETS).find(p => p.toLowerCase() === (platform || "").toLowerCase());
+    const isCustom = platform && !knownPlatform;
+
+    const optionsHtml = Object.keys(PLATFORM_PRESETS).map(p =>
+      `<option value="${p}" ${p === knownPlatform ? "selected" : ""}>${p}</option>`
+    ).join("");
+
     row.innerHTML = `
-      <input type="text" class="platform-input" placeholder="e.g. TikTok" value="${platform || ""}">
+      <select class="platform-select">
+        <option value="" ${!platform ? "selected" : ""} disabled>Choose platform…</option>
+        ${optionsHtml}
+        <option value="__custom__" ${isCustom ? "selected" : ""}>Other…</option>
+      </select>
+      <input type="text" class="custom-platform-input" placeholder="Platform name" value="${isCustom ? platform : ""}" style="display:${isCustom ? "block" : "none"}; width:120px; flex-shrink:0;">
       <input type="text" class="url-input" placeholder="https://…" value="${url || ""}">
       <label style="display:flex; align-items:center; gap:6px; font-size:0.75rem; color:var(--cream-dim); white-space:nowrap; flex-shrink:0;">
         <input type="checkbox" class="public-checkbox" ${checked} style="accent-color: var(--gold); cursor:pointer;"> Public
       </label>
       <button type="button" class="remove-link">×</button>
     `;
+
+    const select = row.querySelector(".platform-select");
+    const customInput = row.querySelector(".custom-platform-input");
+    const urlInput = row.querySelector(".url-input");
+
+    select.addEventListener("change", () => {
+      if (select.value === "__custom__"){
+        customInput.style.display = "block";
+        customInput.focus();
+      } else {
+        customInput.style.display = "none";
+        // Only auto-fill if the URL field is still empty — never clobber
+        // something the user (or a loaded record) already has in there.
+        if (!urlInput.value.trim()){
+          urlInput.value = PLATFORM_PRESETS[select.value] || "";
+          urlInput.focus();
+          urlInput.setSelectionRange(urlInput.value.length, urlInput.value.length);
+        }
+      }
+    });
+
     row.querySelector(".remove-link").addEventListener("click", () => row.remove());
     list.appendChild(row);
   }
@@ -423,12 +472,18 @@
     // Replace the full set of links each save — simplest way to handle
     // additions, edits, and removals without diffing row by row.
     const linkRows = Array.from(document.querySelectorAll("#linksList .link-row"))
-      .map((row, i) => ({
-        platform: row.querySelector(".platform-input").value.trim(),
-        url: row.querySelector(".url-input").value.trim(),
-        is_public: row.querySelector(".public-checkbox").checked,
-        sort_order: i,
-      }))
+      .map((row, i) => {
+        const selectVal = row.querySelector(".platform-select").value;
+        const platform = selectVal === "__custom__"
+          ? row.querySelector(".custom-platform-input").value.trim()
+          : selectVal;
+        return {
+          platform,
+          url: row.querySelector(".url-input").value.trim(),
+          is_public: row.querySelector(".public-checkbox").checked,
+          sort_order: i,
+        };
+      })
       .filter(l => l.platform && l.url);
 
     await supabaseClient.from("profile_links").delete().eq("profile_id", currentSession.user.id);
