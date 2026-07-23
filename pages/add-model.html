@@ -80,6 +80,8 @@
   }
   .photo-slot .drop:hover{ border-color: var(--gold); }
   .photo-slot .drop.filled{ border-style: solid; border-color: var(--gold); }
+  .photo-slot .drop.invalid{ border-color: var(--error); }
+  .photo-slot .drop.drag-over{ border-color: var(--gold-bright); background: rgba(201,162,75,0.08); }
   .photo-slot .drop img{ width:100%; height:100%; object-fit:cover; }
   .photo-slot .drop svg{ width:20px; height:20px; stroke: var(--mono); }
   .photo-slot .drop .plus-label{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; color: var(--mono); text-transform:uppercase; letter-spacing:0.06em; }
@@ -156,7 +158,7 @@
         <div class="photo-slot">
           <label class="drop" for="photo-front">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="plus-label">Add Photo</span>
+            <span class="plus-label">Drop or Click</span>
           </label>
           <input type="file" id="photo-front" accept="image/jpeg,image/png,image/webp" data-view="front">
           <div class="view-label">Front <span class="req">*</span></div>
@@ -164,7 +166,7 @@
         <div class="photo-slot">
           <label class="drop" for="photo-left">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="plus-label">Add Photo</span>
+            <span class="plus-label">Drop or Click</span>
           </label>
           <input type="file" id="photo-left" accept="image/jpeg,image/png,image/webp" data-view="left">
           <div class="view-label">Left <span class="req">*</span></div>
@@ -172,7 +174,7 @@
         <div class="photo-slot">
           <label class="drop" for="photo-rear">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="plus-label">Add Photo</span>
+            <span class="plus-label">Drop or Click</span>
           </label>
           <input type="file" id="photo-rear" accept="image/jpeg,image/png,image/webp" data-view="rear">
           <div class="view-label">Rear <span class="req">*</span></div>
@@ -180,7 +182,7 @@
         <div class="photo-slot">
           <label class="drop" for="photo-right">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="plus-label">Add Photo</span>
+            <span class="plus-label">Drop or Click</span>
           </label>
           <input type="file" id="photo-right" accept="image/jpeg,image/png,image/webp" data-view="right">
           <div class="view-label">Right <span class="req">*</span></div>
@@ -228,13 +230,15 @@
             <option value="private">Private</option>
           </select>
         </div>
-        <div class="field">
+        <div class="field" id="field-startedAt">
           <label for="startedAt">Started</label>
           <input id="startedAt" type="text" inputmode="numeric" placeholder="YYYY-MM-DD" maxlength="10">
+          <div class="error-msg">Must be a complete date (YYYY-MM-DD) or left blank.</div>
         </div>
-        <div class="field">
+        <div class="field" id="field-completedAt">
           <label for="completedAt">Completed</label>
           <input id="completedAt" type="text" inputmode="numeric" placeholder="YYYY-MM-DD" maxlength="10">
+          <div class="error-msg">Must be a complete date (YYYY-MM-DD) or left blank.</div>
         </div>
         <div class="field full">
           <label for="description">Description</label>
@@ -320,6 +324,9 @@
       if (digits.length > 4) formatted += "-" + digits.slice(4, 6);
       if (digits.length > 6) formatted += "-" + digits.slice(6, 8);
       input.value = formatted;
+
+      const wrapper = input.closest(".field");
+      if (wrapper) wrapper.classList.remove("invalid");
     });
   }
   attachDateMask(document.getElementById("startedAt"));
@@ -330,37 +337,69 @@
     return /^\d{4}-\d{2}-\d{2}$/.test(value);
   }
 
+  document.getElementById("title").addEventListener("input", () => {
+    setInvalid("field-title", false);
+  });
+
+  function handlePhotoFile(view, file, dropLabel){
+    if (!file) return;
+
+    if (!ALLOWED_TYPES.includes(file.type)){
+      const isHeic = /\.heic$|\.heif$/i.test(file.name) || file.type === "image/heic" || file.type === "image/heif";
+      showTopError(isHeic
+        ? "That's an HEIC photo, which most browsers can't display. On iPhone, go to Settings → Camera → Formats → \"Most Compatible\" to shoot JPEG instead, or convert this photo before uploading."
+        : `That file type isn't supported. Please use JPEG, PNG, or WebP.`
+      );
+      return;
+    }
+
+    if (file.size > MAX_PHOTO_BYTES){
+      showTopError(`That photo is too large (${formatBytes(file.size)}). Max size per photo is ${formatBytes(MAX_PHOTO_BYTES)}.`);
+      return;
+    }
+
+    selectedFiles[view] = file;
+
+    dropLabel.classList.add("filled");
+    dropLabel.classList.remove("invalid");
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      dropLabel.innerHTML = `<img src="${ev.target.result}" alt="${view} preview">`;
+    };
+    reader.readAsDataURL(file);
+  }
+
   document.querySelectorAll('#photoGrid input[type="file"]').forEach(input => {
+    const view = input.dataset.view;
+    const dropLabel = input.previousElementSibling;
+
     input.addEventListener("change", (e) => {
       const file = e.target.files[0];
-      const view = input.dataset.view;
-      if (!file) return;
+      handlePhotoFile(view, file, dropLabel);
+      e.target.value = ""; // allow re-selecting the same file if needed
+    });
 
-      if (!ALLOWED_TYPES.includes(file.type)){
-        const isHeic = /\.heic$|\.heif$/i.test(file.name) || file.type === "image/heic" || file.type === "image/heif";
-        showTopError(isHeic
-          ? "That's an HEIC photo, which most browsers can't display. On iPhone, go to Settings → Camera → Formats → \"Most Compatible\" to shoot JPEG instead, or convert this photo before uploading."
-          : `That file type isn't supported. Please use JPEG, PNG, or WebP.`
-        );
-        e.target.value = "";
-        return;
-      }
-
-      if (file.size > MAX_PHOTO_BYTES){
-        showTopError(`That photo is too large (${formatBytes(file.size)}). Max size per photo is ${formatBytes(MAX_PHOTO_BYTES)}.`);
-        e.target.value = "";
-        return;
-      }
-
-      selectedFiles[view] = file;
-
-      const dropLabel = input.previousElementSibling;
-      dropLabel.classList.add("filled");
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        dropLabel.innerHTML = `<img src="${ev.target.result}" alt="${view} preview">`;
-      };
-      reader.readAsDataURL(file);
+    // Drag and drop support
+    ["dragenter", "dragover"].forEach(evt => {
+      dropLabel.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropLabel.classList.add("drag-over");
+      });
+    });
+    ["dragleave", "dragend"].forEach(evt => {
+      dropLabel.addEventListener(evt, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dropLabel.classList.remove("drag-over");
+      });
+    });
+    dropLabel.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropLabel.classList.remove("drag-over");
+      const file = e.dataTransfer.files[0];
+      handlePhotoFile(view, file, dropLabel);
     });
   });
 
@@ -408,7 +447,14 @@
     const datesValid = isValidDateOrEmpty(startedAtValue) && isValidDateOrEmpty(completedAtValue);
 
     setInvalid("field-title", !title);
+    setInvalid("field-startedAt", !isValidDateOrEmpty(startedAtValue));
+    setInvalid("field-completedAt", !isValidDateOrEmpty(completedAtValue));
     document.getElementById("photoError").style.display = missingPhotos.length ? "block" : "none";
+    requiredViews.forEach(v => {
+      const input = document.getElementById(`photo-${v}`);
+      const dropLabel = input.previousElementSibling;
+      dropLabel.classList.toggle("invalid", missingPhotos.includes(v));
+    });
 
     if (!title || missingPhotos.length || !datesValid){
       showTopError(!datesValid ? "Dates must be a complete YYYY-MM-DD, or left blank." : "Please fix the highlighted fields before submitting.");
@@ -498,7 +544,7 @@
       form.reset();
       document.querySelectorAll("#photoGrid .drop").forEach(el => {
         el.classList.remove("filled");
-        el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg><span class="plus-label">Add Photo</span>`;
+        el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg><span class="plus-label">Drop or Click</span>`;
       });
       Object.keys(selectedFiles).forEach(k => delete selectedFiles[k]);
 
