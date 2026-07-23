@@ -423,37 +423,8 @@
     <h2>From the Collection</h2>
   </div>
 
-  <div class="grid-3">
-    <div class="mini-card">
-      <div class="thumb">
-        <span class="id-tag">MA-0001</span>
-        <svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
-      </div>
-      <div class="info">
-        <div class="name">Captain Cassian</div>
-        <div class="meta">Games Workshop · 35.0 hrs</div>
-      </div>
-    </div>
-    <div class="mini-card">
-      <div class="thumb">
-        <span class="id-tag">MA-0002</span>
-        <svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
-      </div>
-      <div class="info">
-        <div class="name">Magnus the Red</div>
-        <div class="meta">Forge World · in progress</div>
-      </div>
-    </div>
-    <div class="mini-card">
-      <div class="thumb">
-        <span class="id-tag">MA-0003</span>
-        <svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
-      </div>
-      <div class="info">
-        <div class="name">Christmas Gitz</div>
-        <div class="meta">Games Workshop · queued</div>
-      </div>
-    </div>
+  <div class="grid-3" id="featuredGrid">
+    <div style="grid-column: 1 / -1; text-align:center; color:var(--cream-dim); padding: 20px 0; font-family:'IBM Plex Mono', monospace; font-size:0.8rem;">Loading recent models…</div>
   </div>
 
   <div class="view-all-row">
@@ -533,6 +504,47 @@
   const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  async function loadFeaturedModels(){
+    const featuredGrid = document.getElementById("featuredGrid");
+
+    const { data, error } = await supabaseClient
+      .from("miniatures")
+      .select(`
+        id, archive_id, title, manufacturer, status, hours_worked,
+        photos ( image_url, photo_type )
+      `)
+      .eq("visibility", "public")
+      .order("created_at", { ascending: false })
+      .limit(3);
+
+    if (error || !data || !data.length){
+      featuredGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; color:var(--cream-dim); padding: 20px 0;">No public models yet — <a href="add-model.html" style="color:var(--gold-bright);">be the first to log one →</a></div>`;
+      return;
+    }
+
+    const shieldIcon = `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>`;
+    const statusLabel = { finished: `${""}`, wip: "in progress", queued: "queued" };
+
+    featuredGrid.innerHTML = data.map(m => {
+      const frontPhoto = (m.photos || []).find(p => p.photo_type === "front") || (m.photos || [])[0];
+      const metaRight = m.status === "finished" ? `${(m.hours_worked || 0).toFixed(1)} hrs` : (statusLabel[m.status] || m.status);
+      return `
+        <div class="mini-card" onclick="window.location.href='model.html?id=${m.id}'">
+          <div class="thumb">
+            <span class="id-tag">${m.archive_id}</span>
+            ${frontPhoto ? `<img src="${frontPhoto.image_url}" alt="${m.title}" style="width:100%;height:100%;object-fit:cover;">` : shieldIcon}
+          </div>
+          <div class="info">
+            <div class="name">${m.title}</div>
+            <div class="meta">${m.manufacturer || "—"} · ${metaRight}</div>
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  loadFeaturedModels();
 
   (async () => {
     const { data: { session } } = await supabaseClient.auth.getSession();
