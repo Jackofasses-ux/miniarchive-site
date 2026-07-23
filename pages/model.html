@@ -434,7 +434,7 @@
       .from("miniatures")
       .select(`
         id, archive_id, title, manufacturer, scale, base_size, description, status, hours_worked,
-        started_at, completed_at, owner_profile_id,
+        started_at, completed_at, owner_profile_id, painter_name,
         photos ( image_url, photo_type ),
         profiles:owner_profile_id ( username, display_name )
       `)
@@ -455,6 +455,7 @@
     (data.photos || []).forEach(p => { PHOTOS_BY_VIEW[p.photo_type] = p.image_url; });
 
     const ownerLabel = data.profiles?.username || data.profiles?.display_name || "Unknown";
+    const painterLabel = data.painter_name || "Unattributed";
 
     renderProfile({
       id: data.archive_id,
@@ -462,7 +463,7 @@
       manufacturer: data.manufacturer || "—",
       scale: data.scale || "—",
       completed: formatDate(data.completed_at),
-      painter: ownerLabel,
+      painter: painterLabel,
       owner: ownerLabel,
       hours: data.hours_worked || 0,
       baseSize: data.base_size ? `${data.base_size}mm` : "—",
