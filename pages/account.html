@@ -63,6 +63,13 @@
   .field{ margin-top: 4px; }
   .field.full{ grid-column: 1 / -1; }
   .field label{ display:block; font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); margin-bottom:8px; }
+  .field-label-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .field-label-row label{ margin-bottom:0; }
+  .field-public-toggle{
+    display:flex !important; align-items:center; gap:5px; font-family:'IBM Plex Mono', monospace;
+    font-size:0.62rem; text-transform:none; letter-spacing:0; color: var(--cream-dim); cursor:pointer;
+  }
+  .field-public-toggle input{ width:auto !important; accent-color: var(--gold); cursor:pointer; }
   .field input, .field textarea{
     width:100%; background: var(--bg-raised); border:1px solid var(--hairline);
     padding: 12px 14px; color: var(--cream); font-family:'Jost', sans-serif; font-size:0.94rem;
@@ -184,15 +191,24 @@
         <textarea id="bio" placeholder="A few lines about you or your studio…"></textarea>
       </div>
       <div class="field">
-        <label for="website">Website</label>
+        <div class="field-label-row">
+          <label for="website">Website</label>
+          <label class="field-public-toggle"><input type="checkbox" id="websitePublic" checked> Public</label>
+        </div>
         <input id="website" type="text" placeholder="https://…">
       </div>
       <div class="field">
-        <label for="instagram">Instagram Handle</label>
+        <div class="field-label-row">
+          <label for="instagram">Instagram Handle</label>
+          <label class="field-public-toggle"><input type="checkbox" id="instagramPublic" checked> Public</label>
+        </div>
         <input id="instagram" type="text" placeholder="e.g. paintordiestudios">
       </div>
       <div class="field">
-        <label for="youtube">YouTube</label>
+        <div class="field-label-row">
+          <label for="youtube">YouTube</label>
+          <label class="field-public-toggle"><input type="checkbox" id="youtubePublic" checked> Public</label>
+        </div>
         <input id="youtube" type="text" placeholder="https://youtube.com/@…">
       </div>
       <div class="field">
@@ -269,7 +285,7 @@
 
     const { data: profile, error: profileError } = await supabaseClient
       .from("profiles")
-      .select("username, display_name, bio, website, instagram, youtube, country, avatar_url, tier")
+      .select("username, display_name, bio, website, instagram, youtube, country, avatar_url, tier, website_public, instagram_public, youtube_public")
       .eq("id", session.user.id)
       .maybeSingle();
 
@@ -289,6 +305,9 @@
       document.getElementById("instagram").value = profile.instagram || "";
       document.getElementById("youtube").value = profile.youtube || "";
       document.getElementById("country").value = profile.country || "";
+      document.getElementById("websitePublic").checked = profile.website_public !== false;
+      document.getElementById("instagramPublic").checked = profile.instagram_public !== false;
+      document.getElementById("youtubePublic").checked = profile.youtube_public !== false;
       document.getElementById("tierValue").textContent = profile.tier === "paid" ? "Paid" : "Free";
       document.getElementById("viewProfileLink").href = `profile.html?username=${encodeURIComponent(profile.username || "")}`;
       if (profile.avatar_url){
@@ -415,6 +434,9 @@
       instagram: document.getElementById("instagram").value.trim() || null,
       youtube: document.getElementById("youtube").value.trim() || null,
       country: document.getElementById("country").value.trim() || null,
+      website_public: document.getElementById("websitePublic").checked,
+      instagram_public: document.getElementById("instagramPublic").checked,
+      youtube_public: document.getElementById("youtubePublic").checked,
     };
 
     if (!payload.username){
