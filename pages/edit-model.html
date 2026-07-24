@@ -629,15 +629,18 @@
     return true;
   }
 
-  async function uploadChangedPhotos(id){
+  async function uploadChangedPhotos(id, { versioned = false, logEdits = false } = {}){
     for (const view of requiredViews){
       const state = photoState[view];
       if (!state.newFile) continue;
+
+      const previousUrl = state.existingUrl || null;
 
       const uploadForm = new FormData();
       uploadForm.append("file", state.newFile);
       uploadForm.append("miniature_id", id);
       uploadForm.append("view", view);
+      if (versioned) uploadForm.append("versioned", "true");
 
       const uploadRes = await fetch(WORKER_UPLOAD_URL, {
         method: "POST",
@@ -656,6 +659,16 @@
         sort_order: requiredViews.indexOf(view),
       });
       if (photoErr) throw photoErr;
+
+      if (logEdits && previousUrl){
+        await supabaseClient.from("miniature_edits").insert({
+          miniature_id: id,
+          editor_profile_id: currentSession.user.id,
+          field_name: `photo_${view}`,
+          old_value: previousUrl,
+          new_value: uploadResult.url,
+        });
+      }
 
       state.existingUrl = uploadResult.url;
       state.newFile = null;
@@ -939,7 +952,7 @@
 
       if (hasAnyNewPhoto){
         progressNote.textContent = "Uploading photos…";
-        await uploadChangedPhotos(modelId);
+        await uploadChangedPhotos(modelId, { versioned: true, logEdits: true });
         progressNote.textContent = "";
       }
 
