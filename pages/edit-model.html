@@ -127,18 +127,10 @@
   .timeline-event-card .te-milestone-badge{ font-family:'IBM Plex Mono', monospace; font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--gold); border:1px solid rgba(201,162,75,0.4); padding:3px 8px; flex-shrink:0; }
 
   .timeline-form{ margin-top: 24px; border:1px solid var(--gold); background: var(--bg-raised); padding: 24px; }
-  .te-photo-slot .drop{
-    border:1px dashed var(--hairline); background: var(--bg); height:110px; width:110px;
-    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px;
-    cursor:pointer; overflow:hidden;
-  }
-  .te-photo-slot .drop.filled{ border-style:solid; border-color: var(--gold); }
-  .te-photo-slot .drop img{ width:100%; height:100%; object-fit:cover; }
-  .te-photo-slot input[type="file"]{ display:none; }
 
   .subtask-row{
     border:1px solid var(--hairline); background: var(--bg); padding: 12px 14px; margin-bottom:10px;
-    display:grid; grid-template-columns: 1fr 1fr auto; gap:10px; align-items:start;
+    display:grid; grid-template-columns: 60px 1fr 1fr auto; gap:10px; align-items:start;
   }
   .subtask-row input, .subtask-row textarea{
     background: var(--bg-raised); border:1px solid var(--hairline); color: var(--cream);
@@ -149,6 +141,14 @@
     background:none; border:1px solid var(--hairline); color: var(--error); cursor:pointer;
     width:34px; height:34px; font-size:0.95rem; flex-shrink:0;
   }
+  .st-photo-slot .drop{
+    border:1px dashed var(--hairline); background: var(--bg-raised); height:60px; width:60px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden;
+  }
+  .st-photo-slot .drop.filled{ border-style:solid; border-color: var(--gold); }
+  .st-photo-slot .drop img{ width:100%; height:100%; object-fit:cover; }
+  .st-photo-slot .drop svg{ width:16px; height:16px; stroke: var(--mono); }
+  .st-photo-slot input[type="file"]{ display:none; }
 
   .submit-row{ margin-top: 46px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
   .btn-delete{
@@ -438,19 +438,8 @@
           </div>
         </div>
 
-        <div class="field" style="margin-top:16px;">
-          <label>Photo <span style="color:var(--mono); text-transform:none; letter-spacing:0;">(optional)</span></label>
-          <div class="te-photo-slot">
-            <label class="drop" for="tePhoto" id="tePhotoDrop">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
-              <span class="plus-label">Drop or Click</span>
-            </label>
-            <input type="file" id="tePhoto" accept="image/jpeg,image/png,image/webp">
-          </div>
-        </div>
-
         <div class="field full" style="margin-top:26px;">
-          <label>Subtasks <span style="color:var(--mono); text-transform:none; letter-spacing:0;">(optional)</span></label>
+          <label>Subtasks <span style="color:var(--mono); text-transform:none; letter-spacing:0;">(optional — each can have its own photo)</span></label>
           <div id="subtaskList"></div>
           <button type="button" class="btn-ghost" id="addSubtaskBtn" style="margin-top:8px;">+ Add Subtask</button>
         </div>
@@ -1119,23 +1108,50 @@
 
   // ---- Creation Timeline: events + subtasks ----
   let editingEventId = null;
-  let selectedTimelinePhoto = null;
-  let existingTimelinePhotoUrl = null;
 
-  function addSubtaskRow(title, note){
+  function addSubtaskRow(title, note, imageUrl){
     const list = document.getElementById("subtaskList");
     const row = document.createElement("div");
     row.className = "subtask-row";
+    row._photoFile = null;
+    row._existingImageUrl = imageUrl || null;
+
+    const photoInner = imageUrl
+      ? `<img src="${imageUrl}" alt="preview">`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>`;
+
     row.innerHTML = `
+      <div class="st-photo-slot">
+        <label class="drop${imageUrl ? " filled" : ""}">
+          ${photoInner}
+          <input type="file" class="st-photo-input" accept="image/jpeg,image/png,image/webp">
+        </label>
+      </div>
       <input type="text" class="st-title-input" placeholder="Subtask title (e.g. Mold Line Removal)" value="${(title || "").replace(/"/g, "&quot;")}">
       <textarea class="st-note-input" placeholder="Short note…">${note || ""}</textarea>
       <button type="button" class="remove-subtask">×</button>
     `;
+
+    const photoInput = row.querySelector(".st-photo-input");
+    photoInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      row._photoFile = file;
+      const drop = row.querySelector(".drop");
+      drop.classList.add("filled");
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        drop.innerHTML = `<img src="${ev.target.result}" alt="preview">`;
+        drop.appendChild(photoInput); // re-attach — innerHTML wipe above removed it from the DOM
+      };
+      reader.readAsDataURL(file);
+    });
+
     row.querySelector(".remove-subtask").addEventListener("click", () => row.remove());
     list.appendChild(row);
   }
 
-  document.getElementById("addSubtaskBtn").addEventListener("click", () => addSubtaskRow("", ""));
+  document.getElementById("addSubtaskBtn").addEventListener("click", () => addSubtaskRow("", "", null));
 
   function updateTitleFieldVisibility(){
     const isMilestone = document.getElementById("teMilestone").checked;
@@ -1153,8 +1169,6 @@
 
   function resetTimelineForm(){
     editingEventId = null;
-    selectedTimelinePhoto = null;
-    existingTimelinePhotoUrl = null;
     document.getElementById("teStandardTitle").value = "";
     document.getElementById("teMilestoneTitle").value = "";
     document.getElementById("teDate").value = "";
@@ -1163,21 +1177,8 @@
     document.getElementById("teMilestone").checked = false;
     updateTitleFieldVisibility();
     document.getElementById("subtaskList").innerHTML = "";
-    document.getElementById("tePhotoDrop").classList.remove("filled");
-    document.getElementById("tePhotoDrop").innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg><span class="plus-label">Drop or Click</span>`;
     document.getElementById("deleteTimelineEventBtn").style.display = "none";
   }
-
-  document.getElementById("tePhoto").addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    selectedTimelinePhoto = file;
-    const drop = document.getElementById("tePhotoDrop");
-    drop.classList.add("filled");
-    const reader = new FileReader();
-    reader.onload = (ev) => { drop.innerHTML = `<img src="${ev.target.result}" alt="preview">`; };
-    reader.readAsDataURL(file);
-  });
 
   document.getElementById("addTimelineEventBtn").addEventListener("click", () => {
     resetTimelineForm();
@@ -1241,7 +1242,7 @@
 
     const { data: subtasks } = await supabaseClient
       .from("timeline_subtasks")
-      .select("title, note, sort_order")
+      .select("title, note, image_url, sort_order")
       .eq("timeline_event_id", eventId)
       .order("sort_order", { ascending: true });
 
@@ -1258,14 +1259,7 @@
     document.getElementById("teHours").value = event.hours_spent || "";
     document.getElementById("teDescription").value = event.description || "";
 
-    if (event.image_url){
-      existingTimelinePhotoUrl = event.image_url;
-      const drop = document.getElementById("tePhotoDrop");
-      drop.classList.add("filled");
-      drop.innerHTML = `<img src="${event.image_url}" alt="preview">`;
-    }
-
-    (subtasks || []).forEach(s => addSubtaskRow(s.title, s.note));
+    (subtasks || []).forEach(s => addSubtaskRow(s.title, s.note, s.image_url));
 
     document.getElementById("deleteTimelineEventBtn").style.display = "inline-block";
     document.getElementById("timelineForm").style.display = "block";
@@ -1273,9 +1267,20 @@
   }
 
   document.getElementById("saveTimelineEventBtn").addEventListener("click", async () => {
-    const title = document.getElementById("teTitle").value.trim();
+    const title = getCurrentEventTitle();
     if (!title){
-      showTopError("Give this timeline step a title.");
+      showTopError(document.getElementById("teMilestone").checked
+        ? "Give this milestone a name."
+        : "Choose a step from the list.");
+      return;
+    }
+
+    const description = document.getElementById("teDescription").value.trim();
+    const subtaskRowsEls = Array.from(document.querySelectorAll("#subtaskList .subtask-row"));
+    const hasAnySubtaskContent = subtaskRowsEls.some(row => row.querySelector(".st-title-input").value.trim());
+
+    if (!description && !hasAnySubtaskContent){
+      showTopError("Add a description or at least one subtask before saving — an empty step won't show up on the timeline.");
       return;
     }
 
@@ -1285,33 +1290,13 @@
     saveBtn.textContent = "Saving…";
 
     try {
-      let imageUrl = existingTimelinePhotoUrl;
-
-      if (selectedTimelinePhoto){
-        progressNote.textContent = "Uploading photo…";
-        const uploadForm = new FormData();
-        uploadForm.append("file", selectedTimelinePhoto);
-        uploadForm.append("upload_type", "timeline_photo");
-        uploadForm.append("miniature_id", modelId);
-
-        const uploadRes = await fetch(WORKER_UPLOAD_URL, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${currentSession.access_token}` },
-          body: uploadForm,
-        });
-        const result = await uploadRes.json();
-        if (!uploadRes.ok) throw new Error(result.error || "Photo upload failed");
-        imageUrl = result.url;
-      }
-
       progressNote.textContent = "Saving event…";
       const eventPayload = {
         miniature_id: modelId,
         title,
         event_date: document.getElementById("teDate").value || null,
         hours_spent: document.getElementById("teHours").value ? parseFloat(document.getElementById("teHours").value) : null,
-        description: document.getElementById("teDescription").value.trim() || null,
-        image_url: imageUrl,
+        description: description || null,
         is_milestone: document.getElementById("teMilestone").checked,
       };
 
@@ -1332,19 +1317,47 @@
         eventId = inserted.id;
       }
 
+      // Upload any new subtask photos first, so we have URLs ready to save.
+      let uploadedCount = 0;
+      const subtasksToSave = [];
+      for (const row of subtaskRowsEls){
+        const rowTitle = row.querySelector(".st-title-input").value.trim();
+        if (!rowTitle) continue;
+
+        let imageUrl = row._existingImageUrl || null;
+
+        if (row._photoFile){
+          uploadedCount++;
+          progressNote.textContent = `Uploading subtask photo ${uploadedCount}…`;
+          const uploadForm = new FormData();
+          uploadForm.append("file", row._photoFile);
+          uploadForm.append("upload_type", "timeline_photo");
+          uploadForm.append("miniature_id", modelId);
+
+          const uploadRes = await fetch(WORKER_UPLOAD_URL, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${currentSession.access_token}` },
+            body: uploadForm,
+          });
+          const result = await uploadRes.json();
+          if (!uploadRes.ok) throw new Error(result.error || "Subtask photo upload failed");
+          imageUrl = result.url;
+        }
+
+        subtasksToSave.push({
+          title: rowTitle,
+          note: row.querySelector(".st-note-input").value.trim() || null,
+          image_url: imageUrl,
+        });
+      }
+
+      progressNote.textContent = "Saving subtasks…";
       // Replace the full subtask set — same simple approach used for profile links.
       await supabaseClient.from("timeline_subtasks").delete().eq("timeline_event_id", eventId);
-      const subtaskRows = Array.from(document.querySelectorAll("#subtaskList .subtask-row"))
-        .map((row, i) => ({
-          timeline_event_id: eventId,
-          title: row.querySelector(".st-title-input").value.trim(),
-          note: row.querySelector(".st-note-input").value.trim() || null,
-          sort_order: i,
-        }))
-        .filter(s => s.title);
-
-      if (subtaskRows.length){
-        await supabaseClient.from("timeline_subtasks").insert(subtaskRows);
+      if (subtasksToSave.length){
+        await supabaseClient.from("timeline_subtasks").insert(
+          subtasksToSave.map((s, i) => ({ ...s, timeline_event_id: eventId, sort_order: i }))
+        );
       }
 
       progressNote.textContent = "";
