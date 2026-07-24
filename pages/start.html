@@ -287,6 +287,18 @@
       return;
     }
 
+    // Supabase deliberately never says "this email is already registered"
+    // directly (an anti-enumeration measure) — but it leaves a detectable
+    // signal: a genuinely new signup gets a populated identities array,
+    // while an email that already belongs to an account comes back with
+    // an empty one, even though the call itself "succeeds."
+    if (signUpData.user && signUpData.user.identities && signUpData.user.identities.length === 0){
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Create My Archive";
+      showTopError("An account already exists with this email. Try logging in instead, or use \"Resend confirmation email\" from the login page if you never confirmed it.");
+      return;
+    }
+
     // Email confirmation is required, so there's no active session yet —
     // we can't create the profiles row now (RLS would block it since
     // auth.uid() is null until the user confirms). Stash the details and
