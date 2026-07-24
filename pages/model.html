@@ -155,10 +155,7 @@
   .cert-fields{ display:grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 30px; text-align:left; }
   .cert-fields .label{ font-family:'IBM Plex Mono', monospace; font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); }
   .cert-fields .value{ margin-top:3px; font-family:'Cormorant Garamond', serif; font-size:1.1rem; font-weight:600; }
-  .cert-verified{ margin-top: 28px; font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.08em; }
-  .cert-verified.state-verified{ color: var(--green); }
-  .cert-verified.state-pending{ color: var(--mono); }
-  .cert-verified.state-rejected{ color: var(--error); }
+  .cert-verified{ margin-top: 28px; font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.08em; color: var(--green); }
 
   footer{ border-top:1px solid var(--hairline); padding:32px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); }
 
@@ -190,7 +187,6 @@
       <li><a href="index.html#provenance">Provenance</a></li>
       <li><a href="index.html#about">About</a></li>
     </ul>
-    <a class="btn-gold" href="edit-model.html" id="editButton" style="display:none;">Edit This Model</a>
     <a class="btn-gold" href="collection.html">← Back to Collection</a>
   </nav>
 </header>
@@ -406,16 +402,6 @@
       </div>
     `;
 
-    // m.verified can be true (verified), false/undefined (pending — the
-    // current default for everything, since no verification system exists
-    // yet), or "rejected" (reserved for when one does).
-    let verifyIcon = "✕", verifyClass = "state-pending", verifyText = "Awaiting Verification";
-    if (m.verified === true){
-      verifyIcon = "✓"; verifyClass = "state-verified"; verifyText = "Painter Verified";
-    } else if (m.verified === "rejected"){
-      verifyIcon = "✕"; verifyClass = "state-rejected"; verifyText = "Verification Rejected";
-    }
-
     document.getElementById("certBox").innerHTML = `
       <div class="shield"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
       <div class="eyebrow">MINI ARCHIVE</div>
@@ -428,7 +414,7 @@
         <div><div class="label">Total Hours</div><div class="value">${m.hours.toFixed(1)} hours</div></div>
         <div><div class="label">Scale</div><div class="value">${m.scale} — ${m.baseSize} base</div></div>
       </div>
-      <div class="cert-verified ${verifyClass}">${verifyIcon} ${verifyText}</div>
+      <div class="cert-verified">✓ ${m.verified ? "Painter Verified" : "Awaiting Verification"}</div>
     `;
   }
 
@@ -544,13 +530,6 @@
     (data.photos || []).forEach(p => { PHOTOS_BY_VIEW[p.photo_type] = p.image_url; });
 
     const isOwnerViewing = session && session.user.id === data.owner_profile_id;
-
-    if (isOwnerViewing){
-      const editBtn = document.getElementById("editButton");
-      editBtn.href = `edit-model.html?id=${data.id}`;
-      editBtn.style.display = "inline-block";
-    }
-
     const realOwnerName = data.owner?.username || data.owner?.display_name || "Unknown";
     const ownerVisibleToViewer = data.owner_visible || isOwnerViewing;
     const ownerLabel = ownerVisibleToViewer
@@ -597,7 +576,15 @@
     completed_at: "Completed",
     description: "Description",
     owner_visible: "Show Ownership Publicly",
+    photo_front: "Front Photo",
+    photo_left: "Left Photo",
+    photo_rear: "Rear Photo",
+    photo_right: "Right Photo",
   };
+
+  function isPhotoField(fieldName){
+    return fieldName.startsWith("photo_");
+  }
 
   async function loadEditHistory(miniatureId){
     const { data, error } = await supabaseClient
@@ -616,11 +603,16 @@
       const editorLabel = e.profiles?.username || e.profiles?.display_name || "Unknown";
       const fieldLabel = EDIT_FIELD_LABELS[e.field_name] || e.field_name;
       const dateLabel = new Date(e.created_at).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
+
+      const valueLine = isPhotoField(e.field_name)
+        ? `<a href="${e.old_value}" target="_blank" rel="noopener" style="color:var(--gold-bright);">View original</a> → <a href="${e.new_value}" target="_blank" rel="noopener" style="color:var(--gold-bright);">View replacement</a>`
+        : `${e.old_value || "—"} → ${e.new_value || "—"}`;
+
       return `
         <div style="padding:16px 0; border-top:1px solid var(--hairline); display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap;">
           <div>
             <div style="font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--gold);">${fieldLabel}</div>
-            <div style="margin-top:6px; color:var(--cream-dim); font-size:0.9rem;">${e.old_value || "—"} → ${e.new_value || "—"}</div>
+            <div style="margin-top:6px; color:var(--cream-dim); font-size:0.9rem;">${valueLine}</div>
           </div>
           <div style="text-align:right; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color:var(--mono); white-space:nowrap;">
             ${editorLabel}<br>${dateLabel}
