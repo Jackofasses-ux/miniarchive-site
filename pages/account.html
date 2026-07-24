@@ -55,14 +55,14 @@
 
   .section-head{ margin-top: 60px; }
   .section-head h2{ font-family:'Cormorant Garamond', serif; font-weight:500; font-size:1.6rem; }
-  .tab-row{ margin-top: 46px; display:flex; gap:8px; border-bottom:1px solid var(--hairline); }
+  .tab-row{ margin-top: 46px; display:flex; gap:10px; }
   .tab-btn{
-    font-family:'IBM Plex Mono', monospace; font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase;
-    color: var(--cream-dim); background:none; border:none; padding: 14px 4px; margin-right: 28px;
-    cursor:pointer; position:relative; top:1px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase;
+    color: var(--cream-dim); background: var(--bg-raised); border:1px solid var(--hairline); padding: 12px 22px;
+    cursor:pointer; transition: all .2s ease;
   }
-  .tab-btn.active{ color: var(--gold-bright); border-bottom: 2px solid var(--gold); }
-  .tab-btn:hover:not(.active){ color: var(--cream); }
+  .tab-btn.active{ background: var(--gold); border-color: var(--gold); color:#0c0b09; font-weight:500; }
+  .tab-btn:hover:not(.active){ border-color: var(--gold); color: var(--cream); }
   .tab-panel{ margin-top: 40px; }
   .rule-row{ display:flex; align-items:center; gap:14px; margin:14px 0 26px; }
   .rule-row .line{ height:1px; background: var(--hairline); flex:1; }
