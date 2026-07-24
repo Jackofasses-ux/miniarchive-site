@@ -397,10 +397,32 @@
       <button type="button" class="btn-ghost" id="addTimelineEventBtn" style="margin-top:14px;">+ Add Timeline Event</button>
 
       <div class="timeline-form" id="timelineForm" style="display:none;">
-        <div class="field-grid">
-          <div class="field full">
-            <label for="teTitle">Step Title <span class="req">*</span></label>
-            <input id="teTitle" type="text" placeholder="e.g. Assembly, The First Brushstroke">
+        <div class="field">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; font-size:0.9rem; color:var(--cream);">
+            <input type="checkbox" id="teMilestone" style="width:auto; accent-color:var(--gold);"> This is a milestone, not a standard step
+          </label>
+          <div class="hint">Standard steps use a fixed list, so timelines stay consistent across models. Milestones get their own name for a turning point in the build itself — not an award or later event; those belong elsewhere.</div>
+        </div>
+
+        <div class="field-grid" style="margin-top:20px;">
+          <div class="field full" id="teStandardTitleField">
+            <label for="teStandardTitle">Step <span class="req">*</span></label>
+            <select id="teStandardTitle">
+              <option value="">Choose a step…</option>
+              <option value="Assembly">Assembly</option>
+              <option value="Surface Preparation">Surface Preparation</option>
+              <option value="Basecoat">Basecoat</option>
+              <option value="Shading / Washes">Shading / Washes</option>
+              <option value="Highlighting">Highlighting</option>
+              <option value="Details / Freehand">Details / Freehand</option>
+              <option value="Basing">Basing</option>
+              <option value="Varnish / Sealing">Varnish / Sealing</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+          <div class="field full" id="teMilestoneTitleField" style="display:none;">
+            <label for="teMilestoneTitle">Milestone Name <span class="req">*</span></label>
+            <input id="teMilestoneTitle" type="text" placeholder="e.g. The First Brushstroke, Final Details Complete">
           </div>
           <div class="field">
             <label for="teDate">Date</label>
@@ -425,12 +447,6 @@
             </label>
             <input type="file" id="tePhoto" accept="image/jpeg,image/png,image/webp">
           </div>
-        </div>
-
-        <div class="field" style="margin-top:16px;">
-          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; font-size:0.9rem; color:var(--cream);">
-            <input type="checkbox" id="teMilestone" style="width:auto; accent-color:var(--gold);"> Mark as a milestone
-          </label>
         </div>
 
         <div class="field full" style="margin-top:26px;">
@@ -1121,15 +1137,31 @@
 
   document.getElementById("addSubtaskBtn").addEventListener("click", () => addSubtaskRow("", ""));
 
+  function updateTitleFieldVisibility(){
+    const isMilestone = document.getElementById("teMilestone").checked;
+    document.getElementById("teStandardTitleField").style.display = isMilestone ? "none" : "block";
+    document.getElementById("teMilestoneTitleField").style.display = isMilestone ? "block" : "none";
+  }
+  document.getElementById("teMilestone").addEventListener("change", updateTitleFieldVisibility);
+
+  function getCurrentEventTitle(){
+    const isMilestone = document.getElementById("teMilestone").checked;
+    return isMilestone
+      ? document.getElementById("teMilestoneTitle").value.trim()
+      : document.getElementById("teStandardTitle").value;
+  }
+
   function resetTimelineForm(){
     editingEventId = null;
     selectedTimelinePhoto = null;
     existingTimelinePhotoUrl = null;
-    document.getElementById("teTitle").value = "";
+    document.getElementById("teStandardTitle").value = "";
+    document.getElementById("teMilestoneTitle").value = "";
     document.getElementById("teDate").value = "";
     document.getElementById("teHours").value = "";
     document.getElementById("teDescription").value = "";
     document.getElementById("teMilestone").checked = false;
+    updateTitleFieldVisibility();
     document.getElementById("subtaskList").innerHTML = "";
     document.getElementById("tePhotoDrop").classList.remove("filled");
     document.getElementById("tePhotoDrop").innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg><span class="plus-label">Drop or Click</span>`;
@@ -1215,11 +1247,16 @@
 
     resetTimelineForm();
     editingEventId = eventId;
-    document.getElementById("teTitle").value = event.title || "";
+    document.getElementById("teMilestone").checked = !!event.is_milestone;
+    updateTitleFieldVisibility();
+    if (event.is_milestone){
+      document.getElementById("teMilestoneTitle").value = event.title || "";
+    } else {
+      document.getElementById("teStandardTitle").value = event.title || "";
+    }
     document.getElementById("teDate").value = event.event_date || "";
     document.getElementById("teHours").value = event.hours_spent || "";
     document.getElementById("teDescription").value = event.description || "";
-    document.getElementById("teMilestone").checked = !!event.is_milestone;
 
     if (event.image_url){
       existingTimelinePhotoUrl = event.image_url;
