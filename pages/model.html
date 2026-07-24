@@ -342,6 +342,7 @@
     id: "MA-0001",
     name: "Captain Cassian",
     manufacturer: "Games Workshop",
+    material: "Injection-Molded Plastic (Styrene)",
     scale: "1:56",
     completed: "28 Mar 2024",
     painter: "E. Stegosaurus",
@@ -396,6 +397,7 @@
 
     document.getElementById("infoGrid").innerHTML = `
       <div class="info-box"><div class="label">Manufacturer</div><div class="value">${m.manufacturer}</div></div>
+      <div class="info-box"><div class="label">Material</div><div class="value">${m.material}</div></div>
       <div class="info-box"><div class="label">Scale</div><div class="value">${m.scale}</div></div>
       <div class="info-box"><div class="label">Completed</div><div class="value">${m.completed}</div></div>
       <div class="info-box"><div class="label">Painter</div><div class="value">${painterDisplay}</div></div>
@@ -588,7 +590,7 @@
     const { data, error } = await supabaseClient
       .from("miniatures")
       .select(`
-        id, archive_id, title, manufacturer, scale, base_size, description, status, hours_worked,
+        id, archive_id, title, manufacturer, material, scale, base_size, description, status, hours_worked,
         started_at, completed_at, owner_profile_id, painter_name, painter_profile_id, owner_visible,
         photos ( image_url, photo_type ),
         owner:profiles!owner_profile_id ( username, display_name ),
@@ -632,6 +634,7 @@
       id: data.archive_id,
       name: data.title,
       manufacturer: data.manufacturer || "—",
+      material: data.material || "—",
       scale: data.scale || "—",
       completed: formatDate(data.completed_at),
       painter: painterLabel,
@@ -676,6 +679,7 @@
     title: "Model Name",
     painter_name: "Painter",
     manufacturer: "Manufacturer",
+    material: "Material",
     scale: "Scale",
     base_size: "Base Size",
     hours_worked: "Hours Worked",
