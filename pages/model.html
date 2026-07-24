@@ -127,9 +127,11 @@
     color: var(--gold); margin-bottom:6px;
   }
   .timeline-item h3{ font-family:'Cormorant Garamond', serif; font-size:1.5rem; font-weight:600; }
-  .timeline-item .t-body{ display:flex; gap:20px; margin-top:10px; align-items:flex-start; }
-  .timeline-item .t-photo{ width:110px; height:110px; object-fit:cover; border:1px solid var(--hairline); flex-shrink:0; }
-  .timeline-item .t-desc{ color: var(--cream-dim); font-size:0.92rem; max-width: 620px; }
+  .timeline-item .t-desc{ color: var(--cream-dim); font-size:0.92rem; max-width: 620px; margin-top:10px; }
+  .t-photo-strip{ display:flex; gap:10px; margin-top:16px; overflow-x:auto; padding-bottom:6px; }
+  .t-photo-strip img{ width:90px; height:90px; object-fit:cover; border:1px solid var(--hairline); flex-shrink:0; cursor:zoom-in; transition: border-color .2s ease; }
+  .t-photo-strip img:hover{ border-color: var(--gold); }
+  .subtask-card .st-thumb{ width:100%; height:90px; object-fit:cover; display:block; margin-bottom:8px; cursor:zoom-in; }
   .chip-row{ display:grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap:10px; margin-top:16px; }
   .subtask-card{
     border:1px solid var(--hairline); background: var(--bg-raised); padding: 12px 14px;
@@ -377,11 +379,32 @@
     description: "A commission piece rendered in 35 painstaking hours — chapter captain of the Iron Vigil, bearing the honours of two crusades and the Painter's Choice Award, NovaCon 2024.",
     verified: true,
     timeline: [
-      { title: "Assembly", date: "12 Mar 2024", hours: "2.5 hours", desc: "Removed mold lines, pinned the cloak to the torso with a 0.8mm brass rod. Gap-filled the left shoulder pauldron joint with green stuff.", chips: ["Mold line removal", "Pin cloak to torso", "Gap fill — pauldron", "Dry fit check"] },
-      { title: "Surface Preparation", date: "14 Mar 2024", hours: "1 hour", desc: "Zenithal prime applied in three passes — black from below, grey from 45°, white from directly above.", chips: ["Zenithal prime", "3-pass build"] },
-      { title: "The First Brushstroke", date: "16 Mar 2024", hours: "4 hours", desc: "The armour receives its first colour — Kantor Blue, thinned to near-glaze consistency. Two patient coats.", chips: ["Armour — Kantor Blue", "Skin — Ratskin Flesh", "Leather — Rhinox Hide", "Cloak — Incubi Darkness"] },
-      { title: "Shadow & Depth", date: "19 Mar 2024", hours: "3 hours", desc: "Targeted Nuln Oil Gloss into all recesses — undiluted at joints, diluted 1:3 on flat plates to preserve the pre-shading gradient.", chips: ["Nuln Oil — joints", "Nuln Oil — flat plates", "Reikland — skin"] },
-      { title: "Completed", date: "28 Mar 2024", hours: "—", desc: "Gloss varnish on lenses and gems. Satin coat over armour plates. Matte finish on the cloak and base. Captain Cassian is complete.", chips: ["Gloss varnish", "Satin varnish", "Matte varnish", "Tufts & static grass"] },
+      { title: "Assembly", date: "12 Mar 2024", hours: "2.5 hours", desc: "Removed mold lines, pinned the cloak to the torso with a 0.8mm brass rod. Gap-filled the left shoulder pauldron joint with green stuff.", stepPhotos: [], subtasks: [
+        { title: "Mold Line Removal", note: "Scraper + 400-grit sanding stick on all visible seams", photoUrl: null },
+        { title: "Pin Cloak to Torso", note: "0.8mm brass rod, 6mm deep on each side. Tested pull strength.", photoUrl: null },
+        { title: "Gap Fill — Pauldron", note: "Green stuff, 1:1 mix, textured to match plate surface.", photoUrl: null },
+        { title: "Dry Fit Check", note: "Confirmed all joins tight before gluing permanently.", photoUrl: null },
+      ] },
+      { title: "Surface Preparation", date: "14 Mar 2024", hours: "1 hour", desc: "Zenithal prime applied in three passes — black from below, grey from 45°, white from directly above.", stepPhotos: [], subtasks: [
+        { title: "Zenithal Prime", note: "3-pass build.", photoUrl: null },
+      ] },
+      { title: "The First Brushstroke", date: "16 Mar 2024", hours: "4 hours", desc: "The armour receives its first colour — Kantor Blue, thinned to near-glaze consistency. Two patient coats.", isMilestone: true, stepPhotos: [], subtasks: [
+        { title: "Armour — Kantor Blue", note: "2 thin coats, thinned 2:1 with flow improver.", photoUrl: null },
+        { title: "Skin — Ratskin Flesh", note: "Face, hands; 3 thin coats over white zenithal.", photoUrl: null },
+        { title: "Leather — Rhinox Hide", note: "Straps, holster, boot soles. Single coat sufficient.", photoUrl: null },
+        { title: "Cloak — Incubi Darkness", note: "Deep teal base, left to dry 2h before next step.", photoUrl: null },
+      ] },
+      { title: "Shadow & Depth", date: "19 Mar 2024", hours: "3 hours", desc: "Targeted Nuln Oil Gloss into all recesses — undiluted at joints, diluted 1:3 on flat plates to preserve the pre-shading gradient.", stepPhotos: [], subtasks: [
+        { title: "Nuln Oil — Joints", note: "Undiluted; capillary action pulls it into recesses.", photoUrl: null },
+        { title: "Nuln Oil — Flat Plates", note: "Diluted 1:3 with Lahmian Medium.", photoUrl: null },
+        { title: "Reikland — Skin", note: "One coat overall; second targeted coat in eye sockets.", photoUrl: null },
+      ] },
+      { title: "Completed", date: "28 Mar 2024", hours: "—", desc: "Gloss varnish on lenses and gems. Satin coat over armour plates. Matte finish on the cloak and base. Captain Cassian is complete.", isMilestone: true, stepPhotos: [], subtasks: [
+        { title: "Gloss Varnish", note: "Lenses, gems, liquid surfaces.", photoUrl: null },
+        { title: "Satin Varnish", note: "Armour plates — Vallejo Satin, airbrushed at 15psi.", photoUrl: null },
+        { title: "Matte Varnish", note: "Cloak, base, skin. Kept away from armour.", photoUrl: null },
+        { title: "Tufts & Static Grass", note: "Gamers Grass — Autumn mix, 3 clusters.", photoUrl: null },
+      ] },
     ],
     recipe: [
       { step: "Step 1 · Primer", title: "The Foundation", paint: "Black Surface Primer — Vallejo", swatch: "#1a1a1a", note: "Establish a light source before the brush ever touches colour." },
@@ -459,12 +482,15 @@
         <div>
           ${t.isMilestone ? `<div class="milestone-tag">◆ Milestone</div>` : ""}
           <h3>${t.title}</h3>
-          <div class="t-body">
-            ${t.photoUrl ? `<img class="t-photo" src="${t.photoUrl}" alt="${t.title}" onclick="openLightbox('${t.photoUrl}')" style="cursor:zoom-in;">` : ""}
-            <p class="t-desc">${t.desc || ""}</p>
-          </div>
+          ${t.desc ? `<p class="t-desc">${t.desc}</p>` : ""}
+          ${(t.stepPhotos && t.stepPhotos.length) ? `
+            <div class="t-photo-strip">
+              ${t.stepPhotos.map(url => `<img src="${url}" alt="${t.title}" onclick="openLightbox('${url}')">`).join("")}
+            </div>
+          ` : ""}
           ${(t.subtasks && t.subtasks.length) ? `<div class="chip-row">${t.subtasks.map(s => `
             <div class="subtask-card">
+              ${s.photoUrl ? `<img class="st-thumb" src="${s.photoUrl}" alt="${s.title}" onclick="openLightbox('${s.photoUrl}')">` : ""}
               <div class="st-title">${s.title}</div>
               ${s.note ? `<div class="st-note">${s.note}</div>` : ""}
             </div>
@@ -700,25 +726,26 @@
     const { data: events, error } = await supabaseClient
       .from("timeline_events")
       .select(`
-        id, title, event_date, hours_spent, description, image_url, is_milestone,
-        timeline_subtasks ( title, note, sort_order )
+        id, title, event_date, hours_spent, description, is_milestone,
+        timeline_subtasks ( title, note, image_url, sort_order )
       `)
       .eq("miniature_id", miniatureId)
       .order("sort_order", { ascending: true });
 
     if (error || !events) return [];
 
-    return events.map(e => ({
-      title: e.title,
-      date: formatDate(e.event_date),
-      hours: e.hours_spent ? `${e.hours_spent} hours` : "—",
-      desc: e.description || "",
-      photoUrl: e.image_url || null,
-      isMilestone: e.is_milestone,
-      subtasks: (e.timeline_subtasks || [])
-        .sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))
-        .map(s => ({ title: s.title, note: s.note })),
-    }));
+    return events.map(e => {
+      const sortedSubtasks = (e.timeline_subtasks || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+      return {
+        title: e.title,
+        date: formatDate(e.event_date),
+        hours: e.hours_spent ? `${e.hours_spent} hours` : "—",
+        desc: e.description || "",
+        isMilestone: e.is_milestone,
+        subtasks: sortedSubtasks.map(s => ({ title: s.title, note: s.note, photoUrl: s.image_url || null })),
+        stepPhotos: sortedSubtasks.filter(s => s.image_url).map(s => s.image_url),
+      };
+    });
   }
 
   function renderGallery(){
