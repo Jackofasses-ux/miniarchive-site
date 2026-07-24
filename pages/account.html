@@ -143,6 +143,27 @@
   .confirm-box p{ font-size:0.9rem; color: var(--cream); }
   .confirm-actions{ margin-top: 14px; display:flex; gap:12px; }
 
+  .preview-overlay{
+    display:none; position:fixed; inset:0; z-index:200;
+    background: rgba(12,11,9,0.9); align-items:center; justify-content:center; padding: 40px;
+  }
+  .preview-overlay.open{ display:flex; }
+  .preview-window{
+    width:100%; max-width: 900px; height: 85vh; background: var(--bg);
+    border:1px solid var(--gold); display:flex; flex-direction:column;
+  }
+  .preview-window-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 12px 18px; border-bottom:1px solid var(--hairline);
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--gold);
+  }
+  .preview-close{
+    width:28px; height:28px; background: var(--bg-raised); border:1px solid var(--hairline); color: var(--cream);
+    font-size:1.1rem; line-height:1; cursor:pointer; transition: border-color .2s ease, color .2s ease;
+  }
+  .preview-close:hover{ border-color: var(--gold); color: var(--gold-bright); }
+  .preview-window iframe{ flex:1; width:100%; border:none; background: var(--bg); }
+
   footer{ border-top:1px solid var(--hairline); padding:28px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); margin-top: 60px; }
 
   .gate{ max-width: 480px; margin: 100px auto; text-align:center; padding: 0 24px; }
@@ -189,12 +210,6 @@
     <div class="stat-box"><div class="num" id="statHours">0</div><div class="label">Painting Hours</div></div>
   </div>
 
-  <div class="quick-links">
-    <a class="btn-gold" href="edit-model.html">Add a Model</a>
-    <a class="btn-ghost" href="collection.html?mine=true">View My Collection</a>
-    <a class="btn-ghost" id="viewProfileLink" href="#">View My Public Profile</a>
-  </div>
-
   <div class="tab-row">
     <button type="button" class="tab-btn active" data-tab="profile">Profile</button>
     <button type="button" class="tab-btn" data-tab="security">Account &amp; Security</button>
@@ -221,7 +236,7 @@
         <div class="field">
           <label for="username">Archive Name</label>
           <input id="username" type="text">
-          <div class="hint">Shown on your public profile URL and collection page.</div>
+          <div class="hint">Shown on your public profile URL and collection page. <a href="#" id="previewProfileLink" style="color:var(--gold-bright);">Preview →</a></div>
         </div>
         <div class="field">
           <label for="displayName">Display Name</label>
@@ -330,6 +345,19 @@
   <div><a href="collection.html">Browse Collection</a></div>
 </footer>
 
+<div class="preview-overlay" id="previewOverlay">
+  <div class="preview-window">
+    <div class="preview-window-header">
+      <span>Public Profile Preview</span>
+      <div style="display:flex; gap:10px; align-items:center;">
+        <a href="#" id="previewOpenFull" target="_blank" style="font-size:0.7rem; color:var(--gold-bright);">Open in new tab ↗</a>
+        <button type="button" class="preview-close" id="previewClose" aria-label="Close">×</button>
+      </div>
+    </div>
+    <iframe id="previewFrame" src="" title="Profile preview"></iframe>
+  </div>
+</div>
+
 <script>
   const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
@@ -400,7 +428,6 @@
       document.getElementById("bio").value = profile.bio || "";
       document.getElementById("country").value = profile.country || "";
       document.getElementById("tierValue").textContent = profile.tier === "paid" ? "Paid" : "Free";
-      document.getElementById("viewProfileLink").href = `profile.html?username=${encodeURIComponent(profile.username || "")}`;
       if (profile.avatar_url){
         document.getElementById("avatarBox").innerHTML = `<img src="${profile.avatar_url}" alt="avatar">`;
       }
@@ -454,6 +481,37 @@
   }
 
   document.getElementById("addLinkBtn").addEventListener("click", () => addLinkRow("", "", null, true));
+
+  // ---- Public profile preview lightbox ----
+  document.getElementById("previewProfileLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    const username = document.getElementById("username").value.trim();
+    if (!username){
+      showTopError("Set an archive name first, then you can preview your profile.");
+      return;
+    }
+    const url = `profile.html?username=${encodeURIComponent(username)}`;
+    document.getElementById("previewFrame").src = url;
+    document.getElementById("previewOpenFull").href = url;
+    document.getElementById("previewOverlay").classList.add("open");
+  });
+
+  document.getElementById("previewClose").addEventListener("click", () => {
+    document.getElementById("previewOverlay").classList.remove("open");
+    document.getElementById("previewFrame").src = "";
+  });
+  document.getElementById("previewOverlay").addEventListener("click", (e) => {
+    if (e.target.id === "previewOverlay"){
+      document.getElementById("previewOverlay").classList.remove("open");
+      document.getElementById("previewFrame").src = "";
+    }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape"){
+      document.getElementById("previewOverlay").classList.remove("open");
+      document.getElementById("previewFrame").src = "";
+    }
+  });
 
   // ---- Tab switching ----
   document.querySelectorAll(".tab-btn").forEach(btn => {
@@ -608,7 +666,6 @@
 
     topSuccess.textContent = "Profile saved.";
     topSuccess.style.display = "block";
-    document.getElementById("viewProfileLink").href = `profile.html?username=${encodeURIComponent(payload.username)}`;
     renderLoggedInNav(currentSession);
   });
 
