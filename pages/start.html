@@ -202,7 +202,9 @@
     <div class="success-state" id="successState">
       <div class="shield"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
       <h2>Archive created</h2>
-      <p>Check your email to confirm your account, then log in to start logging models.</p>
+      <p>A confirmation email has been sent to <b id="confirmedEmail"></b>. Click the link inside to activate your account, then log in to start logging models.</p>
+      <p style="margin-top:14px; font-size:0.85rem;">Didn't get it? <a href="#" id="resendFromSignup" style="color:var(--gold-bright);">Resend the confirmation email</a></p>
+      <p id="resendSignupStatus" style="margin-top:10px; font-size:0.85rem; color:var(--green); display:none;"></p>
     </div>
   </div>
 </div>
@@ -296,7 +298,27 @@
     }));
 
     formState.style.display = "none";
+    document.getElementById("confirmedEmail").textContent = email;
     successState.style.display = "block";
+  });
+
+  document.getElementById("resendFromSignup").addEventListener("click", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("confirmedEmail").textContent;
+    const link = e.target;
+    const statusEl = document.getElementById("resendSignupStatus");
+
+    link.style.pointerEvents = "none";
+    link.style.opacity = "0.6";
+
+    const { error } = await supabaseClient.auth.resend({ type: "signup", email });
+
+    link.style.pointerEvents = "auto";
+    link.style.opacity = "1";
+
+    statusEl.style.display = "block";
+    statusEl.style.color = error ? "var(--error)" : "var(--green)";
+    statusEl.textContent = error ? (error.message || "Couldn't resend the email.") : "Sent — check your inbox.";
   });
 </script>
 
