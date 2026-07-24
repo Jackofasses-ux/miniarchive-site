@@ -211,8 +211,32 @@
       return;
     }
 
-    // Successful login — redirect to the collection page for now.
-    // Later this could go to a dedicated "my collection" or dashboard view.
+    // Successful login — check for deactivation/pending deletion before
+    // continuing. Logging in is itself the "cancel" action for both.
+    const { data: status } = await supabaseClient
+      .from("account_status")
+      .select("deactivated_at, pending_deletion_at")
+      .eq("profile_id", data.user.id)
+      .maybeSingle();
+
+    if (status && (status.deactivated_at || status.pending_deletion_at)){
+      const wasPendingDeletion = !!status.pending_deletion_at;
+
+      await supabaseClient
+        .from("account_status")
+        .update({ deactivated_at: null, pending_deletion_at: null })
+        .eq("profile_id", data.user.id);
+
+      submitBtn.disabled = true;
+      topSuccess.textContent = wasPendingDeletion
+        ? "Welcome back — your account deletion request was cancelled."
+        : "Welcome back — your account has been reactivated.";
+      topSuccess.style.display = "block";
+
+      setTimeout(() => { window.location.href = "collection.html"; }, 1800);
+      return;
+    }
+
     window.location.href = "collection.html";
   });
 
