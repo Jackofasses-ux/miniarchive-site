@@ -236,7 +236,7 @@
         <div class="field">
           <label for="username">Archive Name</label>
           <input id="username" type="text">
-          <div class="hint">Shown on your public profile URL and collection page. <a href="#" id="previewProfileLink" style="color:var(--gold-bright);">Preview →</a></div>
+          <div class="hint">Shown on your public profile URL and collection page.</div>
         </div>
         <div class="field">
           <label for="displayName">Display Name</label>
@@ -261,6 +261,7 @@
 
       <div class="quick-links">
         <button type="submit" class="btn-gold">Save Profile</button>
+        <button type="button" class="btn-ghost" id="previewProfileLink">Preview Public Profile</button>
       </div>
     </form>
   </div>
@@ -348,7 +349,7 @@
 <div class="preview-overlay" id="previewOverlay">
   <div class="preview-window">
     <div class="preview-window-header">
-      <span>Public Profile Preview</span>
+      <span>Public Profile Preview <span style="color:var(--mono); text-transform:none; letter-spacing:0;">— links disabled</span></span>
       <div style="display:flex; gap:10px; align-items:center;">
         <a href="#" id="previewOpenFull" target="_blank" style="font-size:0.7rem; color:var(--gold-bright);">Open in new tab ↗</a>
         <button type="button" class="preview-close" id="previewClose" aria-label="Close">×</button>
@@ -491,9 +492,23 @@
       return;
     }
     const url = `profile.html?username=${encodeURIComponent(username)}`;
-    document.getElementById("previewFrame").src = url;
+    const frame = document.getElementById("previewFrame");
     document.getElementById("previewOpenFull").href = url;
     document.getElementById("previewOverlay").classList.add("open");
+
+    // Block link clicks inside the preview — it's a look, not a place to
+    // navigate away from. Same-origin, so we can reach into its document
+    // once it's actually loaded.
+    frame.onload = () => {
+      try {
+        frame.contentDocument.addEventListener("click", (evt) => {
+          if (evt.target.closest("a")) evt.preventDefault();
+        }, true);
+      } catch (err) {
+        console.warn("Couldn't disable preview links:", err);
+      }
+    };
+    frame.src = url;
   });
 
   document.getElementById("previewClose").addEventListener("click", () => {
