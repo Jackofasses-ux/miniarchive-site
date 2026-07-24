@@ -160,6 +160,28 @@
   .cert-verified.state-pending{ color: var(--mono); }
   .cert-verified.state-rejected{ color: var(--error); }
 
+  /* Edit history photo links + lightbox */
+  .photo-link{ position:relative; color: var(--gold-bright); cursor:pointer; text-decoration:underline; }
+  .photo-link .hover-preview{
+    display:none; position:absolute; bottom: calc(100% + 8px); left:0; z-index:80;
+    width:160px; height:160px; object-fit:cover; border:1px solid var(--gold); background: var(--bg-raised);
+  }
+  .photo-link:hover .hover-preview{ display:block; }
+
+  .lightbox-overlay{
+    display:none; position:fixed; inset:0; z-index:200;
+    background: rgba(12,11,9,0.94); align-items:center; justify-content:center; padding: 50px;
+    cursor: zoom-out;
+  }
+  .lightbox-overlay.open{ display:flex; }
+  .lightbox-overlay img{ max-width:90vw; max-height:88vh; object-fit:contain; border:1px solid var(--gold); cursor:default; }
+  .lightbox-close{
+    position:absolute; top:24px; right:32px; width:42px; height:42px;
+    background: var(--bg-raised); border:1px solid var(--hairline); color: var(--cream);
+    font-size:1.4rem; line-height:1; cursor:pointer; transition: border-color .2s ease, color .2s ease;
+  }
+  .lightbox-close:hover{ border-color: var(--gold); color: var(--gold-bright); }
+
   footer{ border-top:1px solid var(--hairline); padding:32px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); }
 
   @media (max-width: 1000px){
@@ -265,7 +287,32 @@
   <div><a href="collection.html">← Back to Collection</a></div>
 </footer>
 
+<div class="lightbox-overlay" id="lightboxOverlay">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Close">×</button>
+  <img id="lightboxImage" src="" alt="Full size photo">
+</div>
+
 <script>
+  // ---------------------------------------------------------------
+  // Lightbox — used by the Edit History photo links so viewing a
+  // full-size photo never navigates away from the page.
+  // ---------------------------------------------------------------
+  function openLightbox(url){
+    document.getElementById("lightboxImage").src = url;
+    document.getElementById("lightboxOverlay").classList.add("open");
+  }
+  function closeLightbox(){
+    document.getElementById("lightboxOverlay").classList.remove("open");
+    document.getElementById("lightboxImage").src = "";
+  }
+  document.getElementById("lightboxClose").addEventListener("click", closeLightbox);
+  document.getElementById("lightboxOverlay").addEventListener("click", (e) => {
+    if (e.target.id === "lightboxOverlay") closeLightbox();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeLightbox();
+  });
+
   // ---------------------------------------------------------------
   // DUMMY DATA — replace this object with a fetch() to your real
   // data source later (Sheet API, then a real DB). Everything below
@@ -617,16 +664,25 @@
       .eq("miniature_id", miniatureId)
       .order("created_at", { ascending: false });
 
-    if (error || !data || !data.length) return; // no history — section stays hidden
-
     document.getElementById("editHistorySection").style.display = "block";
+
+    if (error){
+      document.getElementById("editHistoryList").innerHTML = `<p style="color:var(--error); padding:16px 0; border-top:1px solid var(--hairline);">Couldn't load edit history.</p>`;
+      return;
+    }
+
+    if (!data || !data.length){
+      document.getElementById("editHistoryList").innerHTML = `<p style="color:var(--cream-dim); padding:16px 0; border-top:1px solid var(--hairline);">None — this record hasn't been edited since it was published.</p>`;
+      return;
+    }
+
     document.getElementById("editHistoryList").innerHTML = data.map(e => {
       const editorLabel = e.profiles?.username || e.profiles?.display_name || "Unknown";
       const fieldLabel = EDIT_FIELD_LABELS[e.field_name] || e.field_name;
       const dateLabel = new Date(e.created_at).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
 
       const valueLine = isPhotoField(e.field_name)
-        ? `<a href="${e.old_value}" target="_blank" rel="noopener" style="color:var(--gold-bright);">View original</a> → <a href="${e.new_value}" target="_blank" rel="noopener" style="color:var(--gold-bright);">View replacement</a>`
+        ? `<span class="photo-link" onclick="openLightbox('${e.old_value}')">View original<img class="hover-preview" src="${e.old_value}" alt=""></span> → <span class="photo-link" onclick="openLightbox('${e.new_value}')">View replacement<img class="hover-preview" src="${e.new_value}" alt=""></span>`
         : `${e.old_value || "—"} → ${e.new_value || "—"}`;
 
       return `
