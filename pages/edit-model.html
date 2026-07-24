@@ -117,6 +117,39 @@
   .owner-visible-row input[type="checkbox"]{ width:16px; height:16px; accent-color: var(--gold); cursor:pointer; }
   .owner-visible-row .hint{ margin-top:8px; margin-left:26px; font-size:0.8rem; color: var(--cream-dim); max-width: 480px; }
 
+  .timeline-event-card{
+    border:1px solid var(--hairline); background: var(--bg-raised); padding: 16px 18px;
+    margin-top:12px; display:flex; justify-content:space-between; align-items:center; gap:16px; cursor:pointer;
+  }
+  .timeline-event-card:hover{ border-color: var(--gold); }
+  .timeline-event-card .te-title{ font-family:'Cormorant Garamond', serif; font-size:1.1rem; font-weight:600; }
+  .timeline-event-card .te-meta{ font-family:'IBM Plex Mono', monospace; font-size:0.68rem; color: var(--mono); margin-top:4px; }
+  .timeline-event-card .te-milestone-badge{ font-family:'IBM Plex Mono', monospace; font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--gold); border:1px solid rgba(201,162,75,0.4); padding:3px 8px; flex-shrink:0; }
+
+  .timeline-form{ margin-top: 24px; border:1px solid var(--gold); background: var(--bg-raised); padding: 24px; }
+  .te-photo-slot .drop{
+    border:1px dashed var(--hairline); background: var(--bg); height:110px; width:110px;
+    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px;
+    cursor:pointer; overflow:hidden;
+  }
+  .te-photo-slot .drop.filled{ border-style:solid; border-color: var(--gold); }
+  .te-photo-slot .drop img{ width:100%; height:100%; object-fit:cover; }
+  .te-photo-slot input[type="file"]{ display:none; }
+
+  .subtask-row{
+    border:1px solid var(--hairline); background: var(--bg); padding: 12px 14px; margin-bottom:10px;
+    display:grid; grid-template-columns: 1fr 1fr auto; gap:10px; align-items:start;
+  }
+  .subtask-row input, .subtask-row textarea{
+    background: var(--bg-raised); border:1px solid var(--hairline); color: var(--cream);
+    padding: 9px 11px; font-family:'Jost', sans-serif; font-size:0.85rem; width:100%;
+  }
+  .subtask-row textarea{ resize:vertical; min-height:38px; }
+  .subtask-row .remove-subtask{
+    background:none; border:1px solid var(--hairline); color: var(--error); cursor:pointer;
+    width:34px; height:34px; font-size:0.95rem; flex-shrink:0;
+  }
+
   .submit-row{ margin-top: 46px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
   .btn-delete{
     font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
@@ -355,6 +388,64 @@
         </div>
       </div>
       <div class="photo-error" id="photoError">All four angle photos are required to publish.</div>
+    </fieldset>
+
+    <fieldset id="timelineFieldset" style="display:none;">
+      <div class="legend">Creation Timeline</div>
+      <div id="timelineNoModelNote" class="hint" style="display:none;">Save this model as a draft first, then you can add timeline events.</div>
+      <div id="timelineEventsList"></div>
+      <button type="button" class="btn-ghost" id="addTimelineEventBtn" style="margin-top:14px;">+ Add Timeline Event</button>
+
+      <div class="timeline-form" id="timelineForm" style="display:none;">
+        <div class="field-grid">
+          <div class="field full">
+            <label for="teTitle">Step Title <span class="req">*</span></label>
+            <input id="teTitle" type="text" placeholder="e.g. Assembly, The First Brushstroke">
+          </div>
+          <div class="field">
+            <label for="teDate">Date</label>
+            <input id="teDate" type="text" inputmode="numeric" placeholder="YYYY-MM-DD" maxlength="10">
+          </div>
+          <div class="field">
+            <label for="teHours">Hours Spent</label>
+            <input id="teHours" type="number" step="0.5" placeholder="e.g. 2.5">
+          </div>
+          <div class="field full">
+            <label for="teDescription">Description</label>
+            <textarea id="teDescription" placeholder="What happened in this step…"></textarea>
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:16px;">
+          <label>Photo <span style="color:var(--mono); text-transform:none; letter-spacing:0;">(optional)</span></label>
+          <div class="te-photo-slot">
+            <label class="drop" for="tePhoto" id="tePhotoDrop">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
+              <span class="plus-label">Drop or Click</span>
+            </label>
+            <input type="file" id="tePhoto" accept="image/jpeg,image/png,image/webp">
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:16px;">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; font-size:0.9rem; color:var(--cream);">
+            <input type="checkbox" id="teMilestone" style="width:auto; accent-color:var(--gold);"> Mark as a milestone
+          </label>
+        </div>
+
+        <div class="field full" style="margin-top:26px;">
+          <label>Subtasks <span style="color:var(--mono); text-transform:none; letter-spacing:0;">(optional)</span></label>
+          <div id="subtaskList"></div>
+          <button type="button" class="btn-ghost" id="addSubtaskBtn" style="margin-top:8px;">+ Add Subtask</button>
+        </div>
+
+        <div class="submit-row" style="margin-top:26px;">
+          <button type="button" class="btn-gold" id="saveTimelineEventBtn">Save Event</button>
+          <button type="button" class="btn-ghost" id="cancelTimelineEventBtn">Cancel</button>
+          <button type="button" class="btn-delete" id="deleteTimelineEventBtn" style="display:none;">Delete Event</button>
+          <span class="progress-note" id="teProgressNote"></span>
+        </div>
+      </div>
     </fieldset>
 
     <div class="owner-visible-row">
@@ -853,6 +944,20 @@
   function applyStatusUI(){
     const chip = document.getElementById("statusChip");
     const deleteBtn = document.getElementById("deleteBtn");
+    const timelineFieldset = document.getElementById("timelineFieldset");
+    const timelineNoModelNote = document.getElementById("timelineNoModelNote");
+
+    timelineFieldset.style.display = "block";
+    if (!modelId){
+      timelineNoModelNote.style.display = "block";
+      document.getElementById("timelineEventsList").innerHTML = "";
+      document.getElementById("addTimelineEventBtn").style.display = "none";
+    } else {
+      timelineNoModelNote.style.display = "none";
+      document.getElementById("addTimelineEventBtn").style.display = "inline-block";
+      loadTimelineEvents();
+    }
+
     if (!modelId){
       chip.style.display = "none";
       deleteBtn.style.display = "none";
@@ -995,6 +1100,254 @@
   });
 
   publishBtn.addEventListener("click", publishBtnClickRouter);
+
+  // ---- Creation Timeline: events + subtasks ----
+  let editingEventId = null;
+  let selectedTimelinePhoto = null;
+  let existingTimelinePhotoUrl = null;
+
+  function addSubtaskRow(title, note){
+    const list = document.getElementById("subtaskList");
+    const row = document.createElement("div");
+    row.className = "subtask-row";
+    row.innerHTML = `
+      <input type="text" class="st-title-input" placeholder="Subtask title (e.g. Mold Line Removal)" value="${(title || "").replace(/"/g, "&quot;")}">
+      <textarea class="st-note-input" placeholder="Short note…">${note || ""}</textarea>
+      <button type="button" class="remove-subtask">×</button>
+    `;
+    row.querySelector(".remove-subtask").addEventListener("click", () => row.remove());
+    list.appendChild(row);
+  }
+
+  document.getElementById("addSubtaskBtn").addEventListener("click", () => addSubtaskRow("", ""));
+
+  function resetTimelineForm(){
+    editingEventId = null;
+    selectedTimelinePhoto = null;
+    existingTimelinePhotoUrl = null;
+    document.getElementById("teTitle").value = "";
+    document.getElementById("teDate").value = "";
+    document.getElementById("teHours").value = "";
+    document.getElementById("teDescription").value = "";
+    document.getElementById("teMilestone").checked = false;
+    document.getElementById("subtaskList").innerHTML = "";
+    document.getElementById("tePhotoDrop").classList.remove("filled");
+    document.getElementById("tePhotoDrop").innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg><span class="plus-label">Drop or Click</span>`;
+    document.getElementById("deleteTimelineEventBtn").style.display = "none";
+  }
+
+  document.getElementById("tePhoto").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    selectedTimelinePhoto = file;
+    const drop = document.getElementById("tePhotoDrop");
+    drop.classList.add("filled");
+    const reader = new FileReader();
+    reader.onload = (ev) => { drop.innerHTML = `<img src="${ev.target.result}" alt="preview">`; };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById("addTimelineEventBtn").addEventListener("click", () => {
+    resetTimelineForm();
+    document.getElementById("timelineForm").style.display = "block";
+    document.getElementById("timelineForm").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  document.getElementById("cancelTimelineEventBtn").addEventListener("click", () => {
+    document.getElementById("timelineForm").style.display = "none";
+    resetTimelineForm();
+  });
+
+  function attachTimelineDateMask(){
+    const input = document.getElementById("teDate");
+    input.addEventListener("input", () => {
+      let digits = input.value.replace(/\D/g, "").slice(0, 8);
+      let formatted = digits.slice(0, 4);
+      if (digits.length > 4) formatted += "-" + digits.slice(4, 6);
+      if (digits.length > 6) formatted += "-" + digits.slice(6, 8);
+      input.value = formatted;
+    });
+  }
+  attachTimelineDateMask();
+
+  async function loadTimelineEvents(){
+    const list = document.getElementById("timelineEventsList");
+    const { data, error } = await supabaseClient
+      .from("timeline_events")
+      .select("id, title, event_date, hours_spent, is_milestone, sort_order")
+      .eq("miniature_id", modelId)
+      .order("sort_order", { ascending: true });
+
+    if (error || !data || !data.length){
+      list.innerHTML = "";
+      return;
+    }
+
+    list.innerHTML = data.map(ev => `
+      <div class="timeline-event-card" data-event-id="${ev.id}">
+        <div>
+          <div class="te-title">${ev.title}</div>
+          <div class="te-meta">${ev.event_date || "No date"} · ${ev.hours_spent ? ev.hours_spent + " hrs" : "—"}</div>
+        </div>
+        ${ev.is_milestone ? `<span class="te-milestone-badge">◆ Milestone</span>` : ""}
+      </div>
+    `).join("");
+
+    list.querySelectorAll(".timeline-event-card").forEach(card => {
+      card.addEventListener("click", () => openTimelineEventForEdit(card.dataset.eventId));
+    });
+  }
+
+  async function openTimelineEventForEdit(eventId){
+    const { data: event, error } = await supabaseClient
+      .from("timeline_events")
+      .select("id, title, event_date, hours_spent, description, image_url, is_milestone")
+      .eq("id", eventId)
+      .maybeSingle();
+
+    if (error || !event) return;
+
+    const { data: subtasks } = await supabaseClient
+      .from("timeline_subtasks")
+      .select("title, note, sort_order")
+      .eq("timeline_event_id", eventId)
+      .order("sort_order", { ascending: true });
+
+    resetTimelineForm();
+    editingEventId = eventId;
+    document.getElementById("teTitle").value = event.title || "";
+    document.getElementById("teDate").value = event.event_date || "";
+    document.getElementById("teHours").value = event.hours_spent || "";
+    document.getElementById("teDescription").value = event.description || "";
+    document.getElementById("teMilestone").checked = !!event.is_milestone;
+
+    if (event.image_url){
+      existingTimelinePhotoUrl = event.image_url;
+      const drop = document.getElementById("tePhotoDrop");
+      drop.classList.add("filled");
+      drop.innerHTML = `<img src="${event.image_url}" alt="preview">`;
+    }
+
+    (subtasks || []).forEach(s => addSubtaskRow(s.title, s.note));
+
+    document.getElementById("deleteTimelineEventBtn").style.display = "inline-block";
+    document.getElementById("timelineForm").style.display = "block";
+    document.getElementById("timelineForm").scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  document.getElementById("saveTimelineEventBtn").addEventListener("click", async () => {
+    const title = document.getElementById("teTitle").value.trim();
+    if (!title){
+      showTopError("Give this timeline step a title.");
+      return;
+    }
+
+    const saveBtn = document.getElementById("saveTimelineEventBtn");
+    const progressNote = document.getElementById("teProgressNote");
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving…";
+
+    try {
+      let imageUrl = existingTimelinePhotoUrl;
+
+      if (selectedTimelinePhoto){
+        progressNote.textContent = "Uploading photo…";
+        const uploadForm = new FormData();
+        uploadForm.append("file", selectedTimelinePhoto);
+        uploadForm.append("upload_type", "timeline_photo");
+        uploadForm.append("miniature_id", modelId);
+
+        const uploadRes = await fetch(WORKER_UPLOAD_URL, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${currentSession.access_token}` },
+          body: uploadForm,
+        });
+        const result = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(result.error || "Photo upload failed");
+        imageUrl = result.url;
+      }
+
+      progressNote.textContent = "Saving event…";
+      const eventPayload = {
+        miniature_id: modelId,
+        title,
+        event_date: document.getElementById("teDate").value || null,
+        hours_spent: document.getElementById("teHours").value ? parseFloat(document.getElementById("teHours").value) : null,
+        description: document.getElementById("teDescription").value.trim() || null,
+        image_url: imageUrl,
+        is_milestone: document.getElementById("teMilestone").checked,
+      };
+
+      let eventId = editingEventId;
+
+      if (eventId){
+        const { error } = await supabaseClient.from("timeline_events").update(eventPayload).eq("id", eventId);
+        if (error) throw error;
+      } else {
+        const { count } = await supabaseClient
+          .from("timeline_events")
+          .select("id", { count: "exact", head: true })
+          .eq("miniature_id", modelId);
+        eventPayload.sort_order = count || 0;
+
+        const { data: inserted, error } = await supabaseClient.from("timeline_events").insert(eventPayload).select().single();
+        if (error) throw error;
+        eventId = inserted.id;
+      }
+
+      // Replace the full subtask set — same simple approach used for profile links.
+      await supabaseClient.from("timeline_subtasks").delete().eq("timeline_event_id", eventId);
+      const subtaskRows = Array.from(document.querySelectorAll("#subtaskList .subtask-row"))
+        .map((row, i) => ({
+          timeline_event_id: eventId,
+          title: row.querySelector(".st-title-input").value.trim(),
+          note: row.querySelector(".st-note-input").value.trim() || null,
+          sort_order: i,
+        }))
+        .filter(s => s.title);
+
+      if (subtaskRows.length){
+        await supabaseClient.from("timeline_subtasks").insert(subtaskRows);
+      }
+
+      progressNote.textContent = "";
+      document.getElementById("timelineForm").style.display = "none";
+      resetTimelineForm();
+      loadTimelineEvents();
+      topSuccess.textContent = "Timeline event saved.";
+      topSuccess.style.display = "block";
+
+    } catch (err){
+      console.error("Save timeline event failed:", err);
+      progressNote.textContent = "";
+      showTopError(err.message || "Couldn't save this timeline event.");
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save Event";
+    }
+  });
+
+  document.getElementById("deleteTimelineEventBtn").addEventListener("click", async () => {
+    if (!editingEventId) return;
+    const btn = document.getElementById("deleteTimelineEventBtn");
+    btn.disabled = true;
+    btn.textContent = "Deleting…";
+
+    await supabaseClient.from("timeline_subtasks").delete().eq("timeline_event_id", editingEventId);
+    const { error } = await supabaseClient.from("timeline_events").delete().eq("id", editingEventId);
+
+    btn.disabled = false;
+    btn.textContent = "Delete Event";
+
+    if (error){
+      showTopError(error.message || "Couldn't delete this event.");
+      return;
+    }
+
+    document.getElementById("timelineForm").style.display = "none";
+    resetTimelineForm();
+    loadTimelineEvents();
+  });
 
   // ---- Load existing model if ?id= present, else fresh new-draft form ----
   (async () => {
