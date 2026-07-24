@@ -544,6 +544,7 @@
       dragging = false;
       frame.classList.remove("dragging");
       try { frame.releasePointerCapture(e.pointerId); } catch (err) {}
+      if (dragBadge) dragBadge.style.opacity = "1";
     }
 
     frame.addEventListener("pointerdown", onPointerDown);
