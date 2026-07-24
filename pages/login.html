@@ -122,6 +122,10 @@
       <p>Your account exists but hasn't been confirmed yet.</p>
       <button type="button" class="btn-resend" id="resendBtn">Resend Confirmation Email</button>
     </div>
+    <div class="resend-box" id="forgotBox" style="display:none;">
+      <p>Enter your email above, then click below to get a password reset link.</p>
+      <button type="button" class="btn-resend" id="sendResetBtn">Send Reset Link</button>
+    </div>
 
     <form id="loginForm" novalidate>
       <div class="field" id="field-email">
@@ -134,7 +138,7 @@
         <label for="password">Password</label>
         <input id="password" type="password" placeholder="Your password">
         <div class="error-msg">Enter your password.</div>
-        <div class="field-foot"><a href="#">Forgot password?</a></div>
+        <div class="field-foot"><a href="#" id="forgotPasswordLink">Forgot password?</a></div>
       </div>
 
       <button type="submit" class="submit-btn">Log In</button>
@@ -281,6 +285,45 @@
     }
 
     topSuccess.textContent = "Confirmation email sent. Check your inbox.";
+    topSuccess.style.display = "block";
+  });
+
+  document.getElementById("forgotPasswordLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    topError.style.display = "none";
+    topSuccess.style.display = "none";
+    resendBox.style.display = "none";
+    document.getElementById("forgotBox").style.display = "block";
+  });
+
+  document.getElementById("sendResetBtn").addEventListener("click", async () => {
+    const email = document.getElementById("email").value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      topError.textContent = "Enter your email above first, then click Send Reset Link.";
+      topError.style.display = "block";
+      document.getElementById("email").focus();
+      return;
+    }
+
+    const btn = document.getElementById("sendResetBtn");
+    btn.disabled = true;
+    btn.textContent = "Sending…";
+
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: "https://www.miniarchive.net/reset-password.html",
+    });
+
+    btn.disabled = false;
+    btn.textContent = "Send Reset Link";
+
+    if (error){
+      topError.textContent = error.message || "Couldn't send the reset link.";
+      topError.style.display = "block";
+      return;
+    }
+
+    document.getElementById("forgotBox").style.display = "none";
+    topSuccess.textContent = "If that email has an account, a password reset link has been sent.";
     topSuccess.style.display = "block";
   });
 </script>
