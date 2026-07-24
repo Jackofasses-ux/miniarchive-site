@@ -132,25 +132,40 @@
   }
   .timeline-item .t-desc{ color: var(--cream-dim); font-size:0.92rem; max-width: 620px; margin-top:14px; }
 
+  /* Step-level mini photo viewer — cycles through subtask photos, mirrors the main front/left/rear/right viewer */
+  .step-photo-viewer{ margin-top:20px; max-width: 420px; border:1px solid var(--hairline); background: var(--bg-raised); }
+  .step-photo-frame{ height:220px; background-size:cover; background-position:center; cursor:zoom-in; }
+  .step-photo-tabs{ display:flex; border-top:1px solid var(--hairline); overflow-x:auto; }
+  .step-photo-tabs button{
+    flex-shrink:0; padding:10px 14px; background:transparent; border:none; border-right:1px solid var(--hairline);
+    font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.06em; text-transform:uppercase;
+    color: var(--cream-dim); cursor:pointer; transition: all .2s ease; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .step-photo-tabs button:last-child{ border-right:none; }
+  .step-photo-tabs button.active{ background: var(--gold); color:#0c0b09; }
+  .step-photo-tabs button:hover:not(.active){ color: var(--cream); }
+
   .chip-row{ display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:16px; margin-top:20px; align-items:start; }
   .subtask-card{
-    border:1px solid var(--hairline); background: var(--bg-raised); overflow:hidden;
+    border:1px solid var(--hairline); background: var(--bg-raised); overflow:hidden; cursor:pointer;
+    transition: border-color .2s ease;
   }
-  .subtask-card .st-thumb{ width:100%; height:170px; object-fit:cover; display:block; cursor:zoom-in; }
+  .subtask-card:hover{ border-color: var(--gold); }
+  .subtask-card .st-thumb{ display:none; width:100%; height:170px; object-fit:cover; cursor:zoom-in; }
+  .subtask-card.expanded .st-thumb{ display:block; }
   .subtask-card .st-body{ padding: 12px 14px; }
-  .subtask-card .st-time{
-    font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.05em; color: var(--gold);
-    display:flex; align-items:center; gap:5px; margin-bottom:8px;
-  }
   .subtask-card .st-title{
     font-family:'IBM Plex Mono', monospace; font-size:0.66rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--gold-bright);
-    display:flex; align-items:center; gap:6px;
+    display:flex; align-items:center; justify-content:space-between; gap:6px;
   }
-  .subtask-card .st-title::before{ content:''; width:6px; height:6px; background: var(--gold); flex-shrink:0; }
+  .subtask-card .st-title .st-title-text{ display:flex; align-items:center; gap:6px; }
+  .subtask-card .st-title-text::before{ content:''; width:6px; height:6px; background: var(--gold); flex-shrink:0; }
+  .subtask-card .st-photo-hint{ font-size:0.9rem; color: var(--gold); flex-shrink:0; }
   .subtask-card .st-note{
     margin-top:6px; font-size:0.8rem; color: var(--cream-dim); line-height:1.4;
-    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
   }
+  .subtask-card.expanded .st-note{ -webkit-line-clamp:unset; overflow:visible; }
 
   /* Paint recipe */
   .recipe-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 40px; }
@@ -479,7 +494,9 @@
       `;
     }
 
-    document.getElementById("timelineList").innerHTML = (m.timeline && m.timeline.length) ? m.timeline.map((t, i) => `
+    document.getElementById("timelineList").innerHTML = (m.timeline && m.timeline.length) ? m.timeline.map((t, i) => {
+      const photoSubtasks = (t.subtasks || []).filter(s => s.photoUrl);
+      return `
       <div class="timeline-item${t.isMilestone ? " milestone" : ""}">
         <div class="t-meta">
           ${String(i + 1).padStart(2, "0")}
@@ -490,18 +507,38 @@
           <h3>${t.title}</h3>
           <div class="t-date-hours">${t.date} · ${t.hours}</div>
           ${t.desc ? `<p class="t-desc">${t.desc}</p>` : ""}
+          ${photoSubtasks.length ? `
+            <div class="step-photo-viewer">
+              <div class="step-photo-frame" id="stepFrame-${i}" style="background-image:url('${photoSubtasks[0].photoUrl}')" onclick="openLightbox(document.getElementById('stepFrame-${i}').dataset.src)" data-src="${photoSubtasks[0].photoUrl}"></div>
+              <div class="step-photo-tabs">
+                ${photoSubtasks.map((s, si) => `<button class="${si === 0 ? "active" : ""}" onclick="setStepPhoto(${i}, '${s.photoUrl.replace(/'/g, "\\'")}', this)">${s.title}</button>`).join("")}
+              </div>
+            </div>
+          ` : ""}
           ${(t.subtasks && t.subtasks.length) ? `<div class="chip-row">${t.subtasks.map(s => `
-            <div class="subtask-card">
-              ${s.photoUrl ? `<img class="st-thumb" src="${s.photoUrl}" alt="${s.title}" onclick="openLightbox('${s.photoUrl}')">` : ""}
+            <div class="subtask-card" onclick="this.classList.toggle('expanded')">
+              ${s.photoUrl ? `<img class="st-thumb" src="${s.photoUrl}" alt="${s.title}" onclick="event.stopPropagation(); openLightbox('${s.photoUrl}')">` : ""}
               <div class="st-body">
-                <div class="st-title">${s.title}</div>
+                <div class="st-title">
+                  <span class="st-title-text">${s.title}</span>
+                  ${s.photoUrl ? `<span class="st-photo-hint">◎</span>` : ""}
+                </div>
                 ${s.note ? `<div class="st-note">${s.note}</div>` : ""}
               </div>
             </div>
           `).join("")}</div>` : ""}
         </div>
       </div>
-    `).join("") : `<p style="color:var(--cream-dim); padding: 24px 0; border-top:1px solid var(--hairline);">No timeline logged for this model yet.</p>`;
+    `;
+    }).join("") : `<p style="color:var(--cream-dim); padding: 24px 0; border-top:1px solid var(--hairline);">No timeline logged for this model yet.</p>`;
+
+    window.setStepPhoto = function(itemIndex, url, btn){
+      const frame = document.getElementById(`stepFrame-${itemIndex}`);
+      frame.style.backgroundImage = `url('${url}')`;
+      frame.dataset.src = url;
+      btn.parentElement.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+    };
 
     document.getElementById("recipeGrid").innerHTML = (m.recipe && m.recipe.length) ? m.recipe.map(r => `
       <div class="recipe-card">
