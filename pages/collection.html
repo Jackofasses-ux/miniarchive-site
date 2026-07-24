@@ -243,12 +243,14 @@
   const resultCount = document.getElementById("resultCount");
   let ALL_MINIS = [];
   let isMineView = false;
+  let currentUserId = null;
 
   const shieldIcon = `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>`;
 
   async function loadMinis(){
     isMineView = new URLSearchParams(window.location.search).get("mine") === "true";
     const { data: { session } } = await supabaseClient.auth.getSession();
+    currentUserId = session?.user?.id || null;
 
     if (isMineView && !session){
       window.location.href = "login.html";
@@ -292,6 +294,7 @@
         painter: painterLabel,
         hours: m.hours_worked || 0,
         status: m.status,
+        ownerProfileId: m.owner_profile_id,
         thumbUrl: anyPhoto?.image_url || null,
       };
     });
@@ -320,7 +323,7 @@
       const tag = isDraft
         ? `<span class="status-tag wip">Draft</span>`
         : `<span class="id-tag">${m.code}</span>`;
-      const editShortcut = (isMineView && !isDraft)
+      const editShortcut = (currentUserId && m.ownerProfileId === currentUserId && !isDraft)
         ? `<a href="edit-model.html?id=${m.id}" onclick="event.stopPropagation()" class="card-edit-link" title="Edit this model">✎</a>`
         : "";
       return `
