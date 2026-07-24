@@ -78,11 +78,11 @@
   .field input:focus, .field textarea:focus{ outline:none; border-color: var(--gold); }
   .field .hint{ margin-top:6px; font-size:0.78rem; color: var(--mono); }
   .link-row{ display:flex; gap:10px; margin-bottom:10px; align-items:center; }
-  .link-row input, .link-row select{
+  .link-row input{
     background: var(--bg-raised); border:1px solid var(--hairline); color: var(--cream);
     padding: 10px 12px; font-family:'Jost', sans-serif; font-size:0.88rem;
   }
-  .link-row select.platform-select{ width:150px; flex-shrink:0; }
+  .link-row input.platform-input{ width:140px; flex-shrink:0; }
   .link-row input.url-input{ flex:1; }
   .link-row .remove-link{
     background:none; border:1px solid var(--hairline); color: var(--error); cursor:pointer;
@@ -102,6 +102,34 @@
   .tier-box{ margin-top: 20px; border:1px solid var(--hairline); background: var(--bg-raised); padding: 18px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; }
   .tier-box .label{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); }
   .tier-box .value{ font-family:'Cormorant Garamond', serif; font-size:1.2rem; font-weight:600; margin-top:4px; }
+
+  .status-banner{
+    margin-top: 20px; border:1px solid rgba(201,162,75,0.4); background: rgba(201,162,75,0.08);
+    padding: 14px 16px; font-size:0.88rem; color: var(--gold-bright);
+  }
+
+  .danger-box{ margin-top: 20px; border:1px solid rgba(201,123,106,0.3); }
+  .danger-row{
+    display:flex; justify-content:space-between; align-items:center; gap:24px; flex-wrap:wrap;
+    padding: 20px 22px; border-bottom:1px solid rgba(201,123,106,0.2);
+  }
+  .danger-row:last-child{ border-bottom:none; }
+  .danger-title{ font-family:'Cormorant Garamond', serif; font-size:1.15rem; font-weight:600; }
+  .danger-desc{ margin-top:6px; font-size:0.85rem; color: var(--cream-dim); max-width: 480px; }
+  .btn-delete{
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color: var(--error); padding: 11px 20px; border:1px solid rgba(201,123,106,0.4); background:transparent; cursor:pointer;
+    transition: background .2s ease; flex-shrink:0;
+  }
+  .btn-delete:hover{ background: rgba(201,123,106,0.1); }
+  .btn-delete:disabled{ opacity:0.5; cursor:not-allowed; }
+
+  .confirm-box{
+    margin-top: 16px; border:1px solid rgba(201,123,106,0.4); background: rgba(201,123,106,0.06);
+    padding: 18px 20px;
+  }
+  .confirm-box p{ font-size:0.9rem; color: var(--cream); }
+  .confirm-actions{ margin-top: 14px; display:flex; gap:12px; }
 
   footer{ border-top:1px solid var(--hairline); padding:28px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); margin-top: 60px; }
 
@@ -221,6 +249,47 @@
     </div>
     <div style="font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--mono);" id="emailValue"></div>
   </div>
+
+  <div class="section-head">
+    <div class="eyebrow">Section III</div>
+    <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+    <h2>Danger Zone</h2>
+  </div>
+
+  <div id="accountStatusBanner" class="status-banner" style="display:none;"></div>
+
+  <div class="danger-box">
+    <div class="danger-row">
+      <div>
+        <div class="danger-title">Deactivate Account</div>
+        <div class="danger-desc">Hides your identity from public view and blocks login until you sign back in. Your published models stay exactly as they are. Fully reversible — just log back in any time.</div>
+      </div>
+      <button type="button" class="btn-ghost" id="deactivateBtn">Deactivate</button>
+    </div>
+    <div class="danger-row">
+      <div>
+        <div class="danger-title">Delete Account</div>
+        <div class="danger-desc">Starts a 21-day grace period. Logging back in during that window cancels the deletion automatically. After 21 days: your login is permanently removed, drafts are deleted, and your profile is anonymized. <b>Published models stay public and permanent</b> — that record can't be undone, even by deleting your account.</div>
+      </div>
+      <button type="button" class="btn-delete" id="deleteAccountBtn">Delete Account</button>
+    </div>
+  </div>
+
+  <div class="confirm-box" id="deactivateConfirm" style="display:none;">
+    <p>Deactivate your account? You can undo this any time just by logging back in.</p>
+    <div class="confirm-actions">
+      <button type="button" class="btn-gold" id="confirmDeactivateBtn">Yes, Deactivate</button>
+      <button type="button" class="btn-ghost" id="cancelDeactivateBtn">Cancel</button>
+    </div>
+  </div>
+
+  <div class="confirm-box" id="deleteConfirm" style="display:none;">
+    <p id="deleteConfirmText">Request account deletion? This starts a 21-day grace period — log back in any time before then to cancel.</p>
+    <div class="confirm-actions">
+      <button type="button" class="btn-delete" id="confirmDeleteAccountBtn">Yes, Request Deletion</button>
+      <button type="button" class="btn-ghost" id="cancelDeleteAccountBtn">Cancel</button>
+    </div>
+  </div>
 </main>
 
 <footer>
@@ -261,6 +330,22 @@
 
   async function loadDashboard(session){
     document.getElementById("emailValue").textContent = session.user.email;
+
+    const { data: status } = await supabaseClient
+      .from("account_status")
+      .select("deactivated_at, pending_deletion_at")
+      .eq("profile_id", session.user.id)
+      .maybeSingle();
+
+    const banner = document.getElementById("accountStatusBanner");
+    if (status?.pending_deletion_at){
+      const deletionDate = new Date(new Date(status.pending_deletion_at).getTime() + 21 * 24 * 60 * 60 * 1000);
+      banner.textContent = `Deletion requested. Your account will be permanently deleted on ${deletionDate.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })} unless you log out and back in before then to cancel it.`;
+      banner.style.display = "block";
+    } else if (status?.deactivated_at){
+      banner.textContent = "Your account is currently deactivated. Log out and back in to reactivate it.";
+      banner.style.display = "block";
+    }
 
     const { data: profile, error: profileError } = await supabaseClient
       .from("profiles")
@@ -317,69 +402,20 @@
   const MAX_AVATAR_BYTES = 10 * 1024 * 1024;
 
   // ---- Other links (TikTok, Twitch, Discord, etc.) ----
-  const PLATFORM_PRESETS = {
-    "Website": "https://",
-    "Instagram": "https://www.instagram.com/",
-    "TikTok": "https://www.tiktok.com/@",
-    "YouTube": "https://www.youtube.com/@",
-    "Twitch": "https://www.twitch.tv/",
-    "X (Twitter)": "https://x.com/",
-    "Facebook": "https://www.facebook.com/",
-    "Discord": "https://discord.gg/",
-    "Patreon": "https://www.patreon.com/",
-    "Bluesky": "https://bsky.app/profile/",
-    "DeviantArt": "https://www.deviantart.com/",
-    "Pinterest": "https://www.pinterest.com/",
-  };
-
   function addLinkRow(platform, url, existingId, isPublic){
     const list = document.getElementById("linksList");
     const row = document.createElement("div");
     row.className = "link-row";
     row.dataset.existingId = existingId || "";
     const checked = isPublic === false ? "" : "checked";
-
-    const knownPlatform = Object.keys(PLATFORM_PRESETS).find(p => p.toLowerCase() === (platform || "").toLowerCase());
-    const isCustom = platform && !knownPlatform;
-
-    const optionsHtml = Object.keys(PLATFORM_PRESETS).map(p =>
-      `<option value="${p}" ${p === knownPlatform ? "selected" : ""}>${p}</option>`
-    ).join("");
-
     row.innerHTML = `
-      <select class="platform-select">
-        <option value="" ${!platform ? "selected" : ""} disabled>Choose platform…</option>
-        ${optionsHtml}
-        <option value="__custom__" ${isCustom ? "selected" : ""}>Other…</option>
-      </select>
-      <input type="text" class="custom-platform-input" placeholder="Platform name" value="${isCustom ? platform : ""}" style="display:${isCustom ? "block" : "none"}; width:120px; flex-shrink:0;">
+      <input type="text" class="platform-input" placeholder="e.g. TikTok" value="${platform || ""}">
       <input type="text" class="url-input" placeholder="https://…" value="${url || ""}">
       <label style="display:flex; align-items:center; gap:6px; font-size:0.75rem; color:var(--cream-dim); white-space:nowrap; flex-shrink:0;">
         <input type="checkbox" class="public-checkbox" ${checked} style="accent-color: var(--gold); cursor:pointer;"> Public
       </label>
       <button type="button" class="remove-link">×</button>
     `;
-
-    const select = row.querySelector(".platform-select");
-    const customInput = row.querySelector(".custom-platform-input");
-    const urlInput = row.querySelector(".url-input");
-
-    select.addEventListener("change", () => {
-      if (select.value === "__custom__"){
-        customInput.style.display = "block";
-        customInput.focus();
-      } else {
-        customInput.style.display = "none";
-        // Only auto-fill if the URL field is still empty — never clobber
-        // something the user (or a loaded record) already has in there.
-        if (!urlInput.value.trim()){
-          urlInput.value = PLATFORM_PRESETS[select.value] || "";
-          urlInput.focus();
-          urlInput.setSelectionRange(urlInput.value.length, urlInput.value.length);
-        }
-      }
-    });
-
     row.querySelector(".remove-link").addEventListener("click", () => row.remove());
     list.appendChild(row);
   }
@@ -472,18 +508,12 @@
     // Replace the full set of links each save — simplest way to handle
     // additions, edits, and removals without diffing row by row.
     const linkRows = Array.from(document.querySelectorAll("#linksList .link-row"))
-      .map((row, i) => {
-        const selectVal = row.querySelector(".platform-select").value;
-        const platform = selectVal === "__custom__"
-          ? row.querySelector(".custom-platform-input").value.trim()
-          : selectVal;
-        return {
-          platform,
-          url: row.querySelector(".url-input").value.trim(),
-          is_public: row.querySelector(".public-checkbox").checked,
-          sort_order: i,
-        };
-      })
+      .map((row, i) => ({
+        platform: row.querySelector(".platform-input").value.trim(),
+        url: row.querySelector(".url-input").value.trim(),
+        is_public: row.querySelector(".public-checkbox").checked,
+        sort_order: i,
+      }))
       .filter(l => l.platform && l.url);
 
     await supabaseClient.from("profile_links").delete().eq("profile_id", currentSession.user.id);
@@ -498,6 +528,83 @@
     document.getElementById("viewProfileLink").href = `profile.html?username=${encodeURIComponent(payload.username)}`;
     renderLoggedInNav(currentSession);
   });
+
+  // ---- Danger Zone: deactivate / delete ----
+  const deactivateBtn = document.getElementById("deactivateBtn");
+  const deactivateConfirm = document.getElementById("deactivateConfirm");
+  const deleteAccountBtn = document.getElementById("deleteAccountBtn");
+  const deleteConfirm = document.getElementById("deleteConfirm");
+
+  deactivateBtn.addEventListener("click", () => { deactivateConfirm.style.display = "block"; });
+  document.getElementById("cancelDeactivateBtn").addEventListener("click", () => { deactivateConfirm.style.display = "none"; });
+
+  document.getElementById("confirmDeactivateBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("confirmDeactivateBtn");
+    btn.disabled = true;
+    btn.textContent = "Deactivating…";
+
+    const { error } = await supabaseClient
+      .from("account_status")
+      .upsert({ profile_id: currentSession.user.id, deactivated_at: new Date().toISOString() });
+
+    if (error){
+      showTopError(error.message || "Couldn't deactivate your account.");
+      btn.disabled = false;
+      btn.textContent = "Yes, Deactivate";
+      return;
+    }
+
+    await supabaseClient.auth.signOut();
+    window.location.href = "index.html";
+  });
+
+  deleteAccountBtn.addEventListener("click", async () => {
+    // Warn with real numbers before confirming — informed consent, not a blind click.
+    const { count } = await supabaseClient
+      .from("miniatures")
+      .select("id", { count: "exact", head: true })
+      .eq("owner_profile_id", currentSession.user.id)
+      .eq("status", "completed");
+
+    const modelNote = count
+      ? ` You have ${count} published model${count === 1 ? "" : "s"} — those will remain public and permanent, but your name will no longer be shown as the owner.`
+      : "";
+
+    document.getElementById("deleteConfirmText").textContent =
+      `Request account deletion? This starts a 21-day grace period — log back in any time before then to cancel.${modelNote}`;
+
+    deleteConfirm.style.display = "block";
+  });
+
+  document.getElementById("cancelDeleteAccountBtn").addEventListener("click", () => { deleteConfirm.style.display = "none"; });
+
+  document.getElementById("confirmDeleteAccountBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("confirmDeleteAccountBtn");
+    btn.disabled = true;
+    btn.textContent = "Requesting…";
+
+    const now = new Date().toISOString();
+    const { error } = await supabaseClient
+      .from("account_status")
+      .upsert({ profile_id: currentSession.user.id, deactivated_at: now, pending_deletion_at: now });
+
+    if (error){
+      showTopError(error.message || "Couldn't request account deletion.");
+      btn.disabled = false;
+      btn.textContent = "Yes, Request Deletion";
+      return;
+    }
+
+    await supabaseClient.auth.signOut();
+    window.location.href = "index.html";
+  });
+
+  function showTopError(message){
+    const box = document.getElementById("topError");
+    box.textContent = message;
+    box.style.display = "block";
+    box.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
 
   (async () => {
     const { data: { session } } = await supabaseClient.auth.getSession();
