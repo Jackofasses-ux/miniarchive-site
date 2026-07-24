@@ -75,6 +75,13 @@
   .mini-card:hover{ border-color: var(--gold); transform: translateY(-4px); }
   .mini-card .thumb{ height: 180px; position:relative; background: linear-gradient(160deg, #23201a, #131110); display:flex; align-items:center; justify-content:center; }
   .mini-card .thumb .id-tag{ position:absolute; top:10px; left:10px; font-family:'IBM Plex Mono', monospace; font-size:0.62rem; color: var(--gold); border:1px solid rgba(201,162,75,0.4); padding:3px 7px; }
+  .mini-card .thumb .card-edit-link{
+    position:absolute; bottom:10px; right:10px; z-index:5;
+    width:28px; height:28px; display:flex; align-items:center; justify-content:center;
+    background: rgba(12,11,9,0.75); border:1px solid var(--hairline); color: var(--cream-dim);
+    font-size:0.85rem; text-decoration:none; transition: border-color .2s ease, color .2s ease;
+  }
+  .mini-card .thumb .card-edit-link:hover{ border-color: var(--gold); color: var(--gold-bright); }
   .mini-card .info{ padding:16px 18px; }
   .mini-card .info .name{ font-family:'Cormorant Garamond', serif; font-size:1.1rem; font-weight:600; }
   .mini-card .info .meta{ margin-top:5px; font-family:'IBM Plex Mono', monospace; font-size:0.64rem; color: var(--mono); text-transform:uppercase; }
@@ -166,12 +173,18 @@
 
   const shieldIcon = `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1" style="width:100%;height:100%;opacity:0.3;"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>`;
 
+  let currentUserId = null;
+
   function renderMiniCard(m){
     const frontPhoto = (m.photos || []).find(p => p.photo_type === "front") || (m.photos || [])[0];
+    const editShortcut = (currentUserId && m.owner_profile_id === currentUserId)
+      ? `<a href="edit-model.html?id=${m.id}" onclick="event.stopPropagation()" class="card-edit-link" title="Edit this model">✎</a>`
+      : "";
     return `
       <div class="mini-card" onclick="window.location.href='model.html?id=${m.id}'">
         <div class="thumb">
           <span class="id-tag">${m.archive_id}</span>
+          ${editShortcut}
           ${frontPhoto ? `<img src="${frontPhoto.image_url}" alt="${m.title}" style="width:100%;height:100%;object-fit:cover;">` : shieldIcon}
         </div>
         <div class="info">
@@ -183,6 +196,9 @@
   }
 
   async function loadProfile(){
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    currentUserId = session?.user?.id || null;
+
     const username = new URLSearchParams(window.location.search).get("username");
     if (!username){
       document.getElementById("loadingState").style.display = "none";
@@ -244,7 +260,7 @@
     // Owned + published models
     const { data: owned } = await supabaseClient
       .from("miniatures")
-      .select("id, archive_id, title, manufacturer, hours_worked, created_at, photos ( image_url, photo_type )")
+      .select("id, archive_id, title, manufacturer, hours_worked, created_at, owner_profile_id, photos ( image_url, photo_type )")
       .eq("owner_profile_id", profile.id)
       .eq("visibility", "public")
       .eq("status", "completed")
@@ -262,7 +278,7 @@
     // Models credited as painter (may include ones they don't own)
     const { data: painted } = await supabaseClient
       .from("miniatures")
-      .select("id, archive_id, title, manufacturer, photos ( image_url, photo_type )")
+      .select("id, archive_id, title, manufacturer, owner_profile_id, photos ( image_url, photo_type )")
       .eq("painter_profile_id", profile.id)
       .eq("visibility", "public")
       .eq("status", "completed")
