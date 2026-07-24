@@ -55,15 +55,21 @@
 
   .section-head{ margin-top: 60px; }
   .section-head h2{ font-family:'Cormorant Garamond', serif; font-weight:500; font-size:1.6rem; }
-  .tab-row{ margin-top: 46px; display:flex; gap:10px; }
+  .tab-row{ margin-top: 46px; display:flex; gap:6px; position:relative; z-index:2; }
   .tab-btn{
     font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase;
-    color: var(--cream-dim); background: var(--bg-raised); border:1px solid var(--hairline); padding: 12px 22px;
-    cursor:pointer; transition: all .2s ease;
+    color: var(--cream-dim); background: var(--bg); border:1px solid var(--hairline); border-bottom:none;
+    padding: 14px 24px; cursor:pointer; transition: color .2s ease, border-color .2s ease;
+    position:relative; top:1px;
   }
-  .tab-btn.active{ background: var(--gold); border-color: var(--gold); color:#0c0b09; font-weight:500; }
-  .tab-btn:hover:not(.active){ border-color: var(--gold); color: var(--cream); }
-  .tab-panel{ margin-top: 40px; }
+  .tab-btn.active{
+    background: var(--bg-raised); border-color: var(--gold); color: var(--gold-bright); font-weight:500;
+    box-shadow: inset 0 2px 0 var(--gold);
+  }
+  .tab-btn:hover:not(.active){ border-color: var(--cream-dim); color: var(--cream); }
+  .tab-panel{
+    border:1px solid var(--hairline); background: var(--bg-raised); padding: 36px 32px;
+  }
   .rule-row{ display:flex; align-items:center; gap:14px; margin:14px 0 26px; }
   .rule-row .line{ height:1px; background: var(--hairline); flex:1; }
   .rule-row .diamond{ width:6px; height:6px; background: var(--gold); transform:rotate(45deg); flex-shrink:0; }
