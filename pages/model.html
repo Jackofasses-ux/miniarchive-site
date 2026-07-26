@@ -142,6 +142,9 @@
     color: var(--gold-bright); background: rgba(12,11,9,0.6); padding:3px 7px;
     opacity:1; transition: opacity .3s ease; pointer-events:none;
   }
+  .step-dots{ display:flex; justify-content:center; gap:6px; padding:10px 0; border-top:1px solid var(--hairline); }
+  .step-dot{ width:6px; height:6px; border-radius:50%; background: var(--hairline); transition: background .2s ease; }
+  .step-dot.active{ background: var(--gold); }
 
   .chip-row{ display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:16px; margin-top:20px; align-items:start; }
   .subtask-card{
@@ -540,6 +543,11 @@
               <div class="step-photo-frame" id="stepFrame-${i}" style="background-image:url('${allPhotos[0]}')" data-src="${allPhotos[0]}">
                 ${allPhotos.length > 1 ? `<div class="step-drag-badge" id="stepBadge-${i}">↔ DRAG</div>` : ""}
               </div>
+              ${allPhotos.length > 1 ? `
+                <div class="step-dots" id="stepDots-${i}">
+                  ${allPhotos.map((_, di) => `<span class="step-dot${di === 0 ? " active" : ""}"></span>`).join("")}
+                </div>
+              ` : ""}
             </div>
           ` : ""}
           <div class="chip-row">${group.entries.map(e => {
@@ -559,7 +567,7 @@
             const entryPhotos = e.photos || [];
             const photoStripHtml = entryPhotos.length ? `
               <div class="st-photo-strip">
-                ${entryPhotos.map(url => `<img src="${url}" alt="${e.date}" onclick="event.stopPropagation(); openLightbox('${url}')">`).join("")}
+                ${entryPhotos.map(url => `<img src="${url}" alt="${e.date}" draggable="false" onclick="event.stopPropagation(); openLightbox('${url}')">`).join("")}
               </div>
             ` : "";
             return `
@@ -631,12 +639,16 @@
 
       const frame = document.getElementById(`stepFrame-${i}`);
       const dragBadge = document.getElementById(`stepBadge-${i}`);
+      const dotsContainer = document.getElementById(`stepDots-${i}`);
       if (!frame) return;
 
       function setIndex(idx){
         idx = ((idx % photos.length) + photos.length) % photos.length;
         frame.style.backgroundImage = `url('${photos[idx].photoUrl}')`;
         frame.dataset.src = photos[idx].photoUrl;
+        if (dotsContainer){
+          dotsContainer.querySelectorAll(".step-dot").forEach((dot, di) => dot.classList.toggle("active", di === idx));
+        }
       }
 
       let dragging = false;
