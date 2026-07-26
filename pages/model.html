@@ -149,8 +149,15 @@
     transition: border-color .2s ease;
   }
   .subtask-card:hover{ border-color: var(--gold); }
-  .subtask-card .st-thumb{ display:none; width:100%; height:170px; object-fit:cover; cursor:zoom-in; }
-  .subtask-card.expanded .st-thumb{ display:block; }
+  .subtask-card .st-photo-strip{
+    display:none; overflow-x:auto; white-space:nowrap; padding:8px; gap:8px;
+    scrollbar-width:none; -ms-overflow-style:none;
+  }
+  .subtask-card .st-photo-strip::-webkit-scrollbar{ display:none; }
+  .subtask-card.expanded .st-photo-strip{ display:flex; }
+  .subtask-card .st-photo-strip img{
+    width:150px; height:150px; object-fit:cover; flex-shrink:0; cursor:zoom-in; border:1px solid var(--hairline);
+  }
   .subtask-card .st-body{ padding: 12px 14px; }
   .subtask-card .st-title{
     font-family:'IBM Plex Mono', monospace; font-size:0.66rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--gold-bright);
@@ -542,8 +549,8 @@
     const stepPhotoData = {};
 
     document.getElementById("timelineList").innerHTML = (m.timeline && m.timeline.length) ? m.timeline.map((group, i) => {
-      const photoEntries = group.entries.filter(e => e.photoUrl);
-      stepPhotoData[i] = photoEntries;
+      const allPhotos = group.entries.flatMap(e => e.photos || []);
+      stepPhotoData[i] = allPhotos.map(url => ({ photoUrl: url }));
       const dateRange = group.entries.length > 1
         ? `${group.entries[0].date} – ${group.entries[group.entries.length - 1].date}`
         : group.entries[0].date;
@@ -558,10 +565,10 @@
           ${group.isMilestone ? `<div class="milestone-tag">◆ Milestone</div>` : ""}
           <h3>${group.title}</h3>
           <div class="t-date-hours">${dateRange} · ${totalHours} hours</div>
-          ${photoEntries.length ? `
+          ${allPhotos.length ? `
             <div class="step-photo-viewer">
-              <div class="step-photo-frame" id="stepFrame-${i}" style="background-image:url('${photoEntries[0].photoUrl}')" data-src="${photoEntries[0].photoUrl}">
-                ${photoEntries.length > 1 ? `<div class="step-drag-badge" id="stepBadge-${i}">↔ DRAG</div>` : ""}
+              <div class="step-photo-frame" id="stepFrame-${i}" style="background-image:url('${allPhotos[0]}')" data-src="${allPhotos[0]}">
+                ${allPhotos.length > 1 ? `<div class="step-drag-badge" id="stepBadge-${i}">↔ DRAG</div>` : ""}
               </div>
             </div>
           ` : ""}
@@ -579,13 +586,19 @@
                 `).join("")}
               </div>
             ` : "";
+            const entryPhotos = e.photos || [];
+            const photoStripHtml = entryPhotos.length ? `
+              <div class="st-photo-strip">
+                ${entryPhotos.map(url => `<img src="${url}" alt="${e.date}" onclick="event.stopPropagation(); openLightbox('${url}')">`).join("")}
+              </div>
+            ` : "";
             return `
             <div class="subtask-card" onclick="toggleEntryCard(this)">
-              ${e.photoUrl ? `<img class="st-thumb" src="${e.photoUrl}" alt="${e.date}" onclick="event.stopPropagation(); openLightbox('${e.photoUrl}')">` : ""}
+              ${photoStripHtml}
               <div class="st-body">
                 <div class="st-title">
                   <span class="st-title-text">${e.date}${e.hours ? ` · ${e.hours}h` : ""}</span>
-                  ${e.photoUrl ? `<span class="st-photo-hint">◎</span>` : ""}
+                  ${entryPhotos.length ? `<span class="st-photo-hint">◎${entryPhotos.length > 1 ? ` ${entryPhotos.length}` : ""}</span>` : ""}
                 </div>
                 ${e.description ? `<div class="st-note">${e.description}</div>` : ""}
                 ${paintChipsHtml}
@@ -986,7 +999,7 @@
     const { data: entries, error } = await supabaseClient
       .from("timeline_entries")
       .select(`
-        id, entry_date, category, description, hours, image_url, is_completion,
+        id, entry_date, category, description, hours, is_completion,
         primer:primer_paint_id ( name, hex_color )
       `)
       .eq("miniature_id", miniatureId)
@@ -995,8 +1008,9 @@
 
     if (error || !entries || !entries.length) return [];
 
-    // Fetch all linked paints (Paint category) for these entries in one go
     const entryIds = entries.map(e => e.id);
+
+    // Fetch all linked paints (Paint category) for these entries in one go
     const { data: linkedRows } = await supabaseClient
       .from("timeline_entry_paints")
       .select("timeline_entry_id, role, sort_order, paints ( name, hex_color )")
@@ -1008,6 +1022,19 @@
       if (!row.paints) return;
       if (!linkedByEntry[row.timeline_entry_id]) linkedByEntry[row.timeline_entry_id] = [];
       linkedByEntry[row.timeline_entry_id].push({ name: row.paints.name, hex: row.paints.hex_color, role: row.role });
+    });
+
+    // Fetch all photos for these entries in one go — an entry can have any number
+    const { data: photoRows } = await supabaseClient
+      .from("timeline_entry_photos")
+      .select("timeline_entry_id, image_url, sort_order")
+      .in("timeline_entry_id", entryIds)
+      .order("sort_order", { ascending: true });
+
+    const photosByEntry = {};
+    (photoRows || []).forEach(row => {
+      if (!photosByEntry[row.timeline_entry_id]) photosByEntry[row.timeline_entry_id] = [];
+      photosByEntry[row.timeline_entry_id].push(row.image_url);
     });
 
     // ---- Compute milestones (derived from the data, never logged directly) ----
@@ -1028,7 +1055,7 @@
         date: formatDate(e.entry_date),
         hours: e.hours || 0,
         description: e.description || "",
-        photoUrl: e.image_url || null,
+        photos: photosByEntry[e.id] || [],
         primer: e.primer ? { name: e.primer.name, hex: e.primer.hex_color } : null,
         paints: linkedByEntry[e.id] || [],
       };
@@ -1081,12 +1108,26 @@
     if (miniatureId){
       const { data: entries } = await supabaseClient
         .from("timeline_entries")
-        .select("image_url, entry_date, category")
+        .select("id, entry_date, category")
         .eq("miniature_id", miniatureId)
-        .not("image_url", "is", null)
         .order("entry_date", { ascending: true });
 
-      timelineItems = (entries || []).map(e => ({ url: e.image_url, tag: `${e.category} · ${formatDate(e.entry_date)}` }));
+      const entryIds = (entries || []).map(e => e.id);
+      if (entryIds.length){
+        const { data: photoRows } = await supabaseClient
+          .from("timeline_entry_photos")
+          .select("timeline_entry_id, image_url, sort_order")
+          .in("timeline_entry_id", entryIds)
+          .order("sort_order", { ascending: true });
+
+        const entryById = {};
+        (entries || []).forEach(e => { entryById[e.id] = e; });
+
+        timelineItems = (photoRows || []).map(row => {
+          const entry = entryById[row.timeline_entry_id];
+          return { url: row.image_url, tag: `${entry?.category || "Timeline"} · ${formatDate(entry?.entry_date)}` };
+        });
+      }
     }
 
     const allItems = [...identityItems, ...timelineItems];
