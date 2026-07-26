@@ -182,14 +182,22 @@
     padding: 11px 10px; font-family:'Jost', sans-serif; font-size:0.85rem; flex-shrink:0; width:150px;
   }
 
-  .te-photo-slot .drop{
-    border:1px dashed var(--hairline); background: var(--bg); height:110px; width:110px;
+  .te-photo-grid{ display:flex; flex-wrap:wrap; gap:12px; }
+  .te-photo-box{ position:relative; }
+  .te-photo-box .drop{
+    border:1px dashed var(--hairline); background: var(--bg); height:100px; width:100px;
     display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px;
     cursor:pointer; overflow:hidden;
   }
-  .te-photo-slot .drop.filled{ border-style:solid; border-color: var(--gold); }
-  .te-photo-slot .drop img{ width:100%; height:100%; object-fit:cover; }
-  .te-photo-slot input[type="file"]{ display:none; }
+  .te-photo-box .drop.filled{ border-style:solid; border-color: var(--gold); }
+  .te-photo-box .drop img{ width:100%; height:100%; object-fit:cover; }
+  .te-photo-box input[type="file"]{ display:none; }
+  .te-photo-box .remove-photo{
+    position:absolute; top:-8px; right:-8px; width:22px; height:22px; border-radius:50%;
+    background: var(--bg); border:1px solid var(--error); color: var(--error);
+    font-size:0.8rem; line-height:1; cursor:pointer; display:none;
+  }
+  .te-photo-box.has-photo .remove-photo{ display:block; }
 
   .submit-row{ margin-top: 46px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
   .btn-delete{
@@ -506,14 +514,9 @@
         </div>
 
         <div class="field" style="margin-top:16px;">
-          <label>Photo <span style="color:var(--mono); text-transform:none; letter-spacing:0;">(optional)</span></label>
-          <div class="te-photo-slot">
-            <label class="drop" for="tePhoto" id="tePhotoDrop">
-              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
-              <span class="plus-label">Drop or Click</span>
-            </label>
-            <input type="file" id="tePhoto" accept="image/jpeg,image/png,image/webp">
-          </div>
+          <label>Photos <span style="color:var(--mono); text-transform:none; letter-spacing:0;">(optional — add as many as you want)</span></label>
+          <div class="te-photo-grid" id="tePhotoGrid"></div>
+          <input type="file" id="tePhotoFileInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
         </div>
 
         <div class="submit-row" style="margin-top:26px;">
@@ -1180,8 +1183,57 @@
   publishBtn.addEventListener("click", publishBtnClickRouter);
 
   // ---- Creation Timeline: flat daily log entries ----
-  let selectedEntryPhoto = null;
-  let existingEntryPhotoUrl = null;
+  // Each item: { file: File|null (newly picked, not yet uploaded), existingUrl: string|null }
+  let pendingEntryPhotos = [];
+  let activePhotoSlotIndex = null;
+
+  function renderPhotoGrid(){
+    const grid = document.getElementById("tePhotoGrid");
+    const totalBoxes = Math.max(4, pendingEntryPhotos.length + 1);
+    let html = "";
+    for (let i = 0; i < totalBoxes; i++){
+      const photo = pendingEntryPhotos[i];
+      if (photo && (photo.file || photo.existingUrl)){
+        const src = photo.file ? URL.createObjectURL(photo.file) : photo.existingUrl;
+        html += `
+          <div class="te-photo-box has-photo" data-index="${i}">
+            <div class="drop filled"><img src="${src}" alt="photo ${i + 1}"></div>
+            <button type="button" class="remove-photo" data-index="${i}">×</button>
+          </div>
+        `;
+      } else {
+        html += `
+          <div class="te-photo-box" data-index="${i}">
+            <div class="drop"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg></div>
+          </div>
+        `;
+      }
+    }
+    grid.innerHTML = html;
+
+    grid.querySelectorAll(".te-photo-box:not(.has-photo) .drop").forEach(drop => {
+      drop.addEventListener("click", () => {
+        activePhotoSlotIndex = parseInt(drop.closest(".te-photo-box").dataset.index);
+        document.getElementById("tePhotoFileInput").click();
+      });
+    });
+    grid.querySelectorAll(".remove-photo").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        pendingEntryPhotos.splice(parseInt(btn.dataset.index), 1);
+        renderPhotoGrid();
+      });
+    });
+  }
+
+  document.getElementById("tePhotoFileInput").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file || activePhotoSlotIndex === null) return;
+    pendingEntryPhotos[activePhotoSlotIndex] = { file, existingUrl: null };
+    activePhotoSlotIndex = null;
+    e.target.value = "";
+    renderPhotoGrid();
+  });
 
   // Writes every pending timeline entry to the database — called from
   // saveDraft()/publishModel() right after the miniature row itself is
@@ -1195,30 +1247,12 @@
     for (const entry of pendingTimelineEntries){
       if (entry._status === "existing") continue; // untouched since load, nothing to do
 
-      let imageUrl = entry.imageUrl;
-      if (entry._photoFile){
-        const uploadForm = new FormData();
-        uploadForm.append("file", entry._photoFile);
-        uploadForm.append("upload_type", "timeline_photo");
-        uploadForm.append("miniature_id", miniatureId);
-
-        const uploadRes = await fetch(WORKER_UPLOAD_URL, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${currentSession.access_token}` },
-          body: uploadForm,
-        });
-        const result = await uploadRes.json();
-        if (!uploadRes.ok) throw new Error(result.error || "Timeline photo upload failed");
-        imageUrl = result.url;
-      }
-
       const payload = {
         miniature_id: miniatureId,
         entry_date: entry.entryDate,
         category: entry.category,
         description: entry.description,
         hours: entry.hours,
-        image_url: imageUrl,
         is_completion: entry.category === "Completed",
         primer_paint_id: entry.primerPaintId,
       };
@@ -1233,6 +1267,36 @@
         entryId = inserted.id;
       }
 
+      // Upload any newly-picked photos, then replace the full photo set
+      // for this entry — same simple approach used elsewhere.
+      const finalPhotoUrls = [];
+      for (const photo of entry.photos){
+        if (photo.file){
+          const uploadForm = new FormData();
+          uploadForm.append("file", photo.file);
+          uploadForm.append("upload_type", "timeline_photo");
+          uploadForm.append("miniature_id", miniatureId);
+
+          const uploadRes = await fetch(WORKER_UPLOAD_URL, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${currentSession.access_token}` },
+            body: uploadForm,
+          });
+          const result = await uploadRes.json();
+          if (!uploadRes.ok) throw new Error(result.error || "Timeline photo upload failed");
+          finalPhotoUrls.push(result.url);
+        } else if (photo.existingUrl){
+          finalPhotoUrls.push(photo.existingUrl);
+        }
+      }
+
+      await supabaseClient.from("timeline_entry_photos").delete().eq("timeline_entry_id", entryId);
+      if (finalPhotoUrls.length){
+        await supabaseClient.from("timeline_entry_photos").insert(
+          finalPhotoUrls.map((url, i) => ({ timeline_entry_id: entryId, image_url: url, sort_order: i }))
+        );
+      }
+
       await supabaseClient.from("timeline_entry_paints").delete().eq("timeline_entry_id", entryId);
       if (entry.category === "Paint" && entry.linkedPaints.length){
         await supabaseClient.from("timeline_entry_paints").insert(
@@ -1242,8 +1306,7 @@
 
       entry._dbId = entryId;
       entry._status = "existing";
-      entry._photoFile = null;
-      entry.imageUrl = imageUrl;
+      entry.photos = finalPhotoUrls.map(url => ({ file: null, existingUrl: url }));
     }
   }
 
@@ -1256,15 +1319,14 @@
 
   function resetTimelineForm(){
     editingLocalId = null;
-    selectedEntryPhoto = null;
-    existingEntryPhotoUrl = null;
+    pendingEntryPhotos = [];
+    activePhotoSlotIndex = null;
     linkedPaintIds = [];
     document.getElementById("teDate").value = todayDateString();
     document.getElementById("teCategory").value = "Assembly";
     document.getElementById("teHours").value = "2";
     document.getElementById("teDescription").value = "";
-    document.getElementById("tePhotoDrop").classList.remove("filled");
-    document.getElementById("tePhotoDrop").innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg><span class="plus-label">Drop or Click</span>`;
+    renderPhotoGrid();
     document.getElementById("deleteTimelineEntryBtn").style.display = "none";
 
     clearPaintPick("tePrimer");
@@ -1405,17 +1467,6 @@
   }
   attachTimelineDateMask();
 
-  document.getElementById("tePhoto").addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    selectedEntryPhoto = file;
-    const drop = document.getElementById("tePhotoDrop");
-    drop.classList.add("filled");
-    const reader = new FileReader();
-    reader.onload = (ev) => { drop.innerHTML = `<img src="${ev.target.result}" alt="preview">`; };
-    reader.readAsDataURL(file);
-  });
-
   document.getElementById("timelineToggle").addEventListener("click", () => {
     const toggle = document.getElementById("timelineToggle");
     const content = document.getElementById("timelineContent");
@@ -1450,7 +1501,7 @@
     const { data: entries } = await supabaseClient
       .from("timeline_entries")
       .select(`
-        id, entry_date, category, description, hours, image_url, is_completion,
+        id, entry_date, category, description, hours, is_completion,
         primer_paint_id,
         primer:primer_paint_id ( name, hex_color )
       `)
@@ -1469,16 +1520,22 @@
         linkedPaints = (lp || []).filter(row => row.paints).map(row => ({ id: row.paint_id, role: row.role, name: row.paints.name, hex: row.paints.hex_color }));
       }
 
+      const { data: photoRows } = await supabaseClient
+        .from("timeline_entry_photos")
+        .select("image_url, sort_order")
+        .eq("timeline_entry_id", entry.id)
+        .order("sort_order", { ascending: true });
+      const photos = (photoRows || []).map(p => ({ file: null, existingUrl: p.image_url }));
+
       pendingTimelineEntries.push({
         _localId: nextLocalId++,
         _dbId: entry.id,
         _status: "existing",
-        _photoFile: null,
         entryDate: entry.entry_date,
         category: entry.category,
         description: entry.description,
         hours: entry.hours,
-        imageUrl: entry.image_url,
+        photos,
         primerPaintId: entry.primer_paint_id,
         primerName: entry.primer?.name || null,
         primerHex: entry.primer?.hex_color || null,
@@ -1534,15 +1591,8 @@
 
     entry.linkedPaints.forEach(p => addPaintLinkRow(p.id, p.name, p.hex, p.role || "Basecoat"));
 
-    if (entry.imageUrl){
-      existingEntryPhotoUrl = entry.imageUrl;
-      const drop = document.getElementById("tePhotoDrop");
-      drop.classList.add("filled");
-      drop.innerHTML = `<img src="${entry.imageUrl}" alt="preview">`;
-    }
-    if (entry._photoFile){
-      selectedEntryPhoto = entry._photoFile;
-    }
+    pendingEntryPhotos = (entry.photos || []).map(p => ({ file: p.file || null, existingUrl: p.existingUrl || null }));
+    renderPhotoGrid();
 
     document.getElementById("deleteTimelineEntryBtn").style.display = "inline-block";
     document.getElementById("timelineForm").style.display = "block";
@@ -1570,8 +1620,7 @@
       category,
       description: document.getElementById("teDescription").value.trim() || null,
       hours: document.getElementById("teHours").value ? parseFloat(document.getElementById("teHours").value) : null,
-      imageUrl: existingEntryPhotoUrl,
-      _photoFile: selectedEntryPhoto,
+      photos: pendingEntryPhotos.filter(p => p && (p.file || p.existingUrl)).map(p => ({ ...p })),
       primerPaintId: document.getElementById("tePrimerPaintId").value || null,
       primerName: document.getElementById("tePrimerPicked").querySelector(".name")?.textContent || null,
       primerHex: document.getElementById("tePrimerPicked").querySelector(".swatch")?.style.background || null,
