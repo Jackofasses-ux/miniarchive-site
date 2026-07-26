@@ -60,6 +60,17 @@
 
   fieldset{ border:none; margin-top: 44px; }
   fieldset .legend{ font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.14em; text-transform:uppercase; color: var(--gold); margin-bottom: 22px; }
+  .collapsible-legend{
+    cursor:pointer; display:flex; align-items:center; gap:12px; margin-bottom:0 !important;
+    padding-bottom: 22px;
+  }
+  .collapsible-legend .collapse-hint{
+    font-size:0.62rem; letter-spacing:0.06em; text-transform:none; color: var(--mono); flex:1;
+  }
+  .collapsible-legend .collapse-arrow{ color: var(--gold); transition: transform .2s ease; font-size:0.9rem; }
+  .collapsible-legend.open .collapse-arrow{ transform: rotate(90deg); }
+  .collapsible-legend.open .collapse-hint{ display:none; }
+  #timelineContent{ margin-top: 22px; }
 
   .field-grid{ display:grid; grid-template-columns: 1fr 1fr; gap: 20px; }
   .field{ margin-top: 20px; }
@@ -411,13 +422,17 @@
       <div class="photo-error" id="photoError">All four angle photos are required to publish.</div>
     </fieldset>
 
-    <fieldset id="timelineFieldset" style="display:none;">
-      <div class="legend">Creation Timeline</div>
-      <div id="timelineNoModelNote" class="hint" style="display:none;">Save this model as a draft first, then you can log timeline entries.</div>
-      <div id="timelineEntriesList"></div>
-      <button type="button" class="btn-ghost" id="addTimelineEntryBtn" style="margin-top:14px;">+ Log an Entry</button>
+    <fieldset id="timelineFieldset">
+      <div class="legend collapsible-legend" id="timelineToggle">
+        Creation Timeline
+        <span class="collapse-hint">Optional — click to expand</span>
+        <span class="collapse-arrow">▸</span>
+      </div>
+      <div id="timelineContent" style="display:none;">
+        <div id="timelineEntriesList"></div>
+        <button type="button" class="btn-ghost" id="addTimelineEntryBtn" style="margin-top:14px;">+ Log an Entry</button>
 
-      <div class="timeline-form" id="timelineForm" style="display:none;">
+        <div class="timeline-form" id="timelineForm" style="display:none;">
         <div class="field-grid">
           <div class="field full">
             <label>What did you do today?</label>
@@ -494,6 +509,7 @@
           <button type="button" class="btn-delete" id="deleteTimelineEntryBtn" style="display:none;">Delete Entry</button>
           <span class="progress-note" id="teProgressNote"></span>
         </div>
+      </div>
       </div>
     </fieldset>
 
@@ -1387,6 +1403,13 @@
     reader.readAsDataURL(file);
   });
 
+  document.getElementById("timelineToggle").addEventListener("click", () => {
+    const toggle = document.getElementById("timelineToggle");
+    const content = document.getElementById("timelineContent");
+    const isOpen = toggle.classList.toggle("open");
+    content.style.display = isOpen ? "block" : "none";
+  });
+
   document.getElementById("addTimelineEntryBtn").addEventListener("click", () => {
     resetTimelineForm();
     document.getElementById("timelineForm").style.display = "block";
@@ -1668,6 +1691,10 @@
     });
 
     await loadExistingTimelineEntries();
+    if (pendingTimelineEntries.length){
+      document.getElementById("timelineToggle").classList.add("open");
+      document.getElementById("timelineContent").style.display = "block";
+    }
     applyStatusUI();
     document.getElementById("formWrap").style.display = "block";
   })();
