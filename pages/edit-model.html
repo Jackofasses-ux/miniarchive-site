@@ -864,6 +864,7 @@
       progressNote.textContent = "";
       showTopSuccess(`Saved. This is still a private draft — <a href="collection.html?mine=true" style="color:var(--gold-bright);">view it in My Collection</a>, or publish it below when it's ready.`);
       history.replaceState({}, "", `edit-model.html?id=${modelId}`);
+      applyStatusUI();
 
     } catch (err){
       console.error("Save draft failed:", err);
