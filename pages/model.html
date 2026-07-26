@@ -400,31 +400,23 @@
     description: "A commission piece rendered in 35 painstaking hours — chapter captain of the Iron Vigil, bearing the honours of two crusades and the Painter's Choice Award, NovaCon 2024.",
     verified: true,
     timeline: [
-      { title: "Assembly", date: "12 Mar 2024", hours: "2.5 hours", desc: "Removed mold lines, pinned the cloak to the torso with a 0.8mm brass rod. Gap-filled the left shoulder pauldron joint with green stuff.", stepPhotos: [], subtasks: [
-        { title: "Mold Line Removal", note: "Scraper + 400-grit sanding stick on all visible seams", photoUrl: null },
-        { title: "Pin Cloak to Torso", note: "0.8mm brass rod, 6mm deep on each side. Tested pull strength.", photoUrl: null },
-        { title: "Gap Fill — Pauldron", note: "Green stuff, 1:1 mix, textured to match plate surface.", photoUrl: null },
-        { title: "Dry Fit Check", note: "Confirmed all joins tight before gluing permanently.", photoUrl: null },
+      { title: "Assembly", isMilestone: false, entries: [
+        { date: "12 Mar 2024", hours: 2.5, description: "Removed mold lines, pinned the cloak to the torso with a 0.8mm brass rod.", photoUrl: null },
+        { date: "13 Mar 2024", hours: 1.5, description: "Gap-filled the left shoulder pauldron joint with green stuff, sculpted to match the surrounding plate texture.", photoUrl: null },
       ] },
-      { title: "Surface Preparation", date: "14 Mar 2024", hours: "1 hour", desc: "Zenithal prime applied in three passes — black from below, grey from 45°, white from directly above.", stepPhotos: [], subtasks: [
-        { title: "Zenithal Prime", note: "3-pass build.", photoUrl: null },
+      { title: "Surface Prep", isMilestone: false, entries: [
+        { date: "14 Mar 2024", hours: 1, description: "Zenithal prime applied in three passes — black from below, grey from 45°, white from directly above.", photoUrl: null },
       ] },
-      { title: "The First Brushstroke", date: "16 Mar 2024", hours: "4 hours", desc: "The armour receives its first colour — Kantor Blue, thinned to near-glaze consistency. Two patient coats.", isMilestone: true, stepPhotos: [], subtasks: [
-        { title: "Armour — Kantor Blue", note: "2 thin coats, thinned 2:1 with flow improver.", photoUrl: null },
-        { title: "Skin — Ratskin Flesh", note: "Face, hands; 3 thin coats over white zenithal.", photoUrl: null },
-        { title: "Leather — Rhinox Hide", note: "Straps, holster, boot soles. Single coat sufficient.", photoUrl: null },
-        { title: "Cloak — Incubi Darkness", note: "Deep teal base, left to dry 2h before next step.", photoUrl: null },
+      { title: "First Brushstroke", isMilestone: true, entries: [
+        { date: "16 Mar 2024", hours: 4, description: "The armour receives its first colour — Kantor Blue, thinned to near-glaze consistency. Two patient coats.", photoUrl: null },
       ] },
-      { title: "Shadow & Depth", date: "19 Mar 2024", hours: "3 hours", desc: "Targeted Nuln Oil Gloss into all recesses — undiluted at joints, diluted 1:3 on flat plates to preserve the pre-shading gradient.", stepPhotos: [], subtasks: [
-        { title: "Nuln Oil — Joints", note: "Undiluted; capillary action pulls it into recesses.", photoUrl: null },
-        { title: "Nuln Oil — Flat Plates", note: "Diluted 1:3 with Lahmian Medium.", photoUrl: null },
-        { title: "Reikland — Skin", note: "One coat overall; second targeted coat in eye sockets.", photoUrl: null },
+      { title: "Paint", isMilestone: false, entries: [
+        { date: "17 Mar 2024", hours: 3, description: "Skin — Ratskin Flesh, 3 thin coats over white zenithal. Leather — Rhinox Hide on straps and boot soles.", photoUrl: null },
+        { date: "19 Mar 2024", hours: 3, description: "Targeted Nuln Oil Gloss into all recesses — undiluted at joints, diluted 1:3 on flat plates.", photoUrl: null },
+        { date: "22 Mar 2024", hours: 2, description: "Edge highlights in Fenrisian Grey, sharpest on final edges. NMM gold begins on the chapter eagle.", photoUrl: null },
       ] },
-      { title: "Completed", date: "28 Mar 2024", hours: "—", desc: "Gloss varnish on lenses and gems. Satin coat over armour plates. Matte finish on the cloak and base. Captain Cassian is complete.", isMilestone: true, stepPhotos: [], subtasks: [
-        { title: "Gloss Varnish", note: "Lenses, gems, liquid surfaces.", photoUrl: null },
-        { title: "Satin Varnish", note: "Armour plates — Vallejo Satin, airbrushed at 15psi.", photoUrl: null },
-        { title: "Matte Varnish", note: "Cloak, base, skin. Kept away from armour.", photoUrl: null },
-        { title: "Tufts & Static Grass", note: "Gamers Grass — Autumn mix, 3 clusters.", photoUrl: null },
+      { title: "Model Completed", isMilestone: true, entries: [
+        { date: "28 Mar 2024", hours: 1, description: "Gloss varnish on lenses and gems. Satin coat over armour plates. Matte finish on the cloak and base. Captain Cassian is complete.", photoUrl: null },
       ] },
     ],
     recipe: [
@@ -494,43 +486,53 @@
       `;
     }
 
-    document.getElementById("timelineList").innerHTML = (m.timeline && m.timeline.length) ? m.timeline.map((t, i) => {
-      const photoSubtasks = (t.subtasks || []).filter(s => s.photoUrl);
+    document.getElementById("timelineList").innerHTML = (m.timeline && m.timeline.length) ? m.timeline.map((group, i) => {
+      const photoEntries = group.entries.filter(e => e.photoUrl);
+      const dateRange = group.entries.length > 1
+        ? `${group.entries[0].date} – ${group.entries[group.entries.length - 1].date}`
+        : group.entries[0].date;
+      const totalHours = group.entries.reduce((sum, e) => sum + (e.hours || 0), 0);
       return `
-      <div class="timeline-item${t.isMilestone ? " milestone" : ""}">
+      <div class="timeline-item${group.isMilestone ? " milestone" : ""}">
         <div class="t-meta">
           ${String(i + 1).padStart(2, "0")}
           <div class="t-marker"></div>
         </div>
         <div>
-          ${t.isMilestone ? `<div class="milestone-tag">◆ Milestone</div>` : ""}
-          <h3>${t.title}</h3>
-          <div class="t-date-hours">${t.date} · ${t.hours}</div>
-          ${t.desc ? `<p class="t-desc">${t.desc}</p>` : ""}
-          ${photoSubtasks.length ? `
+          ${group.isMilestone ? `<div class="milestone-tag">◆ Milestone</div>` : ""}
+          <h3>${group.title}</h3>
+          <div class="t-date-hours">${dateRange} · ${totalHours} hours</div>
+          ${photoEntries.length ? `
             <div class="step-photo-viewer">
-              <div class="step-photo-frame" id="stepFrame-${i}" style="background-image:url('${photoSubtasks[0].photoUrl}')" onclick="openLightbox(document.getElementById('stepFrame-${i}').dataset.src)" data-src="${photoSubtasks[0].photoUrl}"></div>
+              <div class="step-photo-frame" id="stepFrame-${i}" style="background-image:url('${photoEntries[0].photoUrl}')" onclick="openLightbox(document.getElementById('stepFrame-${i}').dataset.src)" data-src="${photoEntries[0].photoUrl}"></div>
               <div class="step-photo-tabs">
-                ${photoSubtasks.map((s, si) => `<button class="${si === 0 ? "active" : ""}" onclick="setStepPhoto(${i}, '${s.photoUrl.replace(/'/g, "\\'")}', this)">${s.title}</button>`).join("")}
+                ${photoEntries.map((e, ei) => `<button class="${ei === 0 ? "active" : ""}" onclick="setStepPhoto(${i}, '${e.photoUrl.replace(/'/g, "\\'")}', this)">${e.date}</button>`).join("")}
               </div>
             </div>
           ` : ""}
-          ${(t.subtasks && t.subtasks.length) ? `<div class="chip-row">${t.subtasks.map(s => `
-            <div class="subtask-card" onclick="this.classList.toggle('expanded')">
-              ${s.photoUrl ? `<img class="st-thumb" src="${s.photoUrl}" alt="${s.title}" onclick="event.stopPropagation(); openLightbox('${s.photoUrl}')">` : ""}
+          <div class="chip-row">${group.entries.map(e => `
+            <div class="subtask-card" onclick="toggleEntryCard(this)">
+              ${e.photoUrl ? `<img class="st-thumb" src="${e.photoUrl}" alt="${e.date}" onclick="event.stopPropagation(); openLightbox('${e.photoUrl}')">` : ""}
               <div class="st-body">
                 <div class="st-title">
-                  <span class="st-title-text">${s.title}</span>
-                  ${s.photoUrl ? `<span class="st-photo-hint">◎</span>` : ""}
+                  <span class="st-title-text">${e.date}${e.hours ? ` · ${e.hours}h` : ""}</span>
+                  ${e.photoUrl ? `<span class="st-photo-hint">◎</span>` : ""}
                 </div>
-                ${s.note ? `<div class="st-note">${s.note}</div>` : ""}
+                ${e.description ? `<div class="st-note">${e.description}</div>` : ""}
               </div>
             </div>
-          `).join("")}</div>` : ""}
+          `).join("")}</div>
         </div>
       </div>
     `;
     }).join("") : `<p style="color:var(--cream-dim); padding: 24px 0; border-top:1px solid var(--hairline);">No timeline logged for this model yet.</p>`;
+
+    window.toggleEntryCard = function(card){
+      const wasExpanded = card.classList.contains("expanded");
+      const container = card.closest(".chip-row");
+      container.querySelectorAll(".subtask-card.expanded").forEach(c => c.classList.remove("expanded"));
+      if (!wasExpanded) card.classList.add("expanded");
+    };
 
     window.setStepPhoto = function(itemIndex, url, btn){
       const frame = document.getElementById(`stepFrame-${itemIndex}`);
@@ -764,28 +766,70 @@
   }
 
   async function loadTimeline(miniatureId){
-    const { data: events, error } = await supabaseClient
-      .from("timeline_events")
-      .select(`
-        id, title, event_date, hours_spent, description, is_milestone,
-        timeline_subtasks ( title, note, image_url, sort_order )
-      `)
+    const { data: entries, error } = await supabaseClient
+      .from("timeline_entries")
+      .select("id, entry_date, category, description, hours, image_url, is_completion")
       .eq("miniature_id", miniatureId)
-      .order("sort_order", { ascending: true });
+      .order("entry_date", { ascending: true })
+      .order("created_at", { ascending: true });
 
-    if (error || !events) return [];
+    if (error || !entries || !entries.length) return [];
 
-    return events.map(e => {
-      const sortedSubtasks = (e.timeline_subtasks || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    // ---- Compute milestones (derived from the data, never logged directly) ----
+    // "First Brushstroke" = earliest entry in the Paint category
+    const firstPaintEntry = entries.find(e => e.category === "Paint") || null;
+    // "Model Completed" = the completion-flagged entry with the latest date
+    const completionCandidates = entries.filter(e => e.is_completion);
+    const completionEntry = completionCandidates.length
+      ? completionCandidates[completionCandidates.length - 1] // entries already sorted ascending by date
+      : null;
+
+    const milestoneIds = new Set();
+    if (firstPaintEntry) milestoneIds.add(firstPaintEntry.id);
+    if (completionEntry) milestoneIds.add(completionEntry.id);
+
+    function toEntryShape(e){
       return {
-        title: e.title,
-        date: formatDate(e.event_date),
-        hours: e.hours_spent ? `${e.hours_spent} hours` : "—",
-        desc: e.description || "",
-        isMilestone: e.is_milestone,
-        subtasks: sortedSubtasks.map(s => ({ title: s.title, note: s.note, photoUrl: s.image_url || null })),
+        date: formatDate(e.entry_date),
+        hours: e.hours || 0,
+        description: e.description || "",
+        photoUrl: e.image_url || null,
       };
+    }
+
+    // ---- Walk entries in date order, bundling consecutive same-category runs.
+    // Milestone entries are pulled out as their own standalone group, breaking
+    // whatever category run they'd otherwise have been part of.
+    const groups = [];
+    let currentCategory = null;
+    let currentEntries = [];
+
+    function flushCurrent(){
+      if (currentEntries.length){
+        groups.push({ title: currentCategory, isMilestone: false, entries: currentEntries });
+      }
+      currentEntries = [];
+      currentCategory = null;
+    }
+
+    entries.forEach(e => {
+      if (milestoneIds.has(e.id)){
+        flushCurrent();
+        const isBoth = e.id === firstPaintEntry?.id && e.id === completionEntry?.id;
+        const title = isBoth ? "Model Completed" : (e.id === completionEntry?.id ? "Model Completed" : "First Brushstroke");
+        groups.push({ title, isMilestone: true, entries: [toEntryShape(e)] });
+        return;
+      }
+
+      if (currentCategory !== e.category){
+        flushCurrent();
+        currentCategory = e.category;
+      }
+      currentEntries.push(toEntryShape(e));
     });
+    flushCurrent();
+
+    return groups;
   }
 
   function renderGallery(){
