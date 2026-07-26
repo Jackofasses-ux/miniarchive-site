@@ -520,8 +520,7 @@
           <div class="chip-row">${group.entries.map(e => {
             const paintChips = [];
             if (e.primer) paintChips.push({ label: "Primer", ...e.primer });
-            if (e.basecoat) paintChips.push({ label: "Basecoat", ...e.basecoat });
-            (e.paints || []).forEach(p => paintChips.push({ label: null, ...p }));
+            (e.paints || []).forEach(p => paintChips.push({ label: p.role, ...p }));
             const paintChipsHtml = paintChips.length ? `
               <div class="st-paint-chips">
                 ${paintChips.map(p => `
@@ -840,9 +839,8 @@
     const { data: entries } = await supabaseClient
       .from("timeline_entries")
       .select(`
-        id, primer_paint_id, basecoat_paint_id,
-        primer:primer_paint_id ( id, brand, range, name, hex_color ),
-        basecoat:basecoat_paint_id ( id, brand, range, name, hex_color )
+        id, primer_paint_id,
+        primer:primer_paint_id ( id, brand, range, name, hex_color )
       `)
       .eq("miniature_id", miniatureId);
 
@@ -850,7 +848,7 @@
     const { data: linkedRows } = entryIds.length
       ? await supabaseClient
           .from("timeline_entry_paints")
-          .select("paints ( id, brand, range, name, hex_color )")
+          .select("role, paints ( id, brand, range, name, hex_color )")
           .in("timeline_entry_id", entryIds)
       : { data: [] };
 
@@ -861,11 +859,8 @@
       if (!byId[paint.id]) byId[paint.id] = { ...paint, roles: new Set() };
       byId[paint.id].roles.add(role);
     }
-    (entries || []).forEach(e => {
-      addPaint(e.primer, "Primer");
-      addPaint(e.basecoat, "Basecoat");
-    });
-    (linkedRows || []).forEach(row => addPaint(row.paints, "Paint"));
+    (entries || []).forEach(e => addPaint(e.primer, "Primer"));
+    (linkedRows || []).forEach(row => addPaint(row.paints, row.role || "Paint"));
 
     const recipe = Object.values(byId);
 
@@ -886,8 +881,7 @@
       .from("timeline_entries")
       .select(`
         id, entry_date, category, description, hours, image_url, is_completion,
-        primer:primer_paint_id ( name, hex_color ),
-        basecoat:basecoat_paint_id ( name, hex_color )
+        primer:primer_paint_id ( name, hex_color )
       `)
       .eq("miniature_id", miniatureId)
       .order("entry_date", { ascending: true })
@@ -899,7 +893,7 @@
     const entryIds = entries.map(e => e.id);
     const { data: linkedRows } = await supabaseClient
       .from("timeline_entry_paints")
-      .select("timeline_entry_id, sort_order, paints ( name, hex_color )")
+      .select("timeline_entry_id, role, sort_order, paints ( name, hex_color )")
       .in("timeline_entry_id", entryIds)
       .order("sort_order", { ascending: true });
 
@@ -907,7 +901,7 @@
     (linkedRows || []).forEach(row => {
       if (!row.paints) return;
       if (!linkedByEntry[row.timeline_entry_id]) linkedByEntry[row.timeline_entry_id] = [];
-      linkedByEntry[row.timeline_entry_id].push({ name: row.paints.name, hex: row.paints.hex_color });
+      linkedByEntry[row.timeline_entry_id].push({ name: row.paints.name, hex: row.paints.hex_color, role: row.role });
     });
 
     // ---- Compute milestones (derived from the data, never logged directly) ----
@@ -930,7 +924,6 @@
         description: e.description || "",
         photoUrl: e.image_url || null,
         primer: e.primer ? { name: e.primer.name, hex: e.primer.hex_color } : null,
-        basecoat: e.basecoat ? { name: e.basecoat.name, hex: e.basecoat.hex_color } : null,
         paints: linkedByEntry[e.id] || [],
       };
     }
