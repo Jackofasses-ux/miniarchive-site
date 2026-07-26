@@ -831,6 +831,54 @@
     setPhotoView("front");
     renderGallery(data.id);
     loadEditHistory(data.id);
+    loadPaintRecipe(data.id);
+  }
+
+  async function loadPaintRecipe(miniatureId){
+    const grid = document.getElementById("recipeGrid");
+
+    const { data: entries } = await supabaseClient
+      .from("timeline_entries")
+      .select(`
+        id, primer_paint_id, basecoat_paint_id,
+        primer:primer_paint_id ( id, brand, range, name, hex_color ),
+        basecoat:basecoat_paint_id ( id, brand, range, name, hex_color )
+      `)
+      .eq("miniature_id", miniatureId);
+
+    const entryIds = (entries || []).map(e => e.id);
+    const { data: linkedRows } = entryIds.length
+      ? await supabaseClient
+          .from("timeline_entry_paints")
+          .select("paints ( id, brand, range, name, hex_color )")
+          .in("timeline_entry_id", entryIds)
+      : { data: [] };
+
+    // Dedupe by paint id, collecting every role each paint was used in
+    const byId = {};
+    function addPaint(paint, role){
+      if (!paint) return;
+      if (!byId[paint.id]) byId[paint.id] = { ...paint, roles: new Set() };
+      byId[paint.id].roles.add(role);
+    }
+    (entries || []).forEach(e => {
+      addPaint(e.primer, "Primer");
+      addPaint(e.basecoat, "Basecoat");
+    });
+    (linkedRows || []).forEach(row => addPaint(row.paints, "Paint"));
+
+    const recipe = Object.values(byId);
+
+    grid.innerHTML = recipe.length ? recipe.map(p => `
+      <div class="recipe-card">
+        <div class="step-meta">
+          <div class="step-label">${Array.from(p.roles).join(" / ")}</div>
+          <div class="swatch" style="background:${p.hex_color || "#333"};"></div>
+        </div>
+        <h3>${p.name}</h3>
+        <div class="paint-name">${p.brand} — ${p.range}</div>
+      </div>
+    `).join("") : `<p style="color:var(--cream-dim); grid-column:1/-1;">No paints logged for this model yet.</p>`;
   }
 
   async function loadTimeline(miniatureId){
