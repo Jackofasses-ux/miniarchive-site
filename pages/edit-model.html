@@ -172,6 +172,15 @@
   .paint-link-row .swatch{ width:16px; height:16px; border:1px solid var(--hairline); flex-shrink:0; }
   .paint-link-row .name{ font-size:0.85rem; flex:1; }
   .paint-link-row .remove-paint-link{ background:none; border:none; color: var(--error); cursor:pointer; font-size:0.95rem; }
+  .paint-link-row .role-tag{
+    font-family:'IBM Plex Mono', monospace; font-size:0.6rem; letter-spacing:0.06em; text-transform:uppercase;
+    color: var(--gold); border:1px solid rgba(201,162,75,0.4); padding:3px 7px; flex-shrink:0;
+  }
+  .add-paint-row{ display:flex; gap:10px; align-items:flex-start; }
+  .add-paint-row select{
+    background: var(--bg); border:1px solid var(--hairline); color: var(--cream);
+    padding: 11px 10px; font-family:'Jost', sans-serif; font-size:0.85rem; flex-shrink:0; width:150px;
+  }
 
   .te-photo-slot .drop{
     border:1px dashed var(--hairline); background: var(--bg); height:110px; width:110px;
@@ -473,22 +482,26 @@
             <div class="paint-search-results" id="tePrimerResults"></div>
             <div class="paint-picked" id="tePrimerPicked" style="display:none;"></div>
           </div>
-          <div class="paint-picker-field">
-            <label>Basecoat Colour</label>
-            <input type="text" class="paint-search-input" id="teBasecoatSearch" placeholder="Search paints…" autocomplete="off">
-            <input type="hidden" id="teBasecoatPaintId">
-            <div class="paint-search-results" id="teBasecoatResults"></div>
-            <div class="paint-picked" id="teBasecoatPicked" style="display:none;"></div>
-          </div>
         </div>
 
         <!-- Paint category only -->
         <div class="field full" id="paintFields" style="display:none; margin-top:20px;">
           <label>Paints Used</label>
           <div id="paintLinksList"></div>
-          <div class="paint-picker-field" style="margin-top:8px;">
-            <input type="text" class="paint-search-input" id="teAddPaintSearch" placeholder="Search paints to add…" autocomplete="off">
-            <div class="paint-search-results" id="teAddPaintResults"></div>
+          <div class="add-paint-row">
+            <select id="teAddPaintRole">
+              <option value="Basecoat">Basecoat</option>
+              <option value="Wash/Shade">Wash / Shade</option>
+              <option value="Highlight">Highlight</option>
+              <option value="Edge Highlight">Edge Highlight</option>
+              <option value="Drybrush">Drybrush</option>
+              <option value="Glaze">Glaze</option>
+              <option value="Other">Other</option>
+            </select>
+            <div class="paint-picker-field" style="flex:1;">
+              <input type="text" class="paint-search-input" id="teAddPaintSearch" placeholder="Search paints to add…" autocomplete="off">
+              <div class="paint-search-results" id="teAddPaintResults"></div>
+            </div>
           </div>
         </div>
 
@@ -1208,7 +1221,6 @@
         image_url: imageUrl,
         is_completion: entry.category === "Completed",
         primer_paint_id: entry.primerPaintId,
-        basecoat_paint_id: entry.basecoatPaintId,
       };
 
       let entryId = entry._dbId;
@@ -1224,7 +1236,7 @@
       await supabaseClient.from("timeline_entry_paints").delete().eq("timeline_entry_id", entryId);
       if (entry.category === "Paint" && entry.linkedPaints.length){
         await supabaseClient.from("timeline_entry_paints").insert(
-          entry.linkedPaints.map((p, i) => ({ timeline_entry_id: entryId, paint_id: p.id, sort_order: i }))
+          entry.linkedPaints.map((p, i) => ({ timeline_entry_id: entryId, paint_id: p.id, role: p.role, sort_order: i }))
         );
       }
 
@@ -1256,7 +1268,6 @@
     document.getElementById("deleteTimelineEntryBtn").style.display = "none";
 
     clearPaintPick("tePrimer");
-    clearPaintPick("teBasecoat");
     document.getElementById("paintLinksList").innerHTML = "";
     document.getElementById("teAddPaintSearch").value = "";
     updateCategoryFieldVisibility();
@@ -1269,7 +1280,7 @@
   }
   document.getElementById("teCategory").addEventListener("change", updateCategoryFieldVisibility);
 
-  // ---- Reusable paint search — used by Primer, Basecoat, and the
+  // ---- Reusable paint search — used by Primer and the
   // Paint-category multi-picker alike. ----
   function paintSwatch(hex){
     return `<div class="paint-result-swatch" style="background:${hex || "#333"};"></div>`;
@@ -1330,22 +1341,23 @@
   }
 
   wireSinglePaintPicker("tePrimer");
-  wireSinglePaintPicker("teBasecoat");
 
-  function addPaintLinkRow(paintId, name, hex){
-    if (linkedPaintIds.includes(paintId)) return; // no duplicates
-    linkedPaintIds.push(paintId);
+  function addPaintLinkRow(paintId, name, hex, role){
+    linkedPaintIds.push(paintId); // duplicates now allowed — same paint can serve different roles
     const list = document.getElementById("paintLinksList");
     const row = document.createElement("div");
     row.className = "paint-link-row";
     row.dataset.paintId = paintId;
+    row.dataset.role = role;
     row.innerHTML = `
+      <span class="role-tag">${role}</span>
       <div class="swatch" style="background:${hex || "#333"};"></div>
       <div class="name">${name}</div>
       <button type="button" class="remove-paint-link">×</button>
     `;
     row.querySelector(".remove-paint-link").addEventListener("click", () => {
-      linkedPaintIds = linkedPaintIds.filter(id => id !== paintId);
+      const idx = linkedPaintIds.indexOf(paintId);
+      if (idx > -1) linkedPaintIds.splice(idx, 1);
       row.remove();
     });
     list.appendChild(row);
@@ -1354,6 +1366,7 @@
   (function wireAddPaintSearch(){
     const input = document.getElementById("teAddPaintSearch");
     const results = document.getElementById("teAddPaintResults");
+    const roleSelect = document.getElementById("teAddPaintRole");
 
     input.addEventListener("input", async () => {
       const matches = await searchPaints(input.value.trim());
@@ -1368,7 +1381,7 @@
       results.classList.add("open");
       results.querySelectorAll(".paint-result-row").forEach(row => {
         row.addEventListener("click", () => {
-          addPaintLinkRow(row.dataset.id, row.dataset.name, row.dataset.hex);
+          addPaintLinkRow(row.dataset.id, row.dataset.name, row.dataset.hex, roleSelect.value);
           input.value = "";
           results.classList.remove("open");
         });
@@ -1438,9 +1451,8 @@
       .from("timeline_entries")
       .select(`
         id, entry_date, category, description, hours, image_url, is_completion,
-        primer_paint_id, basecoat_paint_id,
-        primer:primer_paint_id ( name, hex_color ),
-        basecoat:basecoat_paint_id ( name, hex_color )
+        primer_paint_id,
+        primer:primer_paint_id ( name, hex_color )
       `)
       .eq("miniature_id", modelId)
       .order("entry_date", { ascending: false })
@@ -1451,10 +1463,10 @@
       if (entry.category === "Paint"){
         const { data: lp } = await supabaseClient
           .from("timeline_entry_paints")
-          .select("paint_id, sort_order, paints ( name, hex_color )")
+          .select("paint_id, role, sort_order, paints ( name, hex_color )")
           .eq("timeline_entry_id", entry.id)
           .order("sort_order", { ascending: true });
-        linkedPaints = (lp || []).filter(row => row.paints).map(row => ({ id: row.paint_id, name: row.paints.name, hex: row.paints.hex_color }));
+        linkedPaints = (lp || []).filter(row => row.paints).map(row => ({ id: row.paint_id, role: row.role, name: row.paints.name, hex: row.paints.hex_color }));
       }
 
       pendingTimelineEntries.push({
@@ -1470,9 +1482,6 @@
         primerPaintId: entry.primer_paint_id,
         primerName: entry.primer?.name || null,
         primerHex: entry.primer?.hex_color || null,
-        basecoatPaintId: entry.basecoat_paint_id,
-        basecoatName: entry.basecoat?.name || null,
-        basecoatHex: entry.basecoat?.hex_color || null,
         linkedPaints,
       });
     }
@@ -1522,15 +1531,8 @@
       picked.style.display = "flex";
       picked.querySelector(".clear-pick").addEventListener("click", () => clearPaintPick("tePrimer"));
     }
-    if (entry.basecoatPaintId){
-      document.getElementById("teBasecoatPaintId").value = entry.basecoatPaintId;
-      const picked = document.getElementById("teBasecoatPicked");
-      picked.innerHTML = `<div class="swatch" style="background:${entry.basecoatHex || "#333"};"></div><div class="name">${entry.basecoatName}</div><button type="button" class="clear-pick">×</button>`;
-      picked.style.display = "flex";
-      picked.querySelector(".clear-pick").addEventListener("click", () => clearPaintPick("teBasecoat"));
-    }
 
-    entry.linkedPaints.forEach(p => addPaintLinkRow(p.id, p.name, p.hex));
+    entry.linkedPaints.forEach(p => addPaintLinkRow(p.id, p.name, p.hex, p.role || "Basecoat"));
 
     if (entry.imageUrl){
       existingEntryPhotoUrl = entry.imageUrl;
@@ -1556,10 +1558,12 @@
       return;
     }
 
-    const linkedPaints = linkedPaintIds.map(id => {
-      const row = document.querySelector(`.paint-link-row[data-paint-id="${id}"]`);
-      return { id, name: row?.querySelector(".name")?.textContent || "", hex: row?.querySelector(".swatch")?.style.background || null };
-    });
+    const linkedPaints = Array.from(document.querySelectorAll("#paintLinksList .paint-link-row")).map(row => ({
+      id: row.dataset.paintId,
+      role: row.dataset.role,
+      name: row.querySelector(".name")?.textContent || "",
+      hex: row.querySelector(".swatch")?.style.background || null,
+    }));
 
     const entryData = {
       entryDate: dateValue,
@@ -1571,9 +1575,6 @@
       primerPaintId: document.getElementById("tePrimerPaintId").value || null,
       primerName: document.getElementById("tePrimerPicked").querySelector(".name")?.textContent || null,
       primerHex: document.getElementById("tePrimerPicked").querySelector(".swatch")?.style.background || null,
-      basecoatPaintId: document.getElementById("teBasecoatPaintId").value || null,
-      basecoatName: document.getElementById("teBasecoatPicked").querySelector(".name")?.textContent || null,
-      basecoatHex: document.getElementById("teBasecoatPicked").querySelector(".swatch")?.style.background || null,
       linkedPaints: category === "Paint" ? linkedPaints : [],
     };
 
