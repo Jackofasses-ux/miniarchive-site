@@ -134,21 +134,14 @@
 
   /* Step-level mini photo viewer — cycles through subtask photos, mirrors the main front/left/rear/right viewer */
   .step-photo-viewer{ margin-top:20px; max-width: 280px; border:1px solid var(--hairline); background: var(--bg-raised); }
-  .step-photo-frame{ height:150px; background-size:cover; background-position:center; cursor:grab; touch-action: pan-y; }
+  .step-photo-frame{ height:150px; background-size:cover; background-position:center; cursor:grab; touch-action: pan-y; position:relative; }
   .step-photo-frame:active{ cursor:grabbing; }
-  .step-photo-tabs{
-    display:flex; border-top:1px solid var(--hairline); overflow-x:auto;
-    scrollbar-width:none; -ms-overflow-style:none;
+  .step-drag-badge{
+    position:absolute; bottom:8px; right:10px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.6rem; letter-spacing:0.08em;
+    color: var(--gold-bright); background: rgba(12,11,9,0.6); padding:3px 7px;
+    opacity:1; transition: opacity .3s ease; pointer-events:none;
   }
-  .step-photo-tabs::-webkit-scrollbar{ display:none; }
-  .step-photo-tabs button{
-    flex-shrink:0; padding:10px 14px; background:transparent; border:none; border-right:1px solid var(--hairline);
-    font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.06em; text-transform:uppercase;
-    color: var(--cream-dim); cursor:pointer; transition: all .2s ease; max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
-  }
-  .step-photo-tabs button:last-child{ border-right:none; }
-  .step-photo-tabs button.active{ background: var(--gold); color:#0c0b09; }
-  .step-photo-tabs button:hover:not(.active){ color: var(--cream); }
 
   .chip-row{ display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:16px; margin-top:20px; align-items:start; }
   .subtask-card{
@@ -512,9 +505,8 @@
           <div class="t-date-hours">${dateRange} · ${totalHours} hours</div>
           ${photoEntries.length ? `
             <div class="step-photo-viewer">
-              <div class="step-photo-frame" id="stepFrame-${i}" style="background-image:url('${photoEntries[0].photoUrl}')" data-src="${photoEntries[0].photoUrl}"></div>
-              <div class="step-photo-tabs" id="stepTabs-${i}">
-                ${photoEntries.map((e, ei) => `<button class="${ei === 0 ? "active" : ""}" data-index="${ei}">${e.date}</button>`).join("")}
+              <div class="step-photo-frame" id="stepFrame-${i}" style="background-image:url('${photoEntries[0].photoUrl}')" data-src="${photoEntries[0].photoUrl}">
+                ${photoEntries.length > 1 ? `<div class="step-drag-badge" id="stepBadge-${i}">↔ DRAG</div>` : ""}
               </div>
             </div>
           ` : ""}
@@ -550,22 +542,13 @@
       if (!photos.length) return;
 
       const frame = document.getElementById(`stepFrame-${i}`);
-      const tabs = document.getElementById(`stepTabs-${i}`);
+      const dragBadge = document.getElementById(`stepBadge-${i}`);
       if (!frame) return;
 
       function setIndex(idx){
         idx = ((idx % photos.length) + photos.length) % photos.length;
         frame.style.backgroundImage = `url('${photos[idx].photoUrl}')`;
         frame.dataset.src = photos[idx].photoUrl;
-        if (tabs){
-          tabs.querySelectorAll("button").forEach(b => b.classList.toggle("active", parseInt(b.dataset.index) === idx));
-        }
-      }
-
-      if (tabs){
-        tabs.querySelectorAll("button").forEach(btn => {
-          btn.addEventListener("click", () => setIndex(parseInt(btn.dataset.index)));
-        });
       }
 
       let dragging = false;
@@ -584,6 +567,7 @@
         const deltaX = e.clientX - startX;
         if (Math.abs(deltaX) >= DRAG_STEP_PX){
           hasMoved = true;
+          if (dragBadge) dragBadge.style.opacity = "0";
           const currentIdx = parseInt(frame.dataset.src ? photos.findIndex(p => p.photoUrl === frame.dataset.src) : 0);
           setIndex(currentIdx + (deltaX > 0 ? -1 : 1));
           startX = e.clientX;
@@ -591,6 +575,7 @@
       });
       function endDrag(e){
         dragging = false;
+        if (dragBadge) dragBadge.style.opacity = "1";
         try { frame.releasePointerCapture(e.pointerId); } catch (err) {}
       }
       frame.addEventListener("pointerup", endDrag);
