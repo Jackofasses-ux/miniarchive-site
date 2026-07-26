@@ -235,6 +235,35 @@
   }
   .lightbox-close:hover{ border-color: var(--gold); color: var(--gold-bright); }
 
+  .clickable-swatch{ cursor:pointer; transition: transform .15s ease; }
+  .clickable-swatch:hover{ transform: scale(1.15); }
+
+  .comparables-overlay{
+    display:none; position:fixed; inset:0; z-index:210;
+    background: rgba(12,11,9,0.9); align-items:center; justify-content:center; padding: 40px;
+  }
+  .comparables-overlay.open{ display:flex; }
+  .comparables-window{
+    width:100%; max-width: 480px; max-height: 70vh; background: var(--bg-raised);
+    border:1px solid var(--gold); display:flex; flex-direction:column;
+  }
+  .comparables-header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 16px 20px; border-bottom:1px solid var(--hairline);
+    font-family:'Cormorant Garamond', serif; font-size:1.2rem; font-weight:600; color: var(--gold-bright);
+  }
+  .comparables-close{
+    width:28px; height:28px; background: var(--bg); border:1px solid var(--hairline); color: var(--cream);
+    font-size:1.1rem; line-height:1; cursor:pointer; transition: border-color .2s ease, color .2s ease;
+  }
+  .comparables-close:hover{ border-color: var(--gold); color: var(--gold-bright); }
+  .comparables-list{ overflow-y:auto; padding: 8px 20px 20px; }
+  .comparable-row{ display:flex; align-items:center; gap:14px; padding: 14px 0; border-top:1px solid var(--hairline); }
+  .comparable-row:first-child{ border-top:none; }
+  .comparable-row .swatch{ width:28px; height:28px; border:1px solid var(--hairline); flex-shrink:0; }
+  .comparable-row .name{ font-family:'Cormorant Garamond', serif; font-size:1.05rem; font-weight:600; }
+  .comparable-row .meta{ margin-top:2px; font-family:'IBM Plex Mono', monospace; font-size:0.68rem; color: var(--mono); }
+
   .gallery-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 30px; }
   .gallery-item{ border:1px solid var(--hairline); background: var(--bg-raised); overflow:hidden; cursor: zoom-in; position:relative; }
   .gallery-item img{ width:100%; height:220px; object-fit:cover; display:block; transition: transform .3s ease; }
@@ -364,6 +393,16 @@
   <img id="lightboxImage" src="" alt="Full size photo">
 </div>
 
+<div class="comparables-overlay" id="comparablesOverlay">
+  <div class="comparables-window">
+    <div class="comparables-header">
+      <span id="comparablesTitle">Comparable Paints</span>
+      <button type="button" class="comparables-close" id="comparablesClose" aria-label="Close">×</button>
+    </div>
+    <div id="comparablesList" class="comparables-list"></div>
+  </div>
+</div>
+
 <script>
   // ---------------------------------------------------------------
   // Lightbox — used by the Edit History photo links so viewing a
@@ -381,8 +420,17 @@
   document.getElementById("lightboxOverlay").addEventListener("click", (e) => {
     if (e.target.id === "lightboxOverlay") closeLightbox();
   });
+
+  function closeComparables(){
+    document.getElementById("comparablesOverlay").classList.remove("open");
+  }
+  document.getElementById("comparablesClose").addEventListener("click", closeComparables);
+  document.getElementById("comparablesOverlay").addEventListener("click", (e) => {
+    if (e.target.id === "comparablesOverlay") closeComparables();
+  });
+
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeLightbox();
+    if (e.key === "Escape"){ closeLightbox(); closeComparables(); }
   });
 
   // ---------------------------------------------------------------
@@ -868,12 +916,70 @@
       <div class="recipe-card">
         <div class="step-meta">
           <div class="step-label">${Array.from(p.roles).join(" / ")}</div>
-          <div class="swatch" style="background:${p.hex_color || "#333"};"></div>
+          <div class="swatch clickable-swatch" style="background:${p.hex_color || "#333"};" onclick="showComparablePaints('${p.id}', '${p.name.replace(/'/g, "\\'")}')" title="See comparable paints from other brands"></div>
         </div>
         <h3>${p.name}</h3>
         <div class="paint-name">${p.brand} — ${p.range}</div>
       </div>
     `).join("") : `<p style="color:var(--cream-dim); grid-column:1/-1;">No paints logged for this model yet.</p>`;
+  }
+
+  async function showComparablePaints(paintId, paintName){
+    const overlay = document.getElementById("comparablesOverlay");
+    const list = document.getElementById("comparablesList");
+    document.getElementById("comparablesTitle").textContent = `Comparable to ${paintName}`;
+    list.innerHTML = `<p style="color:var(--cream-dim); padding:20px;">Searching…</p>`;
+    overlay.classList.add("open");
+
+    // Direct outgoing matches (this paint IS the source of a conversion)
+    const { data: directOut } = await supabaseClient
+      .from("paint_conversions")
+      .select("confidence, match_type, target:target_paint_id ( id, brand, range, name, hex_color )")
+      .eq("source_paint_id", paintId);
+
+    // Direct incoming matches (this paint is the TARGET — find its source)
+    const { data: directIn } = await supabaseClient
+      .from("paint_conversions")
+      .select("confidence, match_type, source:source_paint_id ( id, brand, range, name, hex_color )")
+      .eq("target_paint_id", paintId);
+
+    const results = new Map();
+    (directOut || []).forEach(row => {
+      if (row.target) results.set(row.target.id, { ...row.target, confidence: row.confidence, matchType: row.match_type });
+    });
+
+    const hubIds = (directIn || []).filter(row => row.source).map(row => {
+      results.set(row.source.id, { ...row.source, confidence: row.confidence, matchType: row.match_type });
+      return row.source.id;
+    });
+
+    // One more hop: siblings that share the same source (e.g. clicking a
+    // Vallejo paint should also surface the Army Painter equivalent, via
+    // their shared Citadel source), even though there's no direct row
+    // between the two non-Citadel paints themselves.
+    if (hubIds.length){
+      const { data: siblings } = await supabaseClient
+        .from("paint_conversions")
+        .select("confidence, match_type, target:target_paint_id ( id, brand, range, name, hex_color )")
+        .in("source_paint_id", hubIds);
+      (siblings || []).forEach(row => {
+        if (row.target && row.target.id !== paintId) {
+          results.set(row.target.id, { ...row.target, confidence: row.confidence, matchType: row.match_type });
+        }
+      });
+    }
+
+    const matches = Array.from(results.values());
+
+    list.innerHTML = matches.length ? matches.map(m => `
+      <div class="comparable-row">
+        <div class="swatch" style="background:${m.hex_color || "#333"};"></div>
+        <div>
+          <div class="name">${m.name}</div>
+          <div class="meta">${m.brand} — ${m.range}${m.matchType ? ` · ${m.matchType}` : ""}</div>
+        </div>
+      </div>
+    `).join("") : `<p style="color:var(--cream-dim); padding:20px;">No known equivalents in the database yet for this paint.</p>`;
   }
 
   async function loadTimeline(miniatureId){
