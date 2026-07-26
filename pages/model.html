@@ -164,6 +164,13 @@
     display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
   }
   .subtask-card.expanded .st-note{ -webkit-line-clamp:unset; overflow:visible; }
+  .st-paint-chips{ margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; }
+  .st-paint-chip{
+    display:inline-flex; align-items:center; gap:5px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.66rem; color: var(--cream-dim);
+    border:1px solid var(--hairline); padding:3px 8px;
+  }
+  .st-paint-swatch{ width:9px; height:9px; border:1px solid rgba(255,255,255,0.15); flex-shrink:0; }
 
   /* Paint recipe */
   .recipe-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 40px; }
@@ -510,7 +517,22 @@
               </div>
             </div>
           ` : ""}
-          <div class="chip-row">${group.entries.map(e => `
+          <div class="chip-row">${group.entries.map(e => {
+            const paintChips = [];
+            if (e.primer) paintChips.push({ label: "Primer", ...e.primer });
+            if (e.basecoat) paintChips.push({ label: "Basecoat", ...e.basecoat });
+            (e.paints || []).forEach(p => paintChips.push({ label: null, ...p }));
+            const paintChipsHtml = paintChips.length ? `
+              <div class="st-paint-chips">
+                ${paintChips.map(p => `
+                  <span class="st-paint-chip">
+                    <span class="st-paint-swatch" style="background:${p.hex || "#333"};"></span>
+                    ${p.label ? `${p.label}: ` : ""}${p.name}
+                  </span>
+                `).join("")}
+              </div>
+            ` : "";
+            return `
             <div class="subtask-card" onclick="toggleEntryCard(this)">
               ${e.photoUrl ? `<img class="st-thumb" src="${e.photoUrl}" alt="${e.date}" onclick="event.stopPropagation(); openLightbox('${e.photoUrl}')">` : ""}
               <div class="st-body">
@@ -519,9 +541,11 @@
                   ${e.photoUrl ? `<span class="st-photo-hint">◎</span>` : ""}
                 </div>
                 ${e.description ? `<div class="st-note">${e.description}</div>` : ""}
+                ${paintChipsHtml}
               </div>
             </div>
-          `).join("")}</div>
+          `;
+          }).join("")}</div>
         </div>
       </div>
     `;
@@ -812,12 +836,31 @@
   async function loadTimeline(miniatureId){
     const { data: entries, error } = await supabaseClient
       .from("timeline_entries")
-      .select("id, entry_date, category, description, hours, image_url, is_completion")
+      .select(`
+        id, entry_date, category, description, hours, image_url, is_completion,
+        primer:primer_paint_id ( name, hex_color ),
+        basecoat:basecoat_paint_id ( name, hex_color )
+      `)
       .eq("miniature_id", miniatureId)
       .order("entry_date", { ascending: true })
       .order("created_at", { ascending: true });
 
     if (error || !entries || !entries.length) return [];
+
+    // Fetch all linked paints (Paint category) for these entries in one go
+    const entryIds = entries.map(e => e.id);
+    const { data: linkedRows } = await supabaseClient
+      .from("timeline_entry_paints")
+      .select("timeline_entry_id, sort_order, paints ( name, hex_color )")
+      .in("timeline_entry_id", entryIds)
+      .order("sort_order", { ascending: true });
+
+    const linkedByEntry = {};
+    (linkedRows || []).forEach(row => {
+      if (!row.paints) return;
+      if (!linkedByEntry[row.timeline_entry_id]) linkedByEntry[row.timeline_entry_id] = [];
+      linkedByEntry[row.timeline_entry_id].push({ name: row.paints.name, hex: row.paints.hex_color });
+    });
 
     // ---- Compute milestones (derived from the data, never logged directly) ----
     // "First Brushstroke" = earliest entry in the Paint category
@@ -838,6 +881,9 @@
         hours: e.hours || 0,
         description: e.description || "",
         photoUrl: e.image_url || null,
+        primer: e.primer ? { name: e.primer.name, hex: e.primer.hex_color } : null,
+        basecoat: e.basecoat ? { name: e.basecoat.name, hex: e.basecoat.hex_color } : null,
+        paints: linkedByEntry[e.id] || [],
       };
     }
 
