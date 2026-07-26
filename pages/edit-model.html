@@ -871,6 +871,7 @@
 
     draftBtn.disabled = true;
     publishBtn.disabled = true;
+    saveInProgress = true;
     progressNote.textContent = "Saving…";
 
     try {
@@ -910,6 +911,7 @@
     } finally {
       draftBtn.disabled = false;
       publishBtn.disabled = false;
+      saveInProgress = false;
     }
   }
 
@@ -929,6 +931,7 @@
     draftBtn.disabled = true;
     publishBtn.disabled = true;
     publishBtn.textContent = "Publishing…";
+    saveInProgress = true;
 
     try {
       const payload = collectFieldPayload();
@@ -974,6 +977,7 @@
       draftBtn.disabled = false;
       publishBtn.disabled = false;
       publishBtn.textContent = "Publish to Archive";
+      saveInProgress = false;
     }
   }
 
@@ -1135,6 +1139,7 @@
   async function performSaveCompleted(payload, changes, hasAnyNewPhoto){
     publishBtn.disabled = true;
     publishBtn.textContent = "Saving…";
+    saveInProgress = true;
     try {
       const { error } = await supabaseClient.from("miniatures").update(payload).eq("id", modelId);
       if (error) throw error;
@@ -1158,6 +1163,13 @@
         progressNote.textContent = "";
       }
 
+      if (pendingTimelineEntries.some(e => e._status !== "existing") || deletedTimelineEntryIds.length){
+        progressNote.textContent = "Saving timeline entries…";
+        await commitTimelineEntries(modelId);
+        progressNote.textContent = "";
+        renderTimelineEntriesList();
+      }
+
       showTopSuccess(`Saved. <a href="model.html?id=${modelId}" style="color:var(--gold-bright);">View its archive page →</a>`);
     } catch (err){
       console.error("Save failed:", err);
@@ -1165,6 +1177,7 @@
     } finally {
       publishBtn.disabled = false;
       publishBtn.textContent = "Save Changes";
+      saveInProgress = false;
     }
   }
 
@@ -1181,6 +1194,17 @@
   });
 
   publishBtn.addEventListener("click", publishBtnClickRouter);
+
+  // Uploads happen one at a time, so a model with several timeline photos
+  // can take a few seconds even after this page shows "Saved." Block
+  // accidental navigation away mid-save rather than risk a half-written entry.
+  let saveInProgress = false;
+  window.addEventListener("beforeunload", (e) => {
+    if (saveInProgress){
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  });
 
   // ---- Creation Timeline: flat daily log entries ----
   // Each item: { file: File|null (newly picked, not yet uploaded), existingUrl: string|null }
