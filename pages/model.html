@@ -152,17 +152,8 @@
     transition: border-color .2s ease;
   }
   .subtask-card:hover{ border-color: var(--gold); }
-  .subtask-card .st-photo-strip{
-    display:none; overflow-x:auto; white-space:nowrap; padding:8px; gap:8px;
-    scrollbar-width:none; -ms-overflow-style:none; cursor:grab; touch-action: pan-y;
-  }
-  .subtask-card .st-photo-strip:active{ cursor:grabbing; }
-  .subtask-card .st-photo-strip::-webkit-scrollbar{ display:none; }
-  .subtask-card.expanded .st-photo-strip{ display:flex; }
-  .subtask-card .st-photo-strip img{
-    width:150px; height:150px; object-fit:cover; flex-shrink:0; cursor:zoom-in; border:1px solid var(--hairline);
-    -webkit-user-drag:none; user-select:none;
-  }
+  .subtask-card .step-photo-viewer{ display:none; margin-top:12px; max-width: 100%; }
+  .subtask-card.expanded .step-photo-viewer{ display:block; }
   .subtask-card .st-body{ padding: 12px 14px; }
   .subtask-card .st-title{
     font-family:'IBM Plex Mono', monospace; font-size:0.66rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--gold-bright);
@@ -246,6 +237,20 @@
     font-size:1.4rem; line-height:1; cursor:pointer; transition: border-color .2s ease, color .2s ease;
   }
   .lightbox-close:hover{ border-color: var(--gold); color: var(--gold-bright); }
+  .lightbox-nav{
+    position:absolute; top:50%; transform:translateY(-50%); z-index:5;
+    width:48px; height:48px; background: var(--bg-raised); border:1px solid var(--hairline); color: var(--cream);
+    font-size:1.8rem; line-height:1; cursor:pointer; display:none; align-items:center; justify-content:center;
+    transition: border-color .2s ease, color .2s ease;
+  }
+  .lightbox-nav:hover{ border-color: var(--gold); color: var(--gold-bright); }
+  .lightbox-prev{ left:24px; }
+  .lightbox-next{ right:24px; }
+  .lightbox-dots{
+    position:absolute; bottom:24px; left:50%; transform:translateX(-50%);
+    display:flex; gap:8px;
+  }
+  .lightbox-dots .step-dot{ width:8px; height:8px; }
 
   .recipe-card{ cursor:pointer; }
   .recipe-card:hover{ border-color: var(--gold); }
@@ -388,29 +393,58 @@
 
 <div class="lightbox-overlay" id="lightboxOverlay">
   <button class="lightbox-close" id="lightboxClose" aria-label="Close">×</button>
+  <button class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Previous">‹</button>
   <img id="lightboxImage" src="" alt="Full size photo">
+  <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Next">›</button>
+  <div class="lightbox-dots" id="lightboxDots"></div>
 </div>
 
 <script>
   // ---------------------------------------------------------------
-  // Lightbox — used by the Edit History photo links so viewing a
-  // full-size photo never navigates away from the page.
+  // Lightbox — used across the page for full-size photo viewing.
+  // Accepts either a single URL, or an array of URLs + a starting index,
+  // in which case it shows prev/next navigation and dot indicators so
+  // an entire photo set can be browsed without closing and reopening.
   // ---------------------------------------------------------------
-  function openLightbox(url){
-    document.getElementById("lightboxImage").src = url;
+  let lightboxPhotos = [];
+  let lightboxIndex = 0;
+
+  function setLightboxIndex(idx){
+    lightboxIndex = ((idx % lightboxPhotos.length) + lightboxPhotos.length) % lightboxPhotos.length;
+    document.getElementById("lightboxImage").src = lightboxPhotos[lightboxIndex];
+    document.getElementById("lightboxDots").querySelectorAll(".step-dot").forEach((dot, di) => dot.classList.toggle("active", di === lightboxIndex));
+  }
+
+  function openLightbox(urlOrArray, startIndex){
+    lightboxPhotos = Array.isArray(urlOrArray) ? urlOrArray : [urlOrArray];
+    lightboxIndex = startIndex || 0;
+
+    const multi = lightboxPhotos.length > 1;
+    document.getElementById("lightboxPrev").style.display = multi ? "flex" : "none";
+    document.getElementById("lightboxNext").style.display = multi ? "flex" : "none";
+    document.getElementById("lightboxDots").innerHTML = multi
+      ? lightboxPhotos.map((_, di) => `<span class="step-dot${di === lightboxIndex ? " active" : ""}"></span>`).join("")
+      : "";
+
+    document.getElementById("lightboxImage").src = lightboxPhotos[lightboxIndex];
     document.getElementById("lightboxOverlay").classList.add("open");
   }
   function closeLightbox(){
     document.getElementById("lightboxOverlay").classList.remove("open");
     document.getElementById("lightboxImage").src = "";
   }
+  document.getElementById("lightboxPrev").addEventListener("click", (e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex - 1); });
+  document.getElementById("lightboxNext").addEventListener("click", (e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex + 1); });
   document.getElementById("lightboxClose").addEventListener("click", closeLightbox);
   document.getElementById("lightboxOverlay").addEventListener("click", (e) => {
     if (e.target.id === "lightboxOverlay") closeLightbox();
   });
 
   document.addEventListener("keydown", (e) => {
+    if (!document.getElementById("lightboxOverlay").classList.contains("open")) return;
     if (e.key === "Escape") closeLightbox();
+    if (e.key === "ArrowLeft") setLightboxIndex(lightboxIndex - 1);
+    if (e.key === "ArrowRight") setLightboxIndex(lightboxIndex + 1);
   });
 
   // ---------------------------------------------------------------
@@ -519,11 +553,27 @@
       `;
     }
 
-    const stepPhotoData = {};
+    const viewersToWire = []; // { photos: [urls], idPrefix }
+
+    function renderMiniPhotoViewer(photos, idPrefix){
+      if (!photos.length) return "";
+      viewersToWire.push({ photos, idPrefix });
+      return `
+        <div class="step-photo-viewer">
+          <div class="step-photo-frame" id="${idPrefix}Frame" style="background-image:url('${photos[0]}')" data-src="${photos[0]}" data-idx="0">
+            ${photos.length > 1 ? `<div class="step-drag-badge" id="${idPrefix}Badge">↔ DRAG</div>` : ""}
+          </div>
+          ${photos.length > 1 ? `
+            <div class="step-dots" id="${idPrefix}Dots">
+              ${photos.map((_, di) => `<span class="step-dot${di === 0 ? " active" : ""}"></span>`).join("")}
+            </div>
+          ` : ""}
+        </div>
+      `;
+    }
 
     document.getElementById("timelineList").innerHTML = (m.timeline && m.timeline.length) ? m.timeline.map((group, i) => {
       const allPhotos = group.entries.flatMap(e => e.photos || []);
-      stepPhotoData[i] = allPhotos.map(url => ({ photoUrl: url }));
       const dateRange = group.entries.length > 1
         ? `${group.entries[0].date} – ${group.entries[group.entries.length - 1].date}`
         : group.entries[0].date;
@@ -538,19 +588,8 @@
           ${group.isMilestone ? `<div class="milestone-tag">◆ Milestone</div>` : ""}
           <h3>${group.title}</h3>
           <div class="t-date-hours">${dateRange} · ${totalHours} hours</div>
-          ${allPhotos.length ? `
-            <div class="step-photo-viewer">
-              <div class="step-photo-frame" id="stepFrame-${i}" style="background-image:url('${allPhotos[0]}')" data-src="${allPhotos[0]}">
-                ${allPhotos.length > 1 ? `<div class="step-drag-badge" id="stepBadge-${i}">↔ DRAG</div>` : ""}
-              </div>
-              ${allPhotos.length > 1 ? `
-                <div class="step-dots" id="stepDots-${i}">
-                  ${allPhotos.map((_, di) => `<span class="step-dot${di === 0 ? " active" : ""}"></span>`).join("")}
-                </div>
-              ` : ""}
-            </div>
-          ` : ""}
-          <div class="chip-row">${group.entries.map(e => {
+          ${renderMiniPhotoViewer(allPhotos, `step${i}`)}
+          <div class="chip-row">${group.entries.map((e, ei) => {
             const paintChips = [];
             if (e.primer) paintChips.push({ label: "Primer", ...e.primer });
             (e.paints || []).forEach(p => paintChips.push({ label: p.role, ...p }));
@@ -565,14 +604,8 @@
               </div>
             ` : "";
             const entryPhotos = e.photos || [];
-            const photoStripHtml = entryPhotos.length ? `
-              <div class="st-photo-strip">
-                ${entryPhotos.map(url => `<img src="${url}" alt="${e.date}" draggable="false" onclick="event.stopPropagation(); openLightbox('${url}')">`).join("")}
-              </div>
-            ` : "";
             return `
             <div class="subtask-card" onclick="toggleEntryCard(this)">
-              ${photoStripHtml}
               <div class="st-body">
                 <div class="st-title">
                   <span class="st-title-text">${e.date}${e.hours ? ` · ${e.hours}h` : ""}</span>
@@ -580,6 +613,7 @@
                 </div>
                 ${e.description ? `<div class="st-note">${e.description}</div>` : ""}
                 ${paintChipsHtml}
+                <div onclick="event.stopPropagation()">${renderMiniPhotoViewer(entryPhotos, `entry${i}_${ei}`)}</div>
               </div>
             </div>
           `;
@@ -596,56 +630,22 @@
       if (!wasExpanded) card.classList.add("expanded");
     };
 
-    // ---- Entry photo strips: real click-and-drag horizontal scrolling.
-    // Native overflow-x scroll works but isn't discoverable (we hide the
-    // scrollbar for a cleaner look), so drag support makes it actually usable.
-    document.querySelectorAll(".st-photo-strip").forEach(strip => {
-      let isDown = false;
-      let startX = 0;
-      let startScroll = 0;
-      let dragged = false;
-
-      strip.addEventListener("pointerdown", (e) => {
-        isDown = true;
-        dragged = false;
-        startX = e.clientX;
-        startScroll = strip.scrollLeft;
-        strip.setPointerCapture(e.pointerId);
-      });
-      strip.addEventListener("pointermove", (e) => {
-        if (!isDown) return;
-        const delta = e.clientX - startX;
-        if (Math.abs(delta) > 5) dragged = true;
-        strip.scrollLeft = startScroll - delta;
-      });
-      strip.addEventListener("pointerup", (e) => {
-        isDown = false;
-        try { strip.releasePointerCapture(e.pointerId); } catch (err) {}
-      });
-      strip.addEventListener("pointercancel", () => { isDown = false; });
-
-      // A drag shouldn't also trigger the image's lightbox click
-      strip.addEventListener("click", (e) => {
-        if (dragged) e.stopPropagation();
-      }, true);
-    });
-
-    // ---- Step photo viewers: click tabs or drag to cycle, mirrors the
-    // main front/left/rear/right viewer's interaction. ----
-    Object.keys(stepPhotoData).forEach(key => {
-      const i = key;
-      const photos = stepPhotoData[i];
+    // ---- Mini photo viewers: click and drag to cycle, mirrors the main
+    // front/left/rear/right viewer's interaction — used identically for
+    // both the group-level viewer and each entry's own viewer. ----
+    viewersToWire.forEach(({ photos, idPrefix }) => {
       if (!photos.length) return;
 
-      const frame = document.getElementById(`stepFrame-${i}`);
-      const dragBadge = document.getElementById(`stepBadge-${i}`);
-      const dotsContainer = document.getElementById(`stepDots-${i}`);
+      const frame = document.getElementById(`${idPrefix}Frame`);
+      const dragBadge = document.getElementById(`${idPrefix}Badge`);
+      const dotsContainer = document.getElementById(`${idPrefix}Dots`);
       if (!frame) return;
 
       function setIndex(idx){
         idx = ((idx % photos.length) + photos.length) % photos.length;
-        frame.style.backgroundImage = `url('${photos[idx].photoUrl}')`;
-        frame.dataset.src = photos[idx].photoUrl;
+        frame.style.backgroundImage = `url('${photos[idx]}')`;
+        frame.dataset.src = photos[idx];
+        frame.dataset.idx = idx;
         if (dotsContainer){
           dotsContainer.querySelectorAll(".step-dot").forEach((dot, di) => dot.classList.toggle("active", di === idx));
         }
@@ -668,8 +668,7 @@
         if (Math.abs(deltaX) >= DRAG_STEP_PX){
           hasMoved = true;
           if (dragBadge) dragBadge.style.opacity = "0";
-          const currentIdx = parseInt(frame.dataset.src ? photos.findIndex(p => p.photoUrl === frame.dataset.src) : 0);
-          setIndex(currentIdx + (deltaX > 0 ? -1 : 1));
+          setIndex(parseInt(frame.dataset.idx) + (deltaX > 0 ? -1 : 1));
           startX = e.clientX;
         }
       });
@@ -682,7 +681,7 @@
       frame.addEventListener("pointercancel", endDrag);
       frame.addEventListener("click", () => {
         if (hasMoved) return; // just finished a drag — don't also open the lightbox
-        openLightbox(frame.dataset.src);
+        openLightbox(photos, parseInt(frame.dataset.idx));
       });
     });
 
