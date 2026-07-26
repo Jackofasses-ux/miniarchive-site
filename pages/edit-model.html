@@ -861,6 +861,11 @@
         await uploadChangedPhotos(modelId);
       }
 
+      if (pendingTimelineEntries.some(e => e._status !== "existing") || deletedTimelineEntryIds.length){
+        progressNote.textContent = "Saving timeline entries…";
+        await commitTimelineEntries(modelId);
+      }
+
       progressNote.textContent = "";
       showTopSuccess(`Saved. This is still a private draft — <a href="collection.html?mine=true" style="color:var(--gold-bright);">view it in My Collection</a>, or publish it below when it's ready.`);
       history.replaceState({}, "", `edit-model.html?id=${modelId}`);
@@ -909,6 +914,11 @@
 
       progressNote.textContent = "Uploading photos…";
       await uploadChangedPhotos(modelId);
+
+      if (pendingTimelineEntries.some(e => e._status !== "existing") || deletedTimelineEntryIds.length){
+        progressNote.textContent = "Saving timeline entries…";
+        await commitTimelineEntries(modelId);
+      }
 
       progressNote.textContent = "Generating Archive ID…";
       const archiveId = await generateArchiveId();
@@ -994,19 +1004,8 @@
   function applyStatusUI(){
     const chip = document.getElementById("statusChip");
     const deleteBtn = document.getElementById("deleteBtn");
-    const timelineFieldset = document.getElementById("timelineFieldset");
-    const timelineNoModelNote = document.getElementById("timelineNoModelNote");
 
-    timelineFieldset.style.display = "block";
-    if (!modelId){
-      timelineNoModelNote.style.display = "block";
-      document.getElementById("timelineEntriesList").innerHTML = "";
-      document.getElementById("addTimelineEntryBtn").style.display = "none";
-    } else {
-      timelineNoModelNote.style.display = "none";
-      document.getElementById("addTimelineEntryBtn").style.display = "inline-block";
-      loadTimelineEvents();
-    }
+    renderTimelineEntriesList();
 
     if (!modelId){
       chip.style.display = "none";
@@ -1152,9 +1151,73 @@
   publishBtn.addEventListener("click", publishBtnClickRouter);
 
   // ---- Creation Timeline: flat daily log entries ----
-  let editingEntryId = null;
   let selectedEntryPhoto = null;
   let existingEntryPhotoUrl = null;
+
+  // Writes every pending timeline entry to the database — called from
+  // saveDraft()/publishModel() right after the miniature row itself is
+  // created/updated, so a real modelId always exists by this point.
+  async function commitTimelineEntries(miniatureId){
+    if (deletedTimelineEntryIds.length){
+      await supabaseClient.from("timeline_entries").delete().in("id", deletedTimelineEntryIds);
+      deletedTimelineEntryIds = [];
+    }
+
+    for (const entry of pendingTimelineEntries){
+      if (entry._status === "existing") continue; // untouched since load, nothing to do
+
+      let imageUrl = entry.imageUrl;
+      if (entry._photoFile){
+        const uploadForm = new FormData();
+        uploadForm.append("file", entry._photoFile);
+        uploadForm.append("upload_type", "timeline_photo");
+        uploadForm.append("miniature_id", miniatureId);
+
+        const uploadRes = await fetch(WORKER_UPLOAD_URL, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${currentSession.access_token}` },
+          body: uploadForm,
+        });
+        const result = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(result.error || "Timeline photo upload failed");
+        imageUrl = result.url;
+      }
+
+      const payload = {
+        miniature_id: miniatureId,
+        entry_date: entry.entryDate,
+        category: entry.category,
+        description: entry.description,
+        hours: entry.hours,
+        image_url: imageUrl,
+        is_completion: entry.category === "Completed",
+        primer_paint_id: entry.primerPaintId,
+        basecoat_paint_id: entry.basecoatPaintId,
+      };
+
+      let entryId = entry._dbId;
+      if (entryId){
+        const { error } = await supabaseClient.from("timeline_entries").update(payload).eq("id", entryId);
+        if (error) throw error;
+      } else {
+        const { data: inserted, error } = await supabaseClient.from("timeline_entries").insert(payload).select().single();
+        if (error) throw error;
+        entryId = inserted.id;
+      }
+
+      await supabaseClient.from("timeline_entry_paints").delete().eq("timeline_entry_id", entryId);
+      if (entry.category === "Paint" && entry.linkedPaints.length){
+        await supabaseClient.from("timeline_entry_paints").insert(
+          entry.linkedPaints.map((p, i) => ({ timeline_entry_id: entryId, paint_id: p.id, sort_order: i }))
+        );
+      }
+
+      entry._dbId = entryId;
+      entry._status = "existing";
+      entry._photoFile = null;
+      entry.imageUrl = imageUrl;
+    }
+  }
 
   function todayDateString(){
     const d = new Date();
@@ -1164,7 +1227,7 @@
   let linkedPaintIds = []; // for the Paint category's multi-paint list
 
   function resetTimelineForm(){
-    editingEntryId = null;
+    editingLocalId = null;
     selectedEntryPhoto = null;
     existingEntryPhotoUrl = null;
     linkedPaintIds = [];
@@ -1335,37 +1398,20 @@
     resetTimelineForm();
   });
 
-  async function loadTimelineEvents(){
-    const list = document.getElementById("timelineEntriesList");
-    const { data, error } = await supabaseClient
-      .from("timeline_entries")
-      .select("id, entry_date, category, hours, is_completion")
-      .eq("miniature_id", modelId)
-      .order("entry_date", { ascending: false })
-      .order("created_at", { ascending: false });
+  // pendingTimelineEntries holds ALL entries for this session — whether
+  // already saved in the database ('existing') or added just now in this
+  // editing session ('new'/'modified'). Nothing touches the database here;
+  // that only happens when saveDraft()/publishModel() runs, via
+  // commitTimelineEntries() below. This mirrors exactly how the four
+  // required photos already work on this page.
+  let pendingTimelineEntries = [];
+  let deletedTimelineEntryIds = []; // real DB ids to delete on next commit
+  let nextLocalId = 1;
+  let editingLocalId = null;
 
-    if (error || !data || !data.length){
-      list.innerHTML = "";
-      return;
-    }
-
-    list.innerHTML = data.map(entry => `
-      <div class="timeline-event-card" data-entry-id="${entry.id}">
-        <div>
-          <div class="te-title">${entry.category}</div>
-          <div class="te-meta">${entry.entry_date} · ${entry.hours || 0} hrs</div>
-        </div>
-        ${entry.is_completion ? `<span class="te-completion-badge">✓ Completion</span>` : ""}
-      </div>
-    `).join("");
-
-    list.querySelectorAll(".timeline-event-card").forEach(card => {
-      card.addEventListener("click", () => openTimelineEntryForEdit(card.dataset.entryId));
-    });
-  }
-
-  async function openTimelineEntryForEdit(entryId){
-    const { data: entry, error } = await supabaseClient
+  async function loadExistingTimelineEntries(){
+    if (!modelId) return;
+    const { data: entries } = await supabaseClient
       .from("timeline_entries")
       .select(`
         id, entry_date, category, description, hours, image_url, is_completion,
@@ -1373,50 +1419,104 @@
         primer:primer_paint_id ( name, hex_color ),
         basecoat:basecoat_paint_id ( name, hex_color )
       `)
-      .eq("id", entryId)
-      .maybeSingle();
+      .eq("miniature_id", modelId)
+      .order("entry_date", { ascending: false })
+      .order("created_at", { ascending: false });
 
-    if (error || !entry) return;
+    for (const entry of (entries || [])){
+      let linkedPaints = [];
+      if (entry.category === "Paint"){
+        const { data: lp } = await supabaseClient
+          .from("timeline_entry_paints")
+          .select("paint_id, sort_order, paints ( name, hex_color )")
+          .eq("timeline_entry_id", entry.id)
+          .order("sort_order", { ascending: true });
+        linkedPaints = (lp || []).filter(row => row.paints).map(row => ({ id: row.paint_id, name: row.paints.name, hex: row.paints.hex_color }));
+      }
+
+      pendingTimelineEntries.push({
+        _localId: nextLocalId++,
+        _dbId: entry.id,
+        _status: "existing",
+        _photoFile: null,
+        entryDate: entry.entry_date,
+        category: entry.category,
+        description: entry.description,
+        hours: entry.hours,
+        imageUrl: entry.image_url,
+        primerPaintId: entry.primer_paint_id,
+        primerName: entry.primer?.name || null,
+        primerHex: entry.primer?.hex_color || null,
+        basecoatPaintId: entry.basecoat_paint_id,
+        basecoatName: entry.basecoat?.name || null,
+        basecoatHex: entry.basecoat?.hex_color || null,
+        linkedPaints,
+      });
+    }
+
+    renderTimelineEntriesList();
+  }
+
+  function renderTimelineEntriesList(){
+    const list = document.getElementById("timelineEntriesList");
+    const visible = pendingTimelineEntries; // deleted ones are already spliced out
+
+    if (!visible.length){ list.innerHTML = ""; return; }
+
+    const sorted = [...visible].sort((a, b) => (b.entryDate || "").localeCompare(a.entryDate || ""));
+
+    list.innerHTML = sorted.map(entry => `
+      <div class="timeline-event-card" data-local-id="${entry._localId}">
+        <div>
+          <div class="te-title">${entry.category}${entry._status !== "existing" ? ` <span style="color:var(--gold); font-size:0.65rem;">(unsaved)</span>` : ""}</div>
+          <div class="te-meta">${entry.entryDate} · ${entry.hours || 0} hrs</div>
+        </div>
+        ${entry.category === "Completed" ? `<span class="te-completion-badge">✓ Completion</span>` : ""}
+      </div>
+    `).join("");
+
+    list.querySelectorAll(".timeline-event-card").forEach(card => {
+      card.addEventListener("click", () => openTimelineEntryForEdit(parseInt(card.dataset.localId)));
+    });
+  }
+
+  function openTimelineEntryForEdit(localId){
+    const entry = pendingTimelineEntries.find(e => e._localId === localId);
+    if (!entry) return;
 
     resetTimelineForm();
-    editingEntryId = entryId;
-    document.getElementById("teDate").value = entry.entry_date || todayDateString();
+    editingLocalId = localId;
+    document.getElementById("teDate").value = entry.entryDate || todayDateString();
     document.getElementById("teCategory").value = entry.category || "Assembly";
     document.getElementById("teHours").value = entry.hours != null ? entry.hours : 2;
     document.getElementById("teDescription").value = entry.description || "";
     updateCategoryFieldVisibility();
 
-    if (entry.primer_paint_id && entry.primer){
-      document.getElementById("tePrimerPaintId").value = entry.primer_paint_id;
+    if (entry.primerPaintId){
+      document.getElementById("tePrimerPaintId").value = entry.primerPaintId;
       const picked = document.getElementById("tePrimerPicked");
-      picked.innerHTML = `<div class="swatch" style="background:${entry.primer.hex_color || "#333"};"></div><div class="name">${entry.primer.name}</div><button type="button" class="clear-pick">×</button>`;
+      picked.innerHTML = `<div class="swatch" style="background:${entry.primerHex || "#333"};"></div><div class="name">${entry.primerName}</div><button type="button" class="clear-pick">×</button>`;
       picked.style.display = "flex";
       picked.querySelector(".clear-pick").addEventListener("click", () => clearPaintPick("tePrimer"));
     }
-    if (entry.basecoat_paint_id && entry.basecoat){
-      document.getElementById("teBasecoatPaintId").value = entry.basecoat_paint_id;
+    if (entry.basecoatPaintId){
+      document.getElementById("teBasecoatPaintId").value = entry.basecoatPaintId;
       const picked = document.getElementById("teBasecoatPicked");
-      picked.innerHTML = `<div class="swatch" style="background:${entry.basecoat.hex_color || "#333"};"></div><div class="name">${entry.basecoat.name}</div><button type="button" class="clear-pick">×</button>`;
+      picked.innerHTML = `<div class="swatch" style="background:${entry.basecoatHex || "#333"};"></div><div class="name">${entry.basecoatName}</div><button type="button" class="clear-pick">×</button>`;
       picked.style.display = "flex";
       picked.querySelector(".clear-pick").addEventListener("click", () => clearPaintPick("teBasecoat"));
     }
 
-    if (entry.category === "Paint"){
-      const { data: linkedPaints } = await supabaseClient
-        .from("timeline_entry_paints")
-        .select("paint_id, sort_order, paints ( name, hex_color )")
-        .eq("timeline_entry_id", entryId)
-        .order("sort_order", { ascending: true });
-      (linkedPaints || []).forEach(lp => {
-        if (lp.paints) addPaintLinkRow(lp.paint_id, lp.paints.name, lp.paints.hex_color);
-      });
-    }
+    entry.linkedPaints.forEach(p => addPaintLinkRow(p.id, p.name, p.hex));
 
-    if (entry.image_url){
-      existingEntryPhotoUrl = entry.image_url;
+    if (entry.imageUrl){
+      existingEntryPhotoUrl = entry.imageUrl;
       const drop = document.getElementById("tePhotoDrop");
       drop.classList.add("filled");
-      drop.innerHTML = `<img src="${entry.image_url}" alt="preview">`;
+      drop.innerHTML = `<img src="${entry.imageUrl}" alt="preview">`;
+    }
+    if (entry._photoFile){
+      selectedEntryPhoto = entry._photoFile;
     }
 
     document.getElementById("deleteTimelineEntryBtn").style.display = "inline-block";
@@ -1424,7 +1524,7 @@
     document.getElementById("timelineForm").scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
-  document.getElementById("saveTimelineEntryBtn").addEventListener("click", async () => {
+  document.getElementById("saveTimelineEntryBtn").addEventListener("click", () => {
     const category = document.getElementById("teCategory").value;
     const dateValue = document.getElementById("teDate").value.trim();
 
@@ -1433,100 +1533,55 @@
       return;
     }
 
-    const saveBtn = document.getElementById("saveTimelineEntryBtn");
-    const progressNote = document.getElementById("teProgressNote");
-    saveBtn.disabled = true;
-    saveBtn.textContent = "Saving…";
+    const linkedPaints = linkedPaintIds.map(id => {
+      const row = document.querySelector(`.paint-link-row[data-paint-id="${id}"]`);
+      return { id, name: row?.querySelector(".name")?.textContent || "", hex: row?.querySelector(".swatch")?.style.background || null };
+    });
 
-    try {
-      let imageUrl = existingEntryPhotoUrl;
+    const entryData = {
+      entryDate: dateValue,
+      category,
+      description: document.getElementById("teDescription").value.trim() || null,
+      hours: document.getElementById("teHours").value ? parseFloat(document.getElementById("teHours").value) : null,
+      imageUrl: existingEntryPhotoUrl,
+      _photoFile: selectedEntryPhoto,
+      primerPaintId: document.getElementById("tePrimerPaintId").value || null,
+      primerName: document.getElementById("tePrimerPicked").querySelector(".name")?.textContent || null,
+      primerHex: document.getElementById("tePrimerPicked").querySelector(".swatch")?.style.background || null,
+      basecoatPaintId: document.getElementById("teBasecoatPaintId").value || null,
+      basecoatName: document.getElementById("teBasecoatPicked").querySelector(".name")?.textContent || null,
+      basecoatHex: document.getElementById("teBasecoatPicked").querySelector(".swatch")?.style.background || null,
+      linkedPaints: category === "Paint" ? linkedPaints : [],
+    };
 
-      if (selectedEntryPhoto){
-        progressNote.textContent = "Uploading photo…";
-        const uploadForm = new FormData();
-        uploadForm.append("file", selectedEntryPhoto);
-        uploadForm.append("upload_type", "timeline_photo");
-        uploadForm.append("miniature_id", modelId);
-
-        const uploadRes = await fetch(WORKER_UPLOAD_URL, {
-          method: "POST",
-          headers: { Authorization: `Bearer ${currentSession.access_token}` },
-          body: uploadForm,
-        });
-        const result = await uploadRes.json();
-        if (!uploadRes.ok) throw new Error(result.error || "Photo upload failed");
-        imageUrl = result.url;
-      }
-
-      progressNote.textContent = "Saving entry…";
-      const entryPayload = {
-        miniature_id: modelId,
-        entry_date: dateValue,
-        category,
-        description: document.getElementById("teDescription").value.trim() || null,
-        hours: document.getElementById("teHours").value ? parseFloat(document.getElementById("teHours").value) : null,
-        image_url: imageUrl,
-        is_completion: category === "Completed",
-        primer_paint_id: document.getElementById("tePrimerPaintId").value || null,
-        basecoat_paint_id: document.getElementById("teBasecoatPaintId").value || null,
-      };
-
-      let entryId = editingEntryId;
-
-      if (entryId){
-        const { error } = await supabaseClient.from("timeline_entries").update(entryPayload).eq("id", entryId);
-        if (error) throw error;
-      } else {
-        const { data: inserted, error } = await supabaseClient.from("timeline_entries").insert(entryPayload).select().single();
-        if (error) throw error;
-        entryId = inserted.id;
-      }
-
-      // Sync linked paints for the Paint category — replace the full set,
-      // same simple approach used elsewhere (links, subtasks).
-      await supabaseClient.from("timeline_entry_paints").delete().eq("timeline_entry_id", entryId);
-      if (category === "Paint" && linkedPaintIds.length){
-        await supabaseClient.from("timeline_entry_paints").insert(
-          linkedPaintIds.map((paintId, i) => ({ timeline_entry_id: entryId, paint_id: paintId, sort_order: i }))
-        );
-      }
-
-      progressNote.textContent = "";
-      document.getElementById("timelineForm").style.display = "none";
-      resetTimelineForm();
-      loadTimelineEvents();
-      topSuccess.textContent = "Timeline entry saved.";
-      topSuccess.style.display = "block";
-
-    } catch (err){
-      console.error("Save timeline entry failed:", err);
-      progressNote.textContent = "";
-      showTopError(err.message || "Couldn't save this timeline entry.");
-    } finally {
-      saveBtn.disabled = false;
-      saveBtn.textContent = "Save Entry";
-    }
-  });
-
-  document.getElementById("deleteTimelineEntryBtn").addEventListener("click", async () => {
-    if (!editingEntryId) return;
-    const btn = document.getElementById("deleteTimelineEntryBtn");
-    btn.disabled = true;
-    btn.textContent = "Deleting…";
-
-    const { error } = await supabaseClient.from("timeline_entries").delete().eq("id", editingEntryId);
-
-    btn.disabled = false;
-    btn.textContent = "Delete Entry";
-
-    if (error){
-      showTopError(error.message || "Couldn't delete this entry.");
-      return;
+    if (editingLocalId){
+      const existing = pendingTimelineEntries.find(e => e._localId === editingLocalId);
+      Object.assign(existing, entryData);
+      if (existing._status === "existing") existing._status = "modified";
+    } else {
+      pendingTimelineEntries.push({
+        _localId: nextLocalId++,
+        _dbId: null,
+        _status: "new",
+        ...entryData,
+      });
     }
 
     document.getElementById("timelineForm").style.display = "none";
     resetTimelineForm();
-    loadTimelineEvents();
+    renderTimelineEntriesList();
+    showTopSuccess("Entry added — it'll be saved when you save or publish this model.");
+  });
+
+  document.getElementById("deleteTimelineEntryBtn").addEventListener("click", () => {
+    if (!editingLocalId) return;
+    const entry = pendingTimelineEntries.find(e => e._localId === editingLocalId);
+    if (entry && entry._dbId) deletedTimelineEntryIds.push(entry._dbId);
+    pendingTimelineEntries = pendingTimelineEntries.filter(e => e._localId !== editingLocalId);
+
+    document.getElementById("timelineForm").style.display = "none";
+    resetTimelineForm();
+    renderTimelineEntriesList();
   });
 
 
@@ -1612,6 +1667,7 @@
       }
     });
 
+    await loadExistingTimelineEntries();
     applyStatusUI();
     document.getElementById("formWrap").style.display = "block";
   })();
