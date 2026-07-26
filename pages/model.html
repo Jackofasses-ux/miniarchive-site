@@ -136,7 +136,11 @@
   .step-photo-viewer{ margin-top:20px; max-width: 280px; border:1px solid var(--hairline); background: var(--bg-raised); }
   .step-photo-frame{ height:150px; background-size:cover; background-position:center; cursor:grab; touch-action: pan-y; }
   .step-photo-frame:active{ cursor:grabbing; }
-  .step-photo-tabs{ display:flex; border-top:1px solid var(--hairline); overflow-x:auto; }
+  .step-photo-tabs{
+    display:flex; border-top:1px solid var(--hairline); overflow-x:auto;
+    scrollbar-width:none; -ms-overflow-style:none;
+  }
+  .step-photo-tabs::-webkit-scrollbar{ display:none; }
   .step-photo-tabs button{
     flex-shrink:0; padding:10px 14px; background:transparent; border:none; border-right:1px solid var(--hairline);
     font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.06em; text-transform:uppercase;
