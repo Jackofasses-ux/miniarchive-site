@@ -805,7 +805,7 @@
     });
 
     setPhotoView("front");
-    renderGallery();
+    renderGallery(data.id);
     loadEditHistory(data.id);
   }
 
@@ -876,20 +876,37 @@
     return groups;
   }
 
-  function renderGallery(){
+  async function renderGallery(miniatureId){
     const grid = document.getElementById("galleryGrid");
     const order = ["front", "left", "rear", "right"];
-    const entries = order.filter(view => PHOTOS_BY_VIEW[view]);
 
-    if (!entries.length){
+    const identityItems = order
+      .filter(view => PHOTOS_BY_VIEW[view])
+      .map(view => ({ url: PHOTOS_BY_VIEW[view], tag: view }));
+
+    let timelineItems = [];
+    if (miniatureId){
+      const { data: entries } = await supabaseClient
+        .from("timeline_entries")
+        .select("image_url, entry_date, category")
+        .eq("miniature_id", miniatureId)
+        .not("image_url", "is", null)
+        .order("entry_date", { ascending: true });
+
+      timelineItems = (entries || []).map(e => ({ url: e.image_url, tag: `${e.category} · ${formatDate(e.entry_date)}` }));
+    }
+
+    const allItems = [...identityItems, ...timelineItems];
+
+    if (!allItems.length){
       grid.innerHTML = `<p class="gallery-empty">No photos uploaded yet.</p>`;
       return;
     }
 
-    grid.innerHTML = entries.map(view => `
-      <div class="gallery-item" onclick="openLightbox('${PHOTOS_BY_VIEW[view]}')">
-        <span class="view-tag">${view}</span>
-        <img src="${PHOTOS_BY_VIEW[view]}" alt="${view} view" loading="lazy">
+    grid.innerHTML = allItems.map(item => `
+      <div class="gallery-item" onclick="openLightbox('${item.url}')">
+        <span class="view-tag">${item.tag}</span>
+        <img src="${item.url}" alt="${item.tag}" loading="lazy">
       </div>
     `).join("");
   }
