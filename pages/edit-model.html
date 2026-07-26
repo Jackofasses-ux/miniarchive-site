@@ -128,6 +128,40 @@
 
   .timeline-form{ margin-top: 24px; border:1px solid var(--gold); background: var(--bg-raised); padding: 24px; }
 
+  .paint-picker-field{ position:relative; }
+  .paint-picker-field label{ display:block; font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); margin-bottom:8px; }
+  .paint-search-input{
+    width:100%; background: var(--bg); border:1px solid var(--hairline); color: var(--cream);
+    padding: 11px 13px; font-family:'Jost', sans-serif; font-size:0.9rem;
+  }
+  .paint-search-results{
+    display:none; position:absolute; top:100%; left:0; right:0; z-index:40;
+    background: var(--bg-raised); border:1px solid var(--gold); max-height:220px; overflow-y:auto;
+  }
+  .paint-search-results.open{ display:block; }
+  .paint-result-row{
+    display:flex; align-items:center; gap:10px; padding:10px 12px; cursor:pointer; border-bottom:1px solid var(--hairline);
+  }
+  .paint-result-row:last-child{ border-bottom:none; }
+  .paint-result-row:hover{ background: rgba(201,162,75,0.08); }
+  .paint-result-swatch{ width:16px; height:16px; border:1px solid var(--hairline); flex-shrink:0; }
+  .paint-result-name{ font-size:0.85rem; color: var(--cream); }
+  .paint-result-meta{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; color: var(--mono); margin-left:auto; }
+  .paint-picked{
+    margin-top:10px; display:flex; align-items:center; gap:10px;
+    border:1px solid var(--gold); background: rgba(201,162,75,0.06); padding:9px 12px;
+  }
+  .paint-picked .swatch{ width:16px; height:16px; border:1px solid var(--hairline); flex-shrink:0; }
+  .paint-picked .name{ font-size:0.85rem; flex:1; }
+  .paint-picked .clear-pick{ background:none; border:none; color: var(--error); cursor:pointer; font-size:0.9rem; }
+  .paint-link-row{
+    display:flex; align-items:center; gap:10px; border:1px solid var(--hairline); background: var(--bg-raised);
+    padding:9px 12px; margin-bottom:8px;
+  }
+  .paint-link-row .swatch{ width:16px; height:16px; border:1px solid var(--hairline); flex-shrink:0; }
+  .paint-link-row .name{ font-size:0.85rem; flex:1; }
+  .paint-link-row .remove-paint-link{ background:none; border:none; color: var(--error); cursor:pointer; font-size:0.95rem; }
+
   .te-photo-slot .drop{
     border:1px dashed var(--hairline); background: var(--bg); height:110px; width:110px;
     display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px;
@@ -401,6 +435,7 @@
               <option value="Basing">Basing</option>
               <option value="Varnish">Varnish</option>
               <option value="Repair">Repair</option>
+              <option value="Completed">Completed — this was the final step</option>
               <option value="Other">Other</option>
             </select>
           </div>
@@ -414,6 +449,34 @@
           </div>
         </div>
 
+        <!-- Surface Prep only -->
+        <div class="field-grid" id="surfacePrepFields" style="display:none; margin-top:20px;">
+          <div class="paint-picker-field">
+            <label>Primer</label>
+            <input type="text" class="paint-search-input" id="tePrimerSearch" placeholder="Search paints…" autocomplete="off">
+            <input type="hidden" id="tePrimerPaintId">
+            <div class="paint-search-results" id="tePrimerResults"></div>
+            <div class="paint-picked" id="tePrimerPicked" style="display:none;"></div>
+          </div>
+          <div class="paint-picker-field">
+            <label>Basecoat Colour</label>
+            <input type="text" class="paint-search-input" id="teBasecoatSearch" placeholder="Search paints…" autocomplete="off">
+            <input type="hidden" id="teBasecoatPaintId">
+            <div class="paint-search-results" id="teBasecoatResults"></div>
+            <div class="paint-picked" id="teBasecoatPicked" style="display:none;"></div>
+          </div>
+        </div>
+
+        <!-- Paint category only -->
+        <div class="field full" id="paintFields" style="display:none; margin-top:20px;">
+          <label>Paints Used</label>
+          <div id="paintLinksList"></div>
+          <div class="paint-picker-field" style="margin-top:8px;">
+            <input type="text" class="paint-search-input" id="teAddPaintSearch" placeholder="Search paints to add…" autocomplete="off">
+            <div class="paint-search-results" id="teAddPaintResults"></div>
+          </div>
+        </div>
+
         <div class="field" style="margin-top:16px;">
           <label>Photo <span style="color:var(--mono); text-transform:none; letter-spacing:0;">(optional)</span></label>
           <div class="te-photo-slot">
@@ -423,12 +486,6 @@
             </label>
             <input type="file" id="tePhoto" accept="image/jpeg,image/png,image/webp">
           </div>
-        </div>
-
-        <div class="field" style="margin-top:16px;">
-          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; font-size:0.9rem; color:var(--cream);">
-            <input type="checkbox" id="teCompletion" style="width:auto; accent-color:var(--gold);"> This was the final step — the model is done
-          </label>
         </div>
 
         <div class="submit-row" style="margin-top:26px;">
@@ -1103,19 +1160,145 @@
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }
 
+  let linkedPaintIds = []; // for the Paint category's multi-paint list
+
   function resetTimelineForm(){
     editingEntryId = null;
     selectedEntryPhoto = null;
     existingEntryPhotoUrl = null;
+    linkedPaintIds = [];
     document.getElementById("teDate").value = todayDateString();
     document.getElementById("teCategory").value = "Assembly";
     document.getElementById("teHours").value = "2";
     document.getElementById("teDescription").value = "";
-    document.getElementById("teCompletion").checked = false;
     document.getElementById("tePhotoDrop").classList.remove("filled");
     document.getElementById("tePhotoDrop").innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg><span class="plus-label">Drop or Click</span>`;
     document.getElementById("deleteTimelineEntryBtn").style.display = "none";
+
+    clearPaintPick("tePrimer");
+    clearPaintPick("teBasecoat");
+    document.getElementById("paintLinksList").innerHTML = "";
+    document.getElementById("teAddPaintSearch").value = "";
+    updateCategoryFieldVisibility();
   }
+
+  function updateCategoryFieldVisibility(){
+    const category = document.getElementById("teCategory").value;
+    document.getElementById("surfacePrepFields").style.display = (category === "Surface Prep") ? "grid" : "none";
+    document.getElementById("paintFields").style.display = (category === "Paint") ? "block" : "none";
+  }
+  document.getElementById("teCategory").addEventListener("change", updateCategoryFieldVisibility);
+
+  // ---- Reusable paint search — used by Primer, Basecoat, and the
+  // Paint-category multi-picker alike. ----
+  function paintSwatch(hex){
+    return `<div class="paint-result-swatch" style="background:${hex || "#333"};"></div>`;
+  }
+
+  async function searchPaints(query){
+    if (!query || query.length < 2) return [];
+    const { data } = await supabaseClient
+      .from("paints")
+      .select("id, brand, range, name, hex_color")
+      .or(`name.ilike.%${query}%,brand.ilike.%${query}%`)
+      .limit(15);
+    return data || [];
+  }
+
+  function wireSinglePaintPicker(prefix){
+    const input = document.getElementById(`${prefix}Search`);
+    const results = document.getElementById(`${prefix}Results`);
+    const hiddenId = document.getElementById(`${prefix}PaintId`);
+    const picked = document.getElementById(`${prefix}Picked`);
+
+    input.addEventListener("input", async () => {
+      const matches = await searchPaints(input.value.trim());
+      if (!matches.length){ results.classList.remove("open"); return; }
+      results.innerHTML = matches.map(p => `
+        <div class="paint-result-row" data-id="${p.id}" data-name="${p.name.replace(/"/g, "&quot;")}" data-hex="${p.hex_color || ""}">
+          ${paintSwatch(p.hex_color)}
+          <span class="paint-result-name">${p.name}</span>
+          <span class="paint-result-meta">${p.brand} · ${p.range}</span>
+        </div>
+      `).join("");
+      results.classList.add("open");
+      results.querySelectorAll(".paint-result-row").forEach(row => {
+        row.addEventListener("click", () => {
+          hiddenId.value = row.dataset.id;
+          picked.innerHTML = `
+            <div class="swatch" style="background:${row.dataset.hex || "#333"};"></div>
+            <div class="name">${row.dataset.name}</div>
+            <button type="button" class="clear-pick">×</button>
+          `;
+          picked.style.display = "flex";
+          picked.querySelector(".clear-pick").addEventListener("click", () => clearPaintPick(prefix));
+          input.value = "";
+          results.classList.remove("open");
+        });
+      });
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!input.contains(e.target) && !results.contains(e.target)) results.classList.remove("open");
+    });
+  }
+
+  function clearPaintPick(prefix){
+    document.getElementById(`${prefix}PaintId`).value = "";
+    document.getElementById(`${prefix}Picked`).style.display = "none";
+    document.getElementById(`${prefix}Picked`).innerHTML = "";
+  }
+
+  wireSinglePaintPicker("tePrimer");
+  wireSinglePaintPicker("teBasecoat");
+
+  function addPaintLinkRow(paintId, name, hex){
+    if (linkedPaintIds.includes(paintId)) return; // no duplicates
+    linkedPaintIds.push(paintId);
+    const list = document.getElementById("paintLinksList");
+    const row = document.createElement("div");
+    row.className = "paint-link-row";
+    row.dataset.paintId = paintId;
+    row.innerHTML = `
+      <div class="swatch" style="background:${hex || "#333"};"></div>
+      <div class="name">${name}</div>
+      <button type="button" class="remove-paint-link">×</button>
+    `;
+    row.querySelector(".remove-paint-link").addEventListener("click", () => {
+      linkedPaintIds = linkedPaintIds.filter(id => id !== paintId);
+      row.remove();
+    });
+    list.appendChild(row);
+  }
+
+  (function wireAddPaintSearch(){
+    const input = document.getElementById("teAddPaintSearch");
+    const results = document.getElementById("teAddPaintResults");
+
+    input.addEventListener("input", async () => {
+      const matches = await searchPaints(input.value.trim());
+      if (!matches.length){ results.classList.remove("open"); return; }
+      results.innerHTML = matches.map(p => `
+        <div class="paint-result-row" data-id="${p.id}" data-name="${p.name.replace(/"/g, "&quot;")}" data-hex="${p.hex_color || ""}">
+          ${paintSwatch(p.hex_color)}
+          <span class="paint-result-name">${p.name}</span>
+          <span class="paint-result-meta">${p.brand} · ${p.range}</span>
+        </div>
+      `).join("");
+      results.classList.add("open");
+      results.querySelectorAll(".paint-result-row").forEach(row => {
+        row.addEventListener("click", () => {
+          addPaintLinkRow(row.dataset.id, row.dataset.name, row.dataset.hex);
+          input.value = "";
+          results.classList.remove("open");
+        });
+      });
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!input.contains(e.target) && !results.contains(e.target)) results.classList.remove("open");
+    });
+  })();
 
   function attachTimelineDateMask(){
     const input = document.getElementById("teDate");
@@ -1183,7 +1366,12 @@
   async function openTimelineEntryForEdit(entryId){
     const { data: entry, error } = await supabaseClient
       .from("timeline_entries")
-      .select("id, entry_date, category, description, hours, image_url, is_completion")
+      .select(`
+        id, entry_date, category, description, hours, image_url, is_completion,
+        primer_paint_id, basecoat_paint_id,
+        primer:primer_paint_id ( name, hex_color ),
+        basecoat:basecoat_paint_id ( name, hex_color )
+      `)
       .eq("id", entryId)
       .maybeSingle();
 
@@ -1195,7 +1383,33 @@
     document.getElementById("teCategory").value = entry.category || "Assembly";
     document.getElementById("teHours").value = entry.hours != null ? entry.hours : 2;
     document.getElementById("teDescription").value = entry.description || "";
-    document.getElementById("teCompletion").checked = !!entry.is_completion;
+    updateCategoryFieldVisibility();
+
+    if (entry.primer_paint_id && entry.primer){
+      document.getElementById("tePrimerPaintId").value = entry.primer_paint_id;
+      const picked = document.getElementById("tePrimerPicked");
+      picked.innerHTML = `<div class="swatch" style="background:${entry.primer.hex_color || "#333"};"></div><div class="name">${entry.primer.name}</div><button type="button" class="clear-pick">×</button>`;
+      picked.style.display = "flex";
+      picked.querySelector(".clear-pick").addEventListener("click", () => clearPaintPick("tePrimer"));
+    }
+    if (entry.basecoat_paint_id && entry.basecoat){
+      document.getElementById("teBasecoatPaintId").value = entry.basecoat_paint_id;
+      const picked = document.getElementById("teBasecoatPicked");
+      picked.innerHTML = `<div class="swatch" style="background:${entry.basecoat.hex_color || "#333"};"></div><div class="name">${entry.basecoat.name}</div><button type="button" class="clear-pick">×</button>`;
+      picked.style.display = "flex";
+      picked.querySelector(".clear-pick").addEventListener("click", () => clearPaintPick("teBasecoat"));
+    }
+
+    if (entry.category === "Paint"){
+      const { data: linkedPaints } = await supabaseClient
+        .from("timeline_entry_paints")
+        .select("paint_id, sort_order, paints ( name, hex_color )")
+        .eq("timeline_entry_id", entryId)
+        .order("sort_order", { ascending: true });
+      (linkedPaints || []).forEach(lp => {
+        if (lp.paints) addPaintLinkRow(lp.paint_id, lp.paints.name, lp.paints.hex_color);
+      });
+    }
 
     if (entry.image_url){
       existingEntryPhotoUrl = entry.image_url;
@@ -1251,15 +1465,29 @@
         description: document.getElementById("teDescription").value.trim() || null,
         hours: document.getElementById("teHours").value ? parseFloat(document.getElementById("teHours").value) : null,
         image_url: imageUrl,
-        is_completion: document.getElementById("teCompletion").checked,
+        is_completion: category === "Completed",
+        primer_paint_id: document.getElementById("tePrimerPaintId").value || null,
+        basecoat_paint_id: document.getElementById("teBasecoatPaintId").value || null,
       };
 
-      if (editingEntryId){
-        const { error } = await supabaseClient.from("timeline_entries").update(entryPayload).eq("id", editingEntryId);
+      let entryId = editingEntryId;
+
+      if (entryId){
+        const { error } = await supabaseClient.from("timeline_entries").update(entryPayload).eq("id", entryId);
         if (error) throw error;
       } else {
-        const { error } = await supabaseClient.from("timeline_entries").insert(entryPayload);
+        const { data: inserted, error } = await supabaseClient.from("timeline_entries").insert(entryPayload).select().single();
         if (error) throw error;
+        entryId = inserted.id;
+      }
+
+      // Sync linked paints for the Paint category — replace the full set,
+      // same simple approach used elsewhere (links, subtasks).
+      await supabaseClient.from("timeline_entry_paints").delete().eq("timeline_entry_id", entryId);
+      if (category === "Paint" && linkedPaintIds.length){
+        await supabaseClient.from("timeline_entry_paints").insert(
+          linkedPaintIds.map((paintId, i) => ({ timeline_entry_id: entryId, paint_id: paintId, sort_order: i }))
+        );
       }
 
       progressNote.textContent = "";
