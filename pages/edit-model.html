@@ -124,31 +124,18 @@
   .timeline-event-card:hover{ border-color: var(--gold); }
   .timeline-event-card .te-title{ font-family:'Cormorant Garamond', serif; font-size:1.1rem; font-weight:600; }
   .timeline-event-card .te-meta{ font-family:'IBM Plex Mono', monospace; font-size:0.68rem; color: var(--mono); margin-top:4px; }
-  .timeline-event-card .te-milestone-badge{ font-family:'IBM Plex Mono', monospace; font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--gold); border:1px solid rgba(201,162,75,0.4); padding:3px 8px; flex-shrink:0; }
+  .timeline-event-card .te-completion-badge{ font-family:'IBM Plex Mono', monospace; font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--gold); border:1px solid rgba(201,162,75,0.4); padding:3px 8px; flex-shrink:0; }
 
   .timeline-form{ margin-top: 24px; border:1px solid var(--gold); background: var(--bg-raised); padding: 24px; }
 
-  .subtask-row{
-    border:1px solid var(--hairline); background: var(--bg); padding: 12px 14px; margin-bottom:10px;
-    display:grid; grid-template-columns: 60px 1fr 1fr auto; gap:10px; align-items:start;
+  .te-photo-slot .drop{
+    border:1px dashed var(--hairline); background: var(--bg); height:110px; width:110px;
+    display:flex; align-items:center; justify-content:center; flex-direction:column; gap:6px;
+    cursor:pointer; overflow:hidden;
   }
-  .subtask-row input, .subtask-row textarea{
-    background: var(--bg-raised); border:1px solid var(--hairline); color: var(--cream);
-    padding: 9px 11px; font-family:'Jost', sans-serif; font-size:0.85rem; width:100%;
-  }
-  .subtask-row textarea{ resize:vertical; min-height:38px; }
-  .subtask-row .remove-subtask{
-    background:none; border:1px solid var(--hairline); color: var(--error); cursor:pointer;
-    width:34px; height:34px; font-size:0.95rem; flex-shrink:0;
-  }
-  .st-photo-slot .drop{
-    border:1px dashed var(--hairline); background: var(--bg-raised); height:60px; width:60px;
-    display:flex; align-items:center; justify-content:center; cursor:pointer; overflow:hidden;
-  }
-  .st-photo-slot .drop.filled{ border-style:solid; border-color: var(--gold); }
-  .st-photo-slot .drop img{ width:100%; height:100%; object-fit:cover; }
-  .st-photo-slot .drop svg{ width:16px; height:16px; stroke: var(--mono); }
-  .st-photo-slot input[type="file"]{ display:none; }
+  .te-photo-slot .drop.filled{ border-style:solid; border-color: var(--gold); }
+  .te-photo-slot .drop img{ width:100%; height:100%; object-fit:cover; }
+  .te-photo-slot input[type="file"]{ display:none; }
 
   .submit-row{ margin-top: 46px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
   .btn-delete{
@@ -392,62 +379,62 @@
 
     <fieldset id="timelineFieldset" style="display:none;">
       <div class="legend">Creation Timeline</div>
-      <div id="timelineNoModelNote" class="hint" style="display:none;">Save this model as a draft first, then you can add timeline events.</div>
-      <div id="timelineEventsList"></div>
-      <button type="button" class="btn-ghost" id="addTimelineEventBtn" style="margin-top:14px;">+ Add Timeline Event</button>
+      <div id="timelineNoModelNote" class="hint" style="display:none;">Save this model as a draft first, then you can log timeline entries.</div>
+      <div id="timelineEntriesList"></div>
+      <button type="button" class="btn-ghost" id="addTimelineEntryBtn" style="margin-top:14px;">+ Log an Entry</button>
 
       <div class="timeline-form" id="timelineForm" style="display:none;">
-        <div class="field">
-          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; font-size:0.9rem; color:var(--cream);">
-            <input type="checkbox" id="teMilestone" style="width:auto; accent-color:var(--gold);"> This is a milestone, not a standard step
-          </label>
-          <div class="hint">Standard steps use a fixed list, so timelines stay consistent across models. Milestones get their own name for a turning point in the build itself — not an award or later event; those belong elsewhere.</div>
-        </div>
-
-        <div class="field-grid" style="margin-top:20px;">
-          <div class="field full" id="teStandardTitleField">
-            <label for="teStandardTitle">Step <span class="req">*</span></label>
-            <select id="teStandardTitle">
-              <option value="">Choose a step…</option>
-              <option value="Assembly">Assembly</option>
-              <option value="Surface Preparation">Surface Preparation</option>
-              <option value="Basecoat">Basecoat</option>
-              <option value="Shading / Washes">Shading / Washes</option>
-              <option value="Highlighting">Highlighting</option>
-              <option value="Details / Freehand">Details / Freehand</option>
-              <option value="Basing">Basing</option>
-              <option value="Varnish / Sealing">Varnish / Sealing</option>
-              <option value="Completed">Completed</option>
-            </select>
-          </div>
-          <div class="field full" id="teMilestoneTitleField" style="display:none;">
-            <label for="teMilestoneTitle">Milestone Name <span class="req">*</span></label>
-            <input id="teMilestoneTitle" type="text" placeholder="e.g. The First Brushstroke, Final Details Complete">
+        <div class="field-grid">
+          <div class="field full">
+            <label>What did you do today?</label>
           </div>
           <div class="field">
             <label for="teDate">Date</label>
             <input id="teDate" type="text" inputmode="numeric" placeholder="YYYY-MM-DD" maxlength="10">
           </div>
           <div class="field">
-            <label for="teHours">Hours Spent</label>
-            <input id="teHours" type="number" step="0.5" placeholder="e.g. 2.5">
+            <label for="teCategory">Category <span class="req">*</span></label>
+            <select id="teCategory">
+              <option value="Assembly">Assembly</option>
+              <option value="Surface Prep">Surface Prep</option>
+              <option value="Paint">Paint</option>
+              <option value="Basing">Basing</option>
+              <option value="Varnish">Varnish</option>
+              <option value="Repair">Repair</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="teHours">Hours</label>
+            <input id="teHours" type="number" step="0.5" value="2">
           </div>
           <div class="field full">
             <label for="teDescription">Description</label>
-            <textarea id="teDescription" placeholder="What happened in this step…"></textarea>
+            <textarea id="teDescription" placeholder="A quick note about this session…"></textarea>
           </div>
         </div>
 
-        <div class="field full" style="margin-top:26px;">
-          <label>Subtasks <span style="color:var(--mono); text-transform:none; letter-spacing:0;">(optional — each can have its own photo)</span></label>
-          <div id="subtaskList"></div>
-          <button type="button" class="btn-ghost" id="addSubtaskBtn" style="margin-top:8px;">+ Add Subtask</button>
+        <div class="field" style="margin-top:16px;">
+          <label>Photo <span style="color:var(--mono); text-transform:none; letter-spacing:0;">(optional)</span></label>
+          <div class="te-photo-slot">
+            <label class="drop" for="tePhoto" id="tePhotoDrop">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
+              <span class="plus-label">Drop or Click</span>
+            </label>
+            <input type="file" id="tePhoto" accept="image/jpeg,image/png,image/webp">
+          </div>
+        </div>
+
+        <div class="field" style="margin-top:16px;">
+          <label style="display:flex; align-items:center; gap:8px; cursor:pointer; text-transform:none; font-size:0.9rem; color:var(--cream);">
+            <input type="checkbox" id="teCompletion" style="width:auto; accent-color:var(--gold);"> This was the final step — the model is done
+          </label>
         </div>
 
         <div class="submit-row" style="margin-top:26px;">
-          <button type="button" class="btn-gold" id="saveTimelineEventBtn">Save Event</button>
-          <button type="button" class="btn-ghost" id="cancelTimelineEventBtn">Cancel</button>
-          <button type="button" class="btn-delete" id="deleteTimelineEventBtn" style="display:none;">Delete Event</button>
+          <button type="button" class="btn-gold" id="saveTimelineEntryBtn">Save Entry</button>
+          <button type="button" class="btn-ghost" id="cancelTimelineEntryBtn">Cancel</button>
+          <button type="button" class="btn-delete" id="deleteTimelineEntryBtn" style="display:none;">Delete Entry</button>
           <span class="progress-note" id="teProgressNote"></span>
         </div>
       </div>
@@ -955,11 +942,11 @@
     timelineFieldset.style.display = "block";
     if (!modelId){
       timelineNoModelNote.style.display = "block";
-      document.getElementById("timelineEventsList").innerHTML = "";
-      document.getElementById("addTimelineEventBtn").style.display = "none";
+      document.getElementById("timelineEntriesList").innerHTML = "";
+      document.getElementById("addTimelineEntryBtn").style.display = "none";
     } else {
       timelineNoModelNote.style.display = "none";
-      document.getElementById("addTimelineEventBtn").style.display = "inline-block";
+      document.getElementById("addTimelineEntryBtn").style.display = "inline-block";
       loadTimelineEvents();
     }
 
@@ -1106,90 +1093,29 @@
 
   publishBtn.addEventListener("click", publishBtnClickRouter);
 
-  // ---- Creation Timeline: events + subtasks ----
-  let editingEventId = null;
+  // ---- Creation Timeline: flat daily log entries ----
+  let editingEntryId = null;
+  let selectedEntryPhoto = null;
+  let existingEntryPhotoUrl = null;
 
-  function addSubtaskRow(title, note, imageUrl){
-    const list = document.getElementById("subtaskList");
-    const row = document.createElement("div");
-    row.className = "subtask-row";
-    row._photoFile = null;
-    row._existingImageUrl = imageUrl || null;
-
-    const photoInner = imageUrl
-      ? `<img src="${imageUrl}" alt="preview">`
-      : `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>`;
-
-    row.innerHTML = `
-      <div class="st-photo-slot">
-        <label class="drop${imageUrl ? " filled" : ""}">
-          ${photoInner}
-          <input type="file" class="st-photo-input" accept="image/jpeg,image/png,image/webp">
-        </label>
-      </div>
-      <input type="text" class="st-title-input" placeholder="Subtask title (e.g. Mold Line Removal)" value="${(title || "").replace(/"/g, "&quot;")}">
-      <textarea class="st-note-input" placeholder="Short note…">${note || ""}</textarea>
-      <button type="button" class="remove-subtask">×</button>
-    `;
-
-    const photoInput = row.querySelector(".st-photo-input");
-    photoInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      row._photoFile = file;
-      const drop = row.querySelector(".drop");
-      drop.classList.add("filled");
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        drop.innerHTML = `<img src="${ev.target.result}" alt="preview">`;
-        drop.appendChild(photoInput); // re-attach — innerHTML wipe above removed it from the DOM
-      };
-      reader.readAsDataURL(file);
-    });
-
-    row.querySelector(".remove-subtask").addEventListener("click", () => row.remove());
-    list.appendChild(row);
-  }
-
-  document.getElementById("addSubtaskBtn").addEventListener("click", () => addSubtaskRow("", "", null));
-
-  function updateTitleFieldVisibility(){
-    const isMilestone = document.getElementById("teMilestone").checked;
-    document.getElementById("teStandardTitleField").style.display = isMilestone ? "none" : "block";
-    document.getElementById("teMilestoneTitleField").style.display = isMilestone ? "block" : "none";
-  }
-  document.getElementById("teMilestone").addEventListener("change", updateTitleFieldVisibility);
-
-  function getCurrentEventTitle(){
-    const isMilestone = document.getElementById("teMilestone").checked;
-    return isMilestone
-      ? document.getElementById("teMilestoneTitle").value.trim()
-      : document.getElementById("teStandardTitle").value;
+  function todayDateString(){
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }
 
   function resetTimelineForm(){
-    editingEventId = null;
-    document.getElementById("teStandardTitle").value = "";
-    document.getElementById("teMilestoneTitle").value = "";
-    document.getElementById("teDate").value = "";
-    document.getElementById("teHours").value = "";
+    editingEntryId = null;
+    selectedEntryPhoto = null;
+    existingEntryPhotoUrl = null;
+    document.getElementById("teDate").value = todayDateString();
+    document.getElementById("teCategory").value = "Assembly";
+    document.getElementById("teHours").value = "2";
     document.getElementById("teDescription").value = "";
-    document.getElementById("teMilestone").checked = false;
-    updateTitleFieldVisibility();
-    document.getElementById("subtaskList").innerHTML = "";
-    document.getElementById("deleteTimelineEventBtn").style.display = "none";
+    document.getElementById("teCompletion").checked = false;
+    document.getElementById("tePhotoDrop").classList.remove("filled");
+    document.getElementById("tePhotoDrop").innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg><span class="plus-label">Drop or Click</span>`;
+    document.getElementById("deleteTimelineEntryBtn").style.display = "none";
   }
-
-  document.getElementById("addTimelineEventBtn").addEventListener("click", () => {
-    resetTimelineForm();
-    document.getElementById("timelineForm").style.display = "block";
-    document.getElementById("timelineForm").scrollIntoView({ behavior: "smooth", block: "center" });
-  });
-
-  document.getElementById("cancelTimelineEventBtn").addEventListener("click", () => {
-    document.getElementById("timelineForm").style.display = "none";
-    resetTimelineForm();
-  });
 
   function attachTimelineDateMask(){
     const input = document.getElementById("teDate");
@@ -1203,194 +1129,169 @@
   }
   attachTimelineDateMask();
 
+  document.getElementById("tePhoto").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    selectedEntryPhoto = file;
+    const drop = document.getElementById("tePhotoDrop");
+    drop.classList.add("filled");
+    const reader = new FileReader();
+    reader.onload = (ev) => { drop.innerHTML = `<img src="${ev.target.result}" alt="preview">`; };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById("addTimelineEntryBtn").addEventListener("click", () => {
+    resetTimelineForm();
+    document.getElementById("timelineForm").style.display = "block";
+    document.getElementById("timelineForm").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  document.getElementById("cancelTimelineEntryBtn").addEventListener("click", () => {
+    document.getElementById("timelineForm").style.display = "none";
+    resetTimelineForm();
+  });
+
   async function loadTimelineEvents(){
-    const list = document.getElementById("timelineEventsList");
+    const list = document.getElementById("timelineEntriesList");
     const { data, error } = await supabaseClient
-      .from("timeline_events")
-      .select("id, title, event_date, hours_spent, is_milestone, sort_order")
+      .from("timeline_entries")
+      .select("id, entry_date, category, hours, is_completion")
       .eq("miniature_id", modelId)
-      .order("sort_order", { ascending: true });
+      .order("entry_date", { ascending: false })
+      .order("created_at", { ascending: false });
 
     if (error || !data || !data.length){
       list.innerHTML = "";
       return;
     }
 
-    list.innerHTML = data.map(ev => `
-      <div class="timeline-event-card" data-event-id="${ev.id}">
+    list.innerHTML = data.map(entry => `
+      <div class="timeline-event-card" data-entry-id="${entry.id}">
         <div>
-          <div class="te-title">${ev.title}</div>
-          <div class="te-meta">${ev.event_date || "No date"} · ${ev.hours_spent ? ev.hours_spent + " hrs" : "—"}</div>
+          <div class="te-title">${entry.category}</div>
+          <div class="te-meta">${entry.entry_date} · ${entry.hours || 0} hrs</div>
         </div>
-        ${ev.is_milestone ? `<span class="te-milestone-badge">◆ Milestone</span>` : ""}
+        ${entry.is_completion ? `<span class="te-completion-badge">✓ Completion</span>` : ""}
       </div>
     `).join("");
 
     list.querySelectorAll(".timeline-event-card").forEach(card => {
-      card.addEventListener("click", () => openTimelineEventForEdit(card.dataset.eventId));
+      card.addEventListener("click", () => openTimelineEntryForEdit(card.dataset.entryId));
     });
   }
 
-  async function openTimelineEventForEdit(eventId){
-    const { data: event, error } = await supabaseClient
-      .from("timeline_events")
-      .select("id, title, event_date, hours_spent, description, image_url, is_milestone")
-      .eq("id", eventId)
+  async function openTimelineEntryForEdit(entryId){
+    const { data: entry, error } = await supabaseClient
+      .from("timeline_entries")
+      .select("id, entry_date, category, description, hours, image_url, is_completion")
+      .eq("id", entryId)
       .maybeSingle();
 
-    if (error || !event) return;
-
-    const { data: subtasks } = await supabaseClient
-      .from("timeline_subtasks")
-      .select("title, note, image_url, sort_order")
-      .eq("timeline_event_id", eventId)
-      .order("sort_order", { ascending: true });
+    if (error || !entry) return;
 
     resetTimelineForm();
-    editingEventId = eventId;
-    document.getElementById("teMilestone").checked = !!event.is_milestone;
-    updateTitleFieldVisibility();
-    if (event.is_milestone){
-      document.getElementById("teMilestoneTitle").value = event.title || "";
-    } else {
-      document.getElementById("teStandardTitle").value = event.title || "";
+    editingEntryId = entryId;
+    document.getElementById("teDate").value = entry.entry_date || todayDateString();
+    document.getElementById("teCategory").value = entry.category || "Assembly";
+    document.getElementById("teHours").value = entry.hours != null ? entry.hours : 2;
+    document.getElementById("teDescription").value = entry.description || "";
+    document.getElementById("teCompletion").checked = !!entry.is_completion;
+
+    if (entry.image_url){
+      existingEntryPhotoUrl = entry.image_url;
+      const drop = document.getElementById("tePhotoDrop");
+      drop.classList.add("filled");
+      drop.innerHTML = `<img src="${entry.image_url}" alt="preview">`;
     }
-    document.getElementById("teDate").value = event.event_date || "";
-    document.getElementById("teHours").value = event.hours_spent || "";
-    document.getElementById("teDescription").value = event.description || "";
 
-    (subtasks || []).forEach(s => addSubtaskRow(s.title, s.note, s.image_url));
-
-    document.getElementById("deleteTimelineEventBtn").style.display = "inline-block";
+    document.getElementById("deleteTimelineEntryBtn").style.display = "inline-block";
     document.getElementById("timelineForm").style.display = "block";
     document.getElementById("timelineForm").scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
-  document.getElementById("saveTimelineEventBtn").addEventListener("click", async () => {
-    const title = getCurrentEventTitle();
-    if (!title){
-      showTopError(document.getElementById("teMilestone").checked
-        ? "Give this milestone a name."
-        : "Choose a step from the list.");
+  document.getElementById("saveTimelineEntryBtn").addEventListener("click", async () => {
+    const category = document.getElementById("teCategory").value;
+    const dateValue = document.getElementById("teDate").value.trim();
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateValue)){
+      showTopError("Enter a complete date (YYYY-MM-DD).");
       return;
     }
 
-    const description = document.getElementById("teDescription").value.trim();
-    const subtaskRowsEls = Array.from(document.querySelectorAll("#subtaskList .subtask-row"));
-    const hasAnySubtaskContent = subtaskRowsEls.some(row => row.querySelector(".st-title-input").value.trim());
-
-    if (!description && !hasAnySubtaskContent){
-      showTopError("Add a description or at least one subtask before saving — an empty step won't show up on the timeline.");
-      return;
-    }
-
-    const saveBtn = document.getElementById("saveTimelineEventBtn");
+    const saveBtn = document.getElementById("saveTimelineEntryBtn");
     const progressNote = document.getElementById("teProgressNote");
     saveBtn.disabled = true;
     saveBtn.textContent = "Saving…";
 
     try {
-      progressNote.textContent = "Saving event…";
-      const eventPayload = {
+      let imageUrl = existingEntryPhotoUrl;
+
+      if (selectedEntryPhoto){
+        progressNote.textContent = "Uploading photo…";
+        const uploadForm = new FormData();
+        uploadForm.append("file", selectedEntryPhoto);
+        uploadForm.append("upload_type", "timeline_photo");
+        uploadForm.append("miniature_id", modelId);
+
+        const uploadRes = await fetch(WORKER_UPLOAD_URL, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${currentSession.access_token}` },
+          body: uploadForm,
+        });
+        const result = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(result.error || "Photo upload failed");
+        imageUrl = result.url;
+      }
+
+      progressNote.textContent = "Saving entry…";
+      const entryPayload = {
         miniature_id: modelId,
-        title,
-        event_date: document.getElementById("teDate").value || null,
-        hours_spent: document.getElementById("teHours").value ? parseFloat(document.getElementById("teHours").value) : null,
-        description: description || null,
-        is_milestone: document.getElementById("teMilestone").checked,
+        entry_date: dateValue,
+        category,
+        description: document.getElementById("teDescription").value.trim() || null,
+        hours: document.getElementById("teHours").value ? parseFloat(document.getElementById("teHours").value) : null,
+        image_url: imageUrl,
+        is_completion: document.getElementById("teCompletion").checked,
       };
 
-      let eventId = editingEventId;
-
-      if (eventId){
-        const { error } = await supabaseClient.from("timeline_events").update(eventPayload).eq("id", eventId);
+      if (editingEntryId){
+        const { error } = await supabaseClient.from("timeline_entries").update(entryPayload).eq("id", editingEntryId);
         if (error) throw error;
       } else {
-        const { count } = await supabaseClient
-          .from("timeline_events")
-          .select("id", { count: "exact", head: true })
-          .eq("miniature_id", modelId);
-        eventPayload.sort_order = count || 0;
-
-        const { data: inserted, error } = await supabaseClient.from("timeline_events").insert(eventPayload).select().single();
+        const { error } = await supabaseClient.from("timeline_entries").insert(entryPayload);
         if (error) throw error;
-        eventId = inserted.id;
-      }
-
-      // Upload any new subtask photos first, so we have URLs ready to save.
-      let uploadedCount = 0;
-      const subtasksToSave = [];
-      for (const row of subtaskRowsEls){
-        const rowTitle = row.querySelector(".st-title-input").value.trim();
-        if (!rowTitle) continue;
-
-        let imageUrl = row._existingImageUrl || null;
-
-        if (row._photoFile){
-          uploadedCount++;
-          progressNote.textContent = `Uploading subtask photo ${uploadedCount}…`;
-          const uploadForm = new FormData();
-          uploadForm.append("file", row._photoFile);
-          uploadForm.append("upload_type", "timeline_photo");
-          uploadForm.append("miniature_id", modelId);
-
-          const uploadRes = await fetch(WORKER_UPLOAD_URL, {
-            method: "POST",
-            headers: { Authorization: `Bearer ${currentSession.access_token}` },
-            body: uploadForm,
-          });
-          const result = await uploadRes.json();
-          if (!uploadRes.ok) throw new Error(result.error || "Subtask photo upload failed");
-          imageUrl = result.url;
-        }
-
-        subtasksToSave.push({
-          title: rowTitle,
-          note: row.querySelector(".st-note-input").value.trim() || null,
-          image_url: imageUrl,
-        });
-      }
-
-      progressNote.textContent = "Saving subtasks…";
-      // Replace the full subtask set — same simple approach used for profile links.
-      await supabaseClient.from("timeline_subtasks").delete().eq("timeline_event_id", eventId);
-      if (subtasksToSave.length){
-        await supabaseClient.from("timeline_subtasks").insert(
-          subtasksToSave.map((s, i) => ({ ...s, timeline_event_id: eventId, sort_order: i }))
-        );
       }
 
       progressNote.textContent = "";
       document.getElementById("timelineForm").style.display = "none";
       resetTimelineForm();
       loadTimelineEvents();
-      topSuccess.textContent = "Timeline event saved.";
+      topSuccess.textContent = "Timeline entry saved.";
       topSuccess.style.display = "block";
 
     } catch (err){
-      console.error("Save timeline event failed:", err);
+      console.error("Save timeline entry failed:", err);
       progressNote.textContent = "";
-      showTopError(err.message || "Couldn't save this timeline event.");
+      showTopError(err.message || "Couldn't save this timeline entry.");
     } finally {
       saveBtn.disabled = false;
-      saveBtn.textContent = "Save Event";
+      saveBtn.textContent = "Save Entry";
     }
   });
 
-  document.getElementById("deleteTimelineEventBtn").addEventListener("click", async () => {
-    if (!editingEventId) return;
-    const btn = document.getElementById("deleteTimelineEventBtn");
+  document.getElementById("deleteTimelineEntryBtn").addEventListener("click", async () => {
+    if (!editingEntryId) return;
+    const btn = document.getElementById("deleteTimelineEntryBtn");
     btn.disabled = true;
     btn.textContent = "Deleting…";
 
-    await supabaseClient.from("timeline_subtasks").delete().eq("timeline_event_id", editingEventId);
-    const { error } = await supabaseClient.from("timeline_events").delete().eq("id", editingEventId);
+    const { error } = await supabaseClient.from("timeline_entries").delete().eq("id", editingEntryId);
 
     btn.disabled = false;
-    btn.textContent = "Delete Event";
+    btn.textContent = "Delete Entry";
 
     if (error){
-      showTopError(error.message || "Couldn't delete this event.");
+      showTopError(error.message || "Couldn't delete this entry.");
       return;
     }
 
@@ -1398,6 +1299,7 @@
     resetTimelineForm();
     loadTimelineEvents();
   });
+
 
   // ---- Load existing model if ?id= present, else fresh new-draft form ----
   (async () => {
