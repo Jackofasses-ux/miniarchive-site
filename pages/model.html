@@ -821,6 +821,16 @@
     frame.addEventListener("pointermove", onPointerMove);
     frame.addEventListener("pointerup", onPointerUp);
     frame.addEventListener("pointercancel", onPointerUp);
+
+    // Click (not drag) opens the current set of identity photos in the
+    // lightbox, letting you browse all of them in a larger format.
+    frame.addEventListener("click", () => {
+      if (hasMoved) return;
+      const orderedPhotos = VIEW_ORDER.filter(v => PHOTOS_BY_VIEW[v]).map(v => PHOTOS_BY_VIEW[v]);
+      if (!orderedPhotos.length) return;
+      const startIdx = orderedPhotos.indexOf(PHOTOS_BY_VIEW[VIEW_ORDER[currentViewIndex]]);
+      openLightbox(orderedPhotos, startIdx === -1 ? 0 : startIdx);
+    });
   })();
 
   // ---- Load real data if ?id= is present, else fall back to the dummy MODEL above ----
@@ -1172,8 +1182,8 @@
       return;
     }
 
-    grid.innerHTML = allItems.map(item => `
-      <div class="gallery-item" onclick="openLightbox('${item.url}')">
+    grid.innerHTML = allItems.map((item, idx) => `
+      <div class="gallery-item" onclick='openLightbox(${JSON.stringify(allItems.map(i => i.url))}, ${idx})'>
         <span class="view-tag">${item.tag}</span>
         <img src="${item.url}" alt="${item.tag}" loading="lazy">
       </div>
