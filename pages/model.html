@@ -133,8 +133,9 @@
   .timeline-item .t-desc{ color: var(--cream-dim); font-size:0.92rem; max-width: 620px; margin-top:14px; }
 
   /* Step-level mini photo viewer — cycles through subtask photos, mirrors the main front/left/rear/right viewer */
-  .step-photo-viewer{ margin-top:20px; max-width: 420px; border:1px solid var(--hairline); background: var(--bg-raised); }
-  .step-photo-frame{ height:220px; background-size:cover; background-position:center; cursor:zoom-in; }
+  .step-photo-viewer{ margin-top:20px; max-width: 280px; border:1px solid var(--hairline); background: var(--bg-raised); }
+  .step-photo-frame{ height:150px; background-size:cover; background-position:center; cursor:grab; touch-action: pan-y; }
+  .step-photo-frame:active{ cursor:grabbing; }
   .step-photo-tabs{ display:flex; border-top:1px solid var(--hairline); overflow-x:auto; }
   .step-photo-tabs button{
     flex-shrink:0; padding:10px 14px; background:transparent; border:none; border-right:1px solid var(--hairline);
@@ -486,8 +487,11 @@
       `;
     }
 
+    const stepPhotoData = {};
+
     document.getElementById("timelineList").innerHTML = (m.timeline && m.timeline.length) ? m.timeline.map((group, i) => {
       const photoEntries = group.entries.filter(e => e.photoUrl);
+      stepPhotoData[i] = photoEntries;
       const dateRange = group.entries.length > 1
         ? `${group.entries[0].date} – ${group.entries[group.entries.length - 1].date}`
         : group.entries[0].date;
@@ -504,9 +508,9 @@
           <div class="t-date-hours">${dateRange} · ${totalHours} hours</div>
           ${photoEntries.length ? `
             <div class="step-photo-viewer">
-              <div class="step-photo-frame" id="stepFrame-${i}" style="background-image:url('${photoEntries[0].photoUrl}')" onclick="openLightbox(document.getElementById('stepFrame-${i}').dataset.src)" data-src="${photoEntries[0].photoUrl}"></div>
-              <div class="step-photo-tabs">
-                ${photoEntries.map((e, ei) => `<button class="${ei === 0 ? "active" : ""}" onclick="setStepPhoto(${i}, '${e.photoUrl.replace(/'/g, "\\'")}', this)">${e.date}</button>`).join("")}
+              <div class="step-photo-frame" id="stepFrame-${i}" style="background-image:url('${photoEntries[0].photoUrl}')" data-src="${photoEntries[0].photoUrl}"></div>
+              <div class="step-photo-tabs" id="stepTabs-${i}">
+                ${photoEntries.map((e, ei) => `<button class="${ei === 0 ? "active" : ""}" data-index="${ei}">${e.date}</button>`).join("")}
               </div>
             </div>
           ` : ""}
@@ -534,13 +538,64 @@
       if (!wasExpanded) card.classList.add("expanded");
     };
 
-    window.setStepPhoto = function(itemIndex, url, btn){
-      const frame = document.getElementById(`stepFrame-${itemIndex}`);
-      frame.style.backgroundImage = `url('${url}')`;
-      frame.dataset.src = url;
-      btn.parentElement.querySelectorAll("button").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-    };
+    // ---- Step photo viewers: click tabs or drag to cycle, mirrors the
+    // main front/left/rear/right viewer's interaction. ----
+    Object.keys(stepPhotoData).forEach(key => {
+      const i = key;
+      const photos = stepPhotoData[i];
+      if (!photos.length) return;
+
+      const frame = document.getElementById(`stepFrame-${i}`);
+      const tabs = document.getElementById(`stepTabs-${i}`);
+      if (!frame) return;
+
+      function setIndex(idx){
+        idx = ((idx % photos.length) + photos.length) % photos.length;
+        frame.style.backgroundImage = `url('${photos[idx].photoUrl}')`;
+        frame.dataset.src = photos[idx].photoUrl;
+        if (tabs){
+          tabs.querySelectorAll("button").forEach(b => b.classList.toggle("active", parseInt(b.dataset.index) === idx));
+        }
+      }
+
+      if (tabs){
+        tabs.querySelectorAll("button").forEach(btn => {
+          btn.addEventListener("click", () => setIndex(parseInt(btn.dataset.index)));
+        });
+      }
+
+      let dragging = false;
+      let startX = 0;
+      let hasMoved = false;
+      const DRAG_STEP_PX = 50;
+
+      frame.addEventListener("pointerdown", (e) => {
+        dragging = true;
+        hasMoved = false;
+        startX = e.clientX;
+        frame.setPointerCapture(e.pointerId);
+      });
+      frame.addEventListener("pointermove", (e) => {
+        if (!dragging) return;
+        const deltaX = e.clientX - startX;
+        if (Math.abs(deltaX) >= DRAG_STEP_PX){
+          hasMoved = true;
+          const currentIdx = parseInt(frame.dataset.src ? photos.findIndex(p => p.photoUrl === frame.dataset.src) : 0);
+          setIndex(currentIdx + (deltaX > 0 ? -1 : 1));
+          startX = e.clientX;
+        }
+      });
+      function endDrag(e){
+        dragging = false;
+        try { frame.releasePointerCapture(e.pointerId); } catch (err) {}
+      }
+      frame.addEventListener("pointerup", endDrag);
+      frame.addEventListener("pointercancel", endDrag);
+      frame.addEventListener("click", () => {
+        if (hasMoved) return; // just finished a drag — don't also open the lightbox
+        openLightbox(frame.dataset.src);
+      });
+    });
 
     document.getElementById("recipeGrid").innerHTML = (m.recipe && m.recipe.length) ? m.recipe.map(r => `
       <div class="recipe-card">
