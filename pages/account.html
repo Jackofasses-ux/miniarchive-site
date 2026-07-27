@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/translations.js"></script>
+<script src="js/i18n.js"></script>
 <style>
   :root{
     --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
@@ -18,6 +20,15 @@
   *{ margin:0; padding:0; box-sizing:border-box; }
   body{ background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif; font-weight:300; line-height:1.6; min-height:100vh; }
   a{ color:inherit; text-decoration:none; }
+  .lang-toggle{ display:flex; border:1px solid var(--hairline); }
+  .lang-toggle button{
+    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.08em;
+    color: var(--cream-dim); background:transparent; border:none; padding:8px 12px; cursor:pointer;
+    transition: background .2s ease, color .2s ease;
+  }
+  .lang-toggle button:first-child{ border-right:1px solid var(--hairline); }
+  .lang-toggle button.active{ background: var(--gold); color:#0c0b09; }
+  .lang-toggle button:hover:not(.active){ color: var(--cream); }
   @media (prefers-reduced-motion: reduce){ *{ animation-duration:.01ms !important; transition-duration:.01ms !important; } }
 
   .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.22em; text-transform:uppercase; color: var(--gold); }
@@ -192,33 +203,37 @@
     <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
     <div class="brand-name">MINI ARCHIVE</div>
   </a>
-  <nav>
+  <nav style="display:flex; align-items:center; gap:24px;">
+    <div class="lang-toggle">
+      <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">EN</button>
+      <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">FR</button>
+    </div>
     <div id="authArea"></div>
   </nav>
 </header>
 
 <div id="gate" class="gate" style="display:none;">
-  <div class="eyebrow">My Archive</div>
-  <h1>Log in to continue.</h1>
-  <p>You need to be signed in to view your dashboard.</p>
-  <div class="cta-row"><a class="btn-gold" href="login.html">Log In</a></div>
+  <div class="eyebrow" data-i18n="account_gate_eyebrow">My Archive</div>
+  <h1 data-i18n="account_gate_title">Log in to continue.</h1>
+  <p data-i18n="account_gate_desc">You need to be signed in to view your dashboard.</p>
+  <div class="cta-row"><a class="btn-gold" href="login.html" data-i18n="account_gate_login">Log In</a></div>
 </div>
 
 <main id="dashWrap" style="display:none;">
-  <div class="eyebrow">My Archive</div>
-  <h1 id="greeting">Welcome back.</h1>
-  <p class="lede">Everything you've logged, at a glance.</p>
+  <div class="eyebrow" data-i18n="account_eyebrow">My Archive</div>
+  <h1 id="greeting" data-i18n="account_greeting_default">Welcome back.</h1>
+  <p class="lede" data-i18n="account_lede">Everything you've logged, at a glance.</p>
 
   <div class="stats-row">
-    <div class="stat-box"><div class="num" id="statTotal">0</div><div class="label">Total Models</div></div>
-    <div class="stat-box"><div class="num" id="statPublished">0</div><div class="label">Published</div></div>
-    <div class="stat-box"><div class="num" id="statDrafts">0</div><div class="label">Drafts</div></div>
-    <div class="stat-box"><div class="num" id="statHours">0</div><div class="label">Painting Hours</div></div>
+    <div class="stat-box"><div class="num" id="statTotal">0</div><div class="label" data-i18n="stat_total_models">Total Models</div></div>
+    <div class="stat-box"><div class="num" id="statPublished">0</div><div class="label" data-i18n="stat_published">Published</div></div>
+    <div class="stat-box"><div class="num" id="statDrafts">0</div><div class="label" data-i18n="stat_drafts">Drafts</div></div>
+    <div class="stat-box"><div class="num" id="statHours">0</div><div class="label" data-i18n="stat_painting_hours">Painting Hours</div></div>
   </div>
 
   <div class="tab-row">
-    <button type="button" class="tab-btn active" data-tab="profile">Profile</button>
-    <button type="button" class="tab-btn" data-tab="security">Account &amp; Security</button>
+    <button type="button" class="tab-btn active" data-tab="profile" data-i18n="tab_profile">Profile</button>
+    <button type="button" class="tab-btn" data-tab="security" data-i18n="tab_security">Account &amp; Security</button>
   </div>
 
   <div class="top-error" id="topError"></div>
@@ -232,42 +247,42 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
         </div>
         <div>
-          <label for="avatarInput" class="btn-ghost" style="cursor:pointer; display:inline-block;">Change Photo</label>
+          <label for="avatarInput" class="btn-ghost" style="cursor:pointer; display:inline-block;" data-i18n="account_change_photo">Change Photo</label>
           <input type="file" id="avatarInput" accept="image/jpeg,image/png,image/webp" style="display:none;">
-          <div class="hint" style="margin-top:8px;">JPEG, PNG, or WebP. Uploads immediately.</div>
+          <div class="hint" style="margin-top:8px;" data-i18n="account_photo_hint">JPEG, PNG, or WebP. Uploads immediately.</div>
         </div>
       </div>
 
       <div class="field-grid">
         <div class="field">
-          <label for="username">Archive Name</label>
+          <label for="username" data-i18n="account_archive_name">Archive Name</label>
           <input id="username" type="text">
-          <div class="hint">Shown on your public profile URL and collection page.</div>
+          <div class="hint" data-i18n="account_archive_name_hint">Shown on your public profile URL and collection page.</div>
         </div>
         <div class="field">
-          <label for="displayName">Display Name</label>
+          <label for="displayName" data-i18n="account_display_name">Display Name</label>
           <input id="displayName" type="text">
         </div>
         <div class="field full">
-          <label for="bio">Bio</label>
-          <textarea id="bio" placeholder="A few lines about you or your studio…"></textarea>
+          <label for="bio" data-i18n="account_bio">Bio</label>
+          <textarea id="bio" placeholder="A few lines about you or your studio…" data-i18n-placeholder="account_bio_placeholder"></textarea>
         </div>
         <div class="field">
-          <label for="country">Country</label>
-          <input id="country" type="text" placeholder="e.g. Canada">
+          <label for="country" data-i18n="account_country">Country</label>
+          <input id="country" type="text" placeholder="e.g. Canada" data-i18n-placeholder="account_country_placeholder">
         </div>
       </div>
 
       <div class="field full" style="margin-top:30px;">
-        <label>Links</label>
-        <div class="hint" style="margin-bottom:12px;">Website, Instagram, YouTube, TikTok, Twitch, Discord — add as many as you want, in whatever order matters to you.</div>
+        <label data-i18n="account_links_label">Links</label>
+        <div class="hint" style="margin-bottom:12px;" data-i18n="account_links_hint">Website, Instagram, YouTube, TikTok, Twitch, Discord — add as many as you want, in whatever order matters to you.</div>
         <div id="linksList"></div>
-        <button type="button" class="btn-ghost" id="addLinkBtn" style="margin-top:8px;">+ Add a Link</button>
+        <button type="button" class="btn-ghost" id="addLinkBtn" style="margin-top:8px;" data-i18n="account_add_link">+ Add a Link</button>
       </div>
 
       <div class="quick-links">
-        <button type="submit" class="btn-gold">Save Profile</button>
-        <button type="button" class="btn-ghost" id="previewProfileLink">Preview Public Profile</button>
+        <button type="submit" class="btn-gold" data-i18n="account_save_profile">Save Profile</button>
+        <button type="button" class="btn-ghost" id="previewProfileLink" data-i18n="account_preview_profile">Preview Public Profile</button>
       </div>
     </form>
   </div>
@@ -276,37 +291,37 @@
   <div class="tab-panel" id="tab-security" style="display:none;">
     <div class="tier-box">
       <div>
-        <div class="label">Current Tier</div>
-        <div class="value" id="tierValue">Free</div>
+        <div class="label" data-i18n="account_current_tier">Current Tier</div>
+        <div class="value" id="tierValue" data-i18n="account_tier_free">Free</div>
       </div>
       <div style="font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--mono);" id="emailValue"></div>
     </div>
 
     <div class="section-head">
-      <div class="eyebrow">Change Password</div>
+      <div class="eyebrow" data-i18n="account_change_password">Change Password</div>
       <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
     </div>
 
     <form id="passwordForm">
       <div class="field-grid">
         <div class="field" id="field-newPassword">
-          <label for="newPassword">New Password</label>
-          <input id="newPassword" type="password" placeholder="At least 8 characters">
-          <div class="error-msg">Must be at least 8 characters.</div>
+          <label for="newPassword" data-i18n="account_new_password">New Password</label>
+          <input id="newPassword" type="password" placeholder="At least 8 characters" data-i18n-placeholder="account_new_password_placeholder">
+          <div class="error-msg" data-i18n="account_new_password_error">Must be at least 8 characters.</div>
         </div>
         <div class="field" id="field-confirmNewPassword">
-          <label for="confirmNewPassword">Confirm New Password</label>
-          <input id="confirmNewPassword" type="password" placeholder="Type it again">
-          <div class="error-msg">Passwords don't match.</div>
+          <label for="confirmNewPassword" data-i18n="account_confirm_password">Confirm New Password</label>
+          <input id="confirmNewPassword" type="password" placeholder="Type it again" data-i18n-placeholder="account_confirm_password_placeholder">
+          <div class="error-msg" data-i18n="account_confirm_password_error">Passwords don't match.</div>
         </div>
       </div>
       <div class="quick-links">
-        <button type="submit" class="btn-gold">Update Password</button>
+        <button type="submit" class="btn-gold" data-i18n="account_update_password">Update Password</button>
       </div>
     </form>
 
     <div class="section-head">
-      <div class="eyebrow">Deactivate &amp; Delete Account</div>
+      <div class="eyebrow" data-i18n="account_danger_zone_title">Deactivate &amp; Delete Account</div>
       <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
     </div>
 
@@ -315,49 +330,49 @@
     <div class="danger-box">
       <div class="danger-row">
         <div>
-          <div class="danger-title">Deactivate Account</div>
-          <div class="danger-desc">Hides your identity from public view and blocks login until you sign back in. Your published models stay exactly as they are. Fully reversible — just log back in any time.</div>
+          <div class="danger-title" data-i18n="account_deactivate_title">Deactivate Account</div>
+          <div class="danger-desc" data-i18n="account_deactivate_desc">Hides your identity from public view and blocks login until you sign back in. Your published models stay exactly as they are. Fully reversible — just log back in any time.</div>
         </div>
-        <button type="button" class="btn-ghost" id="deactivateBtn">Deactivate</button>
+        <button type="button" class="btn-ghost" id="deactivateBtn" data-i18n="account_deactivate_btn">Deactivate</button>
       </div>
       <div class="danger-row">
         <div>
-          <div class="danger-title">Delete Account</div>
-          <div class="danger-desc">Starts a 21-day grace period. Logging back in during that window cancels the deletion automatically. After 21 days: your login is permanently removed, drafts are deleted, and your profile is anonymized. <b>Published models stay public and permanent</b> — that record can't be undone, even by deleting your account.</div>
+          <div class="danger-title" data-i18n="account_delete_title">Delete Account</div>
+          <div class="danger-desc"><span data-i18n="account_delete_desc_prefix">Starts a 21-day grace period. Logging back in during that window cancels the deletion automatically. After 21 days: your login is permanently removed, drafts are deleted, and your profile is anonymized. </span><b data-i18n="account_delete_desc_bold">Published models stay public and permanent</b><span data-i18n="account_delete_desc_suffix"> — that record can't be undone, even by deleting your account.</span></div>
         </div>
-        <button type="button" class="btn-delete" id="deleteAccountBtn">Delete Account</button>
+        <button type="button" class="btn-delete" id="deleteAccountBtn" data-i18n="account_delete_btn">Delete Account</button>
       </div>
     </div>
 
     <div class="confirm-box" id="deactivateConfirm" style="display:none;">
-      <p>Deactivate your account? You can undo this any time just by logging back in.</p>
+      <p data-i18n="account_deactivate_confirm_text">Deactivate your account? You can undo this any time just by logging back in.</p>
       <div class="confirm-actions">
-        <button type="button" class="btn-gold" id="confirmDeactivateBtn">Yes, Deactivate</button>
-        <button type="button" class="btn-ghost" id="cancelDeactivateBtn">Cancel</button>
+        <button type="button" class="btn-gold" id="confirmDeactivateBtn" data-i18n="account_deactivate_confirm_yes">Yes, Deactivate</button>
+        <button type="button" class="btn-ghost" id="cancelDeactivateBtn" data-i18n="account_cancel">Cancel</button>
       </div>
     </div>
 
     <div class="confirm-box" id="deleteConfirm" style="display:none;">
-      <p id="deleteConfirmText">Request account deletion? This starts a 21-day grace period — log back in any time before then to cancel.</p>
+      <p id="deleteConfirmText" data-i18n="account_delete_confirm_default">Request account deletion? This starts a 21-day grace period — log back in any time before then to cancel.</p>
       <div class="confirm-actions">
-        <button type="button" class="btn-delete" id="confirmDeleteAccountBtn">Yes, Request Deletion</button>
-        <button type="button" class="btn-ghost" id="cancelDeleteAccountBtn">Cancel</button>
+        <button type="button" class="btn-delete" id="confirmDeleteAccountBtn" data-i18n="account_delete_confirm_yes">Yes, Request Deletion</button>
+        <button type="button" class="btn-ghost" id="cancelDeleteAccountBtn" data-i18n="account_cancel">Cancel</button>
       </div>
     </div>
   </div>
 </main>
 
 <footer>
-  <div>© 2026 Mini Archive. Every miniature has a story.</div>
-  <div><a href="collection.html">Browse Collection</a></div>
+  <div>© 2026 Mini Archive. <span data-i18n="footer_tagline">Every miniature has a story.</span></div>
+  <div><a href="collection.html" data-i18n="footer_browse_collection">Browse Collection</a></div>
 </footer>
 
 <div class="preview-overlay" id="previewOverlay">
   <div class="preview-window">
     <div class="preview-window-header">
-      <span>Public Profile Preview <span style="color:var(--mono); text-transform:none; letter-spacing:0;">— links disabled</span></span>
+      <span><span data-i18n="account_preview_title">Public Profile Preview</span> <span style="color:var(--mono); text-transform:none; letter-spacing:0;" data-i18n="account_preview_links_disabled">— links disabled</span></span>
       <div style="display:flex; gap:10px; align-items:center;">
-        <a href="#" id="previewOpenFull" target="_blank" style="font-size:0.7rem; color:var(--gold-bright);">Open in new tab ↗</a>
+        <a href="#" id="previewOpenFull" target="_blank" style="font-size:0.7rem; color:var(--gold-bright);" data-i18n="account_preview_open_full">Open in new tab ↗</a>
         <button type="button" class="preview-close" id="previewClose" aria-label="Close">×</button>
       </div>
     </div>
@@ -380,10 +395,10 @@
     authArea.innerHTML = `
       <button class="user-menu-btn" id="userMenuBtn">${label} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
       <div class="dropdown" id="userDropdown">
-        <a href="collection.html?mine=true">My Collection</a>
-        <a href="edit-model.html">Add a Model</a>
-        <a href="account.html">Account Settings</a>
-        <button id="logoutBtn">Log out</button>
+        <a href="collection.html?mine=true">${t("nav_my_collection")}</a>
+        <a href="edit-model.html">${t("nav_add_model")}</a>
+        <a href="account.html">${t("nav_account_settings")}</a>
+        <button id="logoutBtn">${t("nav_logout")}</button>
       </div>
     `;
     const btn = document.getElementById("userMenuBtn");
@@ -408,10 +423,11 @@
     const banner = document.getElementById("accountStatusBanner");
     if (status?.pending_deletion_at){
       const deletionDate = new Date(new Date(status.pending_deletion_at).getTime() + 21 * 24 * 60 * 60 * 1000);
-      banner.textContent = `Deletion requested. Your account will be permanently deleted on ${deletionDate.toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })} unless you log out and back in before then to cancel it.`;
+      const dateLocale = CURRENT_LANG === "fr" ? "fr-CA" : "en-US";
+      banner.textContent = `${t("account_status_pending_deletion_prefix")}${deletionDate.toLocaleDateString(dateLocale, { day: "numeric", month: "long", year: "numeric" })}${t("account_status_pending_deletion_suffix")}`;
       banner.style.display = "block";
     } else if (status?.deactivated_at){
-      banner.textContent = "Your account is currently deactivated. Log out and back in to reactivate it.";
+      banner.textContent = t("account_status_deactivated");
       banner.style.display = "block";
     }
 
@@ -429,12 +445,12 @@
     }
 
     if (profile){
-      document.getElementById("greeting").textContent = `Welcome back, ${profile.display_name || profile.username}.`;
+      document.getElementById("greeting").textContent = `${t("account_greeting_named")}${profile.display_name || profile.username}.`;
       document.getElementById("username").value = profile.username || "";
       document.getElementById("displayName").value = profile.display_name || "";
       document.getElementById("bio").value = profile.bio || "";
       document.getElementById("country").value = profile.country || "";
-      document.getElementById("tierValue").textContent = profile.tier === "paid" ? "Paid" : "Free";
+      document.getElementById("tierValue").textContent = profile.tier === "paid" ? t("account_tier_paid") : t("account_tier_free");
       if (profile.avatar_url){
         document.getElementById("avatarBox").innerHTML = `<img src="${profile.avatar_url}" alt="avatar">`;
       }
@@ -494,7 +510,7 @@
     e.preventDefault();
     const username = document.getElementById("username").value.trim();
     if (!username){
-      showTopError("Set an archive name first, then you can preview your profile.");
+      showTopError(t("account_error_no_username"));
       return;
     }
     const url = `profile.html?username=${encodeURIComponent(username)}`;
@@ -580,7 +596,7 @@
     }
 
     document.getElementById("passwordForm").reset();
-    topSuccess.textContent = "Password updated.";
+    topSuccess.textContent = t("account_success_password_updated");
     topSuccess.style.display = "block";
   });
 
@@ -627,7 +643,7 @@
       if (error) throw error;
 
       avatarBox.innerHTML = `<img src="${result.url}" alt="avatar">`;
-      topSuccess.textContent = "Photo updated.";
+      topSuccess.textContent = t("account_success_photo_updated");
       topSuccess.style.display = "block";
     } catch (err){
       console.error("Avatar upload failed:", err);
@@ -654,7 +670,7 @@
     };
 
     if (!payload.username){
-      topError.textContent = "Archive name can't be empty.";
+      topError.textContent = t("account_error_archive_name_empty");
       topError.style.display = "block";
       return;
     }
@@ -685,7 +701,7 @@
       );
     }
 
-    topSuccess.textContent = "Profile saved.";
+    topSuccess.textContent = t("account_success_profile_saved");
     topSuccess.style.display = "block";
     renderLoggedInNav(currentSession);
   });
@@ -709,7 +725,7 @@
       .upsert({ profile_id: currentSession.user.id, deactivated_at: new Date().toISOString() });
 
     if (error){
-      showTopError(error.message || "Couldn't deactivate your account.");
+      showTopError(error.message || t("account_error_deactivate_generic"));
       btn.disabled = false;
       btn.textContent = "Yes, Deactivate";
       return;
@@ -728,11 +744,10 @@
       .eq("status", "completed");
 
     const modelNote = count
-      ? ` You have ${count} published model${count === 1 ? "" : "s"} — those will remain public and permanent, but your name will no longer be shown as the owner.`
+      ? t("account_delete_models_note").replace(/{count}/g, count).replace(/{plural}/g, count === 1 ? "" : "s")
       : "";
 
-    document.getElementById("deleteConfirmText").textContent =
-      `Request account deletion? This starts a 21-day grace period — log back in any time before then to cancel.${modelNote}`;
+    document.getElementById("deleteConfirmText").textContent = `${t("account_delete_confirm_default")}${modelNote}`;
 
     deleteConfirm.style.display = "block";
   });
@@ -750,7 +765,7 @@
       .upsert({ profile_id: currentSession.user.id, deactivated_at: now, pending_deletion_at: now });
 
     if (error){
-      showTopError(error.message || "Couldn't request account deletion.");
+      showTopError(error.message || t("account_error_delete_generic"));
       btn.disabled = false;
       btn.textContent = "Yes, Request Deletion";
       return;
@@ -770,6 +785,7 @@
   (async () => {
     const { data: { session } } = await supabaseClient.auth.getSession();
     currentSession = session;
+    initLanguage(supabaseClient);
 
     if (!session){
       document.getElementById("gate").style.display = "block";
@@ -780,6 +796,13 @@
     document.getElementById("dashWrap").style.display = "block";
     loadDashboard(session);
   })();
+
+  function onLanguageChanged(){
+    if (currentSession){
+      renderLoggedInNav(currentSession);
+      loadDashboard(currentSession);
+    }
+  }
 </script>
 
 </body>
