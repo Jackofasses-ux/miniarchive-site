@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/translations.js"></script>
+<script src="js/i18n.js"></script>
 <style>
   :root{
     --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
@@ -32,6 +34,15 @@
   .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
   header nav a{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); }
   header nav a:hover{ color: var(--gold-bright); }
+  .lang-toggle{ display:flex; border:1px solid var(--hairline); }
+  .lang-toggle button{
+    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.08em;
+    color: var(--cream-dim); background:transparent; border:none; padding:8px 12px; cursor:pointer;
+    transition: background .2s ease, color .2s ease;
+  }
+  .lang-toggle button:first-child{ border-right:1px solid var(--hairline); }
+  .lang-toggle button.active{ background: var(--gold); color:#0c0b09; }
+  .lang-toggle button:hover:not(.active){ color: var(--cream); }
 
   .center-wrap{ flex:1; display:flex; align-items:center; justify-content:center; padding: 60px 24px; }
 
@@ -107,57 +118,64 @@
     <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
     <div class="brand-name">MINI ARCHIVE</div>
   </a>
-  <nav><a href="index.html">← Back home</a></nav>
+  <div style="display:flex; align-items:center; gap:24px;">
+    <div class="lang-toggle">
+      <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">EN</button>
+      <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">FR</button>
+    </div>
+    <nav><a href="index.html" data-i18n="login_back_home">← Back home</a></nav>
+  </div>
 </header>
 
 <div class="center-wrap">
   <div class="form-card">
-    <div class="eyebrow">Welcome Back</div>
-    <h1>Log in to your archive</h1>
-    <div class="sub">Pick up right where you left off.</div>
+    <div class="eyebrow" data-i18n="login_eyebrow">Welcome Back</div>
+    <h1 data-i18n="login_title">Log in to your archive</h1>
+    <div class="sub" data-i18n="login_sub">Pick up right where you left off.</div>
 
     <div class="top-error" id="topError"></div>
     <div class="top-success" id="topSuccess"></div>
     <div class="resend-box" id="resendBox" style="display:none;">
-      <p>Your account exists but hasn't been confirmed yet.</p>
-      <button type="button" class="btn-resend" id="resendBtn">Resend Confirmation Email</button>
+      <p data-i18n="login_resend_notice">Your account exists but hasn't been confirmed yet.</p>
+      <button type="button" class="btn-resend" id="resendBtn" data-i18n="login_resend_btn">Resend Confirmation Email</button>
     </div>
     <div class="resend-box" id="forgotBox" style="display:none;">
-      <p>Enter your email below, then click here to get a password reset link.</p>
-      <button type="button" class="btn-resend" id="sendResetBtn">Send Reset Link</button>
+      <p data-i18n="login_forgot_notice">Enter your email below, then click here to get a password reset link.</p>
+      <button type="button" class="btn-resend" id="sendResetBtn" data-i18n="login_send_reset_btn">Send Reset Link</button>
     </div>
 
     <form id="loginForm" novalidate>
       <div class="field" id="field-email">
-        <label for="email">Email</label>
-        <input id="email" type="email" placeholder="you@example.com">
-        <div class="error-msg">Enter a valid email address.</div>
+        <label for="email" data-i18n="login_email_label">Email</label>
+        <input id="email" type="email" placeholder="you@example.com" data-i18n-placeholder="login_email_placeholder">
+        <div class="error-msg" data-i18n="login_email_error">Enter a valid email address.</div>
       </div>
 
       <div class="field" id="field-password">
-        <label for="password">Password</label>
-        <input id="password" type="password" placeholder="Your password">
-        <div class="error-msg">Enter your password.</div>
-        <div class="field-foot"><a href="#" id="forgotPasswordLink">Forgot password?</a></div>
+        <label for="password" data-i18n="login_password_label">Password</label>
+        <input id="password" type="password" placeholder="Your password" data-i18n-placeholder="login_password_placeholder">
+        <div class="error-msg" data-i18n="login_password_error">Enter your password.</div>
+        <div class="field-foot"><a href="#" id="forgotPasswordLink" data-i18n="login_forgot_link">Forgot password?</a></div>
       </div>
 
-      <button type="submit" class="submit-btn">Log In</button>
+      <button type="submit" class="submit-btn" data-i18n="login_submit">Log In</button>
     </form>
 
-    <div class="form-foot">Don't have an archive yet? <a href="start.html">Start one for free</a></div>
-    <div class="form-foot">Didn't get a confirmation email? <a href="#" id="manualResendLink">Resend it</a></div>
+    <div class="form-foot"><span data-i18n="login_no_archive">Don't have an archive yet? </span><a href="start.html" data-i18n="login_start_free">Start one for free</a></div>
+    <div class="form-foot"><span data-i18n="login_no_email">Didn't get a confirmation email? </span><a href="#" id="manualResendLink" data-i18n="login_resend_it">Resend it</a></div>
   </div>
 </div>
 
 <footer>
-  <div>© 2026 Mini Archive. Every miniature has a story.</div>
-  <div><a href="index.html">Home</a></div>
+  <div>© 2026 Mini Archive. <span data-i18n="footer_tagline">Every miniature has a story.</span></div>
+  <div><a href="index.html" data-i18n="footer_home">Home</a></div>
 </footer>
 
 <script>
   const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  initLanguage(supabaseClient);
 
   const form = document.getElementById("loginForm");
   const topError = document.getElementById("topError");
@@ -191,12 +209,12 @@
     if (!(emailValid && passwordValid)) return;
 
     submitBtn.disabled = true;
-    submitBtn.textContent = "Logging in…";
+    submitBtn.textContent = t("login_submit_loading");
 
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
     submitBtn.disabled = false;
-    submitBtn.textContent = "Log In";
+    submitBtn.textContent = t("login_submit");
 
     if (error){
       // This is the specific, distinct error Supabase returns when the
@@ -233,8 +251,8 @@
 
       submitBtn.disabled = true;
       topSuccess.textContent = wasPendingDeletion
-        ? "Welcome back — your account deletion request was cancelled."
-        : "Welcome back — your account has been reactivated.";
+        ? t("login_success_cancelled_deletion")
+        : t("login_success_reactivated");
       topSuccess.style.display = "block";
 
       setTimeout(() => { window.location.href = "collection.html"; }, 1800);
@@ -247,21 +265,21 @@
   resendBtn.addEventListener("click", async () => {
     const email = resendBtn.dataset.email;
     resendBtn.disabled = true;
-    resendBtn.textContent = "Sending…";
+    resendBtn.textContent = t("login_resend_sending");
 
     const { error } = await sendConfirmation(email);
 
     resendBtn.disabled = false;
-    resendBtn.textContent = "Resend Confirmation Email";
+    resendBtn.textContent = t("login_resend_btn");
 
     if (error){
-      topError.textContent = error.message || "Couldn't resend the confirmation email.";
+      topError.textContent = error.message || t("login_error_resend_generic");
       topError.style.display = "block";
       return;
     }
 
     resendBox.style.display = "none";
-    topSuccess.textContent = "Confirmation email sent. Check your inbox.";
+    topSuccess.textContent = t("login_success_confirmation_sent");
     topSuccess.style.display = "block";
   });
 
@@ -269,7 +287,7 @@
     e.preventDefault();
     const email = document.getElementById("email").value.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-      topError.textContent = "Enter your email below first, then click Resend.";
+      topError.textContent = t("login_error_enter_email_resend");
       topError.style.display = "block";
       document.getElementById("email").focus();
       return;
@@ -279,12 +297,12 @@
     const { error } = await sendConfirmation(email);
 
     if (error){
-      topError.textContent = error.message || "Couldn't resend the confirmation email.";
+      topError.textContent = error.message || t("login_error_resend_generic");
       topError.style.display = "block";
       return;
     }
 
-    topSuccess.textContent = "Confirmation email sent. Check your inbox.";
+    topSuccess.textContent = t("login_success_confirmation_sent");
     topSuccess.style.display = "block";
   });
 
@@ -299,7 +317,7 @@
   document.getElementById("sendResetBtn").addEventListener("click", async () => {
     const email = document.getElementById("email").value.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-      topError.textContent = "Enter your email below first, then click Send Reset Link.";
+      topError.textContent = t("login_error_enter_email_reset");
       topError.style.display = "block";
       document.getElementById("email").focus();
       return;
@@ -307,23 +325,23 @@
 
     const btn = document.getElementById("sendResetBtn");
     btn.disabled = true;
-    btn.textContent = "Sending…";
+    btn.textContent = t("login_resend_sending");
 
     const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
       redirectTo: "https://www.miniarchive.net/reset-password.html",
     });
 
     btn.disabled = false;
-    btn.textContent = "Send Reset Link";
+    btn.textContent = t("login_send_reset_btn");
 
     if (error){
-      topError.textContent = error.message || "Couldn't send the reset link.";
+      topError.textContent = error.message || t("login_error_reset_generic");
       topError.style.display = "block";
       return;
     }
 
     document.getElementById("forgotBox").style.display = "none";
-    topSuccess.textContent = "If that email has an account, a password reset link has been sent.";
+    topSuccess.textContent = t("login_reset_sent");
     topSuccess.style.display = "block";
   });
 </script>
