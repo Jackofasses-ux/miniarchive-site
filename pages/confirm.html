@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/translations.js"></script>
+<script src="js/i18n.js"></script>
 <style>
   :root{
     --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
@@ -30,6 +32,16 @@
   .brand-mark{ width:30px; height:30px; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; }
   .brand-mark svg{ width:16px; height:16px; fill: var(--gold); }
   .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
+
+  .lang-toggle{ display:flex; border:1px solid var(--hairline); }
+  .lang-toggle button{
+    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.08em;
+    color: var(--cream-dim); background:transparent; border:none; padding:8px 12px; cursor:pointer;
+    transition: background .2s ease, color .2s ease;
+  }
+  .lang-toggle button:first-child{ border-right:1px solid var(--hairline); }
+  .lang-toggle button.active{ background: var(--gold); color:#0c0b09; }
+  .lang-toggle button:hover:not(.active){ color: var(--cream); }
 
   .center-wrap{ flex:1; display:flex; align-items:center; justify-content:center; padding: 60px 24px; }
 
@@ -99,47 +111,51 @@
     <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
     <div class="brand-name">MINI ARCHIVE</div>
   </a>
+  <div class="lang-toggle">
+    <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">EN</button>
+    <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">FR</button>
+  </div>
 </header>
 
 <div class="center-wrap">
 
   <div id="loadingState" class="state-loading">
     <div class="spinner"></div>
-    <p>Confirming your account…</p>
+    <p data-i18n="confirm_loading">Confirming your account…</p>
   </div>
 
   <div id="successState" class="cert-box" style="display:none;">
     <div class="shield"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
-    <div class="eyebrow">Account Confirmed</div>
-    <h1>Your archive is ready.</h1>
-    <div class="sub">Welcome to Mini Archive — every miniature has a story, and yours starts now.</div>
+    <div class="eyebrow" data-i18n="confirm_eyebrow">Account Confirmed</div>
+    <h1 data-i18n="confirm_title">Your archive is ready.</h1>
+    <div class="sub" data-i18n="confirm_sub">Welcome to Mini Archive — every miniature has a story, and yours starts now.</div>
 
     <div class="cert-fields">
-      <div class="row"><span class="label">Archive Name</span><span class="value" id="fieldArchiveName">—</span></div>
-      <div class="row"><span class="label">Account</span><span class="value" id="fieldEmail">—</span></div>
+      <div class="row"><span class="label" data-i18n="confirm_field_archive_name">Archive Name</span><span class="value" id="fieldArchiveName">—</span></div>
+      <div class="row"><span class="label" data-i18n="confirm_field_account">Account</span><span class="value" id="fieldEmail">—</span></div>
     </div>
 
     <div class="cta-row">
-      <a class="btn-gold" href="edit-model.html">Log Your First Model</a>
-      <a class="btn-ghost" href="collection.html">Browse the Collection</a>
+      <a class="btn-gold" href="edit-model.html" data-i18n="confirm_cta_log_first">Log Your First Model</a>
+      <a class="btn-ghost" href="collection.html" data-i18n="confirm_cta_browse">Browse the Collection</a>
     </div>
   </div>
 
   <div id="errorState" class="state-error" style="display:none;">
     <div class="icon">!</div>
-    <h1 style="font-family:'Cormorant Garamond', serif; font-size:1.6rem; font-weight:600; margin-bottom:10px;">Couldn't confirm this link</h1>
-    <p id="errorMessage">This confirmation link may have expired or already been used.</p>
+    <h1 style="font-family:'Cormorant Garamond', serif; font-size:1.6rem; font-weight:600; margin-bottom:10px;" data-i18n="confirm_error_title">Couldn't confirm this link</h1>
+    <p id="errorMessage" data-i18n="confirm_error_default">This confirmation link may have expired or already been used.</p>
     <div class="cta-row">
-      <a class="btn-gold" href="login.html">Go to Log In</a>
-      <a class="btn-ghost" href="start.html">Start an Archive</a>
+      <a class="btn-gold" href="login.html" data-i18n="confirm_cta_login">Go to Log In</a>
+      <a class="btn-ghost" href="start.html" data-i18n="confirm_cta_start">Start an Archive</a>
     </div>
   </div>
 
 </div>
 
 <footer>
-  <div>© 2026 Mini Archive. Every miniature has a story.</div>
-  <div><a href="index.html">Home</a></div>
+  <div>© 2026 Mini Archive. <span data-i18n="footer_tagline">Every miniature has a story.</span></div>
+  <div><a href="index.html" data-i18n="footer_home">Home</a></div>
 </footer>
 
 <script>
@@ -153,6 +169,8 @@
     });
   }
 
+  initLanguage(supabaseClient);
+
   (async () => {
     // Supabase's client auto-processes the access token in the URL hash
     // and establishes a session. Give it a beat, then check.
@@ -160,7 +178,7 @@
 
     if (!session){
       showState("errorState");
-      document.getElementById("errorMessage").textContent = "This confirmation link may have expired or already been used. Try logging in — if your account was already confirmed, it'll just work.";
+      document.getElementById("errorMessage").textContent = t("confirm_error_expired");
       return;
     }
 
@@ -187,7 +205,7 @@
         if (error){
           console.error("Profile creation failed:", error);
           showState("errorState");
-          document.getElementById("errorMessage").textContent = "Your email was confirmed, but we couldn't finish setting up your archive. Please try logging in — if the problem continues, contact support.";
+          document.getElementById("errorMessage").textContent = t("confirm_error_profile_failed");
           return;
         }
       }
