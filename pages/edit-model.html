@@ -1361,7 +1361,6 @@
           if (orig.description !== entry.description) changedParts.push("description changed");
           if (orig.hours !== entry.hours) changedParts.push(`hours ${orig.hours ?? "—"} → ${entry.hours ?? "—"}`);
           if (orig.primerPaintId !== entry.primerPaintId) changedParts.push("primer changed");
-          if (JSON.stringify(orig.photoUrls) !== JSON.stringify(finalPhotoUrls)) changedParts.push(`photos updated (${orig.photoUrls.length} → ${finalPhotoUrls.length})`);
           const newPaintSignature = entry.linkedPaints.map(p => `${p.id}:${p.role}`).sort().join(",");
           if (orig.paintSignature !== newPaintSignature) changedParts.push("paints updated");
 
@@ -1374,6 +1373,31 @@
               new_value: changedParts.join("; "),
             });
           }
+
+          // Photos aren't fixed slots here (an entry can have any number),
+          // so there's no clean "old photo → new photo" pairing the way the
+          // four identity photos have. Log each addition/removal on its own
+          // instead, each with a real clickable link to the actual file.
+          const removedPhotos = orig.photoUrls.filter(url => !finalPhotoUrls.includes(url));
+          const addedPhotos = finalPhotoUrls.filter(url => !orig.photoUrls.includes(url));
+          removedPhotos.forEach(url => {
+            editLogRows.push({
+              miniature_id: miniatureId,
+              editor_profile_id: currentSession.user.id,
+              field_name: "Timeline Photo",
+              old_value: url,
+              new_value: "(removed)",
+            });
+          });
+          addedPhotos.forEach(url => {
+            editLogRows.push({
+              miniature_id: miniatureId,
+              editor_profile_id: currentSession.user.id,
+              field_name: "Timeline Photo",
+              old_value: "(none)",
+              new_value: url,
+            });
+          });
         }
       }
 
