@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/translations.js"></script>
+<script src="js/i18n.js"></script>
 <style>
   :root{
     --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
@@ -29,6 +31,15 @@
   nav{ display:flex; align-items:center; gap:40px; }
   #authArea{ display:flex; align-items:center; gap:20px; position:relative; }
   .login-link{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); }
+  .lang-toggle{ display:flex; border:1px solid var(--hairline); }
+  .lang-toggle button{
+    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.08em;
+    color: var(--cream-dim); background:transparent; border:none; padding:8px 12px; cursor:pointer;
+    transition: background .2s ease, color .2s ease;
+  }
+  .lang-toggle button:first-child{ border-right:1px solid var(--hairline); }
+  .lang-toggle button.active{ background: var(--gold); color:#0c0b09; }
+  .lang-toggle button:hover:not(.active){ color: var(--cream); }
   .login-link:hover{ color: var(--gold-bright); }
   .btn-gold{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); padding:11px 22px; border:1px solid var(--gold); }
   .user-menu-btn{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); border:1px solid var(--gold); padding:11px 20px; cursor:pointer; display:flex; align-items:center; gap:8px; }
@@ -110,20 +121,24 @@
     <div class="brand-name">MINI ARCHIVE</div>
   </a>
   <nav>
+    <div class="lang-toggle" style="margin-right:20px;">
+      <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">EN</button>
+      <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">FR</button>
+    </div>
     <div id="authArea">
-      <a class="login-link" href="login.html">Log in</a>
-      <a class="btn-gold" href="start.html">Start an Archive</a>
+      <a class="login-link" href="login.html" data-i18n="nav_login">Log in</a>
+      <a class="btn-gold" href="start.html" data-i18n="nav_start_archive">Start an Archive</a>
     </div>
   </nav>
 </header>
 
 <div id="loadingState" class="state-loading">
-  <p style="color:var(--cream-dim);">Loading profile…</p>
+  <p style="color:var(--cream-dim);" data-i18n="profile_loading">Loading profile…</p>
 </div>
 
 <div id="errorState" class="state-error" style="display:none;">
-  <h1>Profile not found.</h1>
-  <p><a href="collection.html" style="color:var(--gold-bright);">← Back to Collection</a></p>
+  <h1 data-i18n="profile_not_found">Profile not found.</h1>
+  <p><a href="collection.html" style="color:var(--gold-bright);" data-i18n="profile_back_to_collection">← Back to Collection</a></p>
 </div>
 
 <main id="profileWrap" style="display:none;">
@@ -140,30 +155,30 @@
   </div>
 
   <div class="stats-row">
-    <div class="stat-box"><div class="num" id="statModels">0</div><div class="label">Models Published</div></div>
-    <div class="stat-box"><div class="num" id="statHours">0</div><div class="label">Painting Hours</div></div>
-    <div class="stat-box"><div class="num" id="statSince">—</div><div class="label">Member Since</div></div>
-    <div class="stat-box"><div class="num" id="statLatest">—</div><div class="label">Latest Model</div></div>
+    <div class="stat-box"><div class="num" id="statModels">0</div><div class="label" data-i18n="stat_models_published">Models Published</div></div>
+    <div class="stat-box"><div class="num" id="statHours">0</div><div class="label" data-i18n="stat_painting_hours">Painting Hours</div></div>
+    <div class="stat-box"><div class="num" id="statSince">—</div><div class="label" data-i18n="stat_member_since">Member Since</div></div>
+    <div class="stat-box"><div class="num" id="statLatest">—</div><div class="label" data-i18n="stat_latest_model">Latest Model</div></div>
   </div>
 
   <div class="section-head">
-    <div class="eyebrow">Owned Collection</div>
+    <div class="eyebrow" data-i18n="profile_owned_eyebrow">Owned Collection</div>
     <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
-    <h2>Published Models</h2>
+    <h2 data-i18n="profile_published_models">Published Models</h2>
   </div>
   <div class="grid-4" id="ownedGrid"></div>
 
   <div class="section-head" id="paintedSectionHead" style="display:none;">
-    <div class="eyebrow">Credited Work</div>
+    <div class="eyebrow" data-i18n="profile_credited_eyebrow">Credited Work</div>
     <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
-    <h2>Models Painted</h2>
+    <h2 data-i18n="profile_models_painted">Models Painted</h2>
   </div>
   <div class="grid-4" id="paintedGrid"></div>
 </main>
 
 <footer>
-  <div>© 2026 Mini Archive. Every miniature has a story.</div>
-  <div><a href="collection.html">Browse Collection</a></div>
+  <div>© 2026 Mini Archive. <span data-i18n="footer_tagline">Every miniature has a story.</span></div>
+  <div><a href="collection.html" data-i18n="footer_browse_collection">Browse Collection</a></div>
 </footer>
 
 <script>
@@ -178,7 +193,7 @@
   function renderMiniCard(m){
     const frontPhoto = (m.photos || []).find(p => p.photo_type === "front") || (m.photos || [])[0];
     const editShortcut = (currentUserId && m.owner_profile_id === currentUserId)
-      ? `<a href="edit-model.html?id=${m.id}" onclick="event.stopPropagation()" class="card-edit-link" title="Edit this model">✎</a>`
+      ? `<a href="edit-model.html?id=${m.id}" onclick="event.stopPropagation()" class="card-edit-link" title="${t("edit_this_model_title")}">✎</a>`
       : "";
     return `
       <div class="mini-card" onclick="window.location.href='model.html?id=${m.id}'">
@@ -223,7 +238,7 @@
     document.getElementById("profileHandle").textContent = `@${profile.username}`;
     if (profile.tier === "paid"){
       const badge = document.getElementById("tierBadge");
-      badge.textContent = "Paid Member";
+      badge.textContent = t("profile_tier_paid");
       badge.style.display = "inline-block";
     }
     if (profile.country){
@@ -273,7 +288,7 @@
 
     document.getElementById("ownedGrid").innerHTML = ownedList.length
       ? ownedList.map(renderMiniCard).join("")
-      : `<p class="empty-note">No published models yet.</p>`;
+      : `<p class="empty-note">${t("profile_no_published")}</p>`;
 
     // Models credited as painter (may include ones they don't own)
     const { data: painted } = await supabaseClient
@@ -301,10 +316,10 @@
     authArea.innerHTML = `
       <button class="user-menu-btn" id="userMenuBtn">${label} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
       <div class="dropdown" id="userDropdown">
-        <a href="collection.html?mine=true">My Collection</a>
-        <a href="edit-model.html">Add a Model</a>
-        <a href="account.html">Account Settings</a>
-        <button id="logoutBtn">Log out</button>
+        <a href="collection.html?mine=true">${t("nav_my_collection")}</a>
+        <a href="edit-model.html">${t("nav_add_model")}</a>
+        <a href="account.html">${t("nav_account_settings")}</a>
+        <button id="logoutBtn">${t("nav_logout")}</button>
       </div>
     `;
     const btn = document.getElementById("userMenuBtn");
@@ -323,6 +338,14 @@
   })();
 
   loadProfile();
+  initLanguage(supabaseClient);
+
+  function onLanguageChanged(){
+    loadProfile();
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      if (session) renderLoggedInNav(session);
+    });
+  }
 </script>
 
 </body>
