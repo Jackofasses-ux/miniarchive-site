@@ -230,7 +230,7 @@ const TRANSLATIONS = {
 
     // ---- index.html: collection section ----
     section_1_label: "Section I",
-    section_from_collection: "De la collection",
+    section_from_collection: "Aperçu de la collection",
     view_full_collection: "Voir toute la collection →",
 
     // ---- index.html: how it works section ----
