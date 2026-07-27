@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../js/translations.js"></script>
+<script src="../js/i18n.js"></script>
 <style>
   :root{
     --bg: #0c0b09;
@@ -109,6 +111,16 @@
     transition: background 0.25s ease, color 0.25s ease;
   }
   .btn-gold:hover{ background: var(--gold-bright); }
+
+  .lang-toggle{ display:flex; border:1px solid var(--hairline); }
+  .lang-toggle button{
+    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.08em;
+    color: var(--cream-dim); background:transparent; border:none; padding:8px 12px; cursor:pointer;
+    transition: background .2s ease, color .2s ease;
+  }
+  .lang-toggle button:first-child{ border-right:1px solid var(--hairline); }
+  .lang-toggle button.active{ background: var(--gold); color:#0c0b09; }
+  .lang-toggle button:hover:not(.active){ color: var(--cream); }
 
   .login-link{
     font-family:'IBM Plex Mono', monospace;
@@ -396,25 +408,29 @@
   </a>
   <nav>
     <ul>
-      <li><a href="collection.html">Collection</a></li>
-      <li><a href="#how">How it works</a></li>
-      <li><a href="#provenance">Provenance</a></li>
-      <li><a href="#about">About</a></li>
+      <li><a href="collection.html" data-i18n="nav_collection">Collection</a></li>
+      <li><a href="#how" data-i18n="nav_how_it_works">How it works</a></li>
+      <li><a href="#provenance" data-i18n="nav_provenance">Provenance</a></li>
+      <li><a href="#about" data-i18n="nav_about">About</a></li>
     </ul>
+    <div class="lang-toggle">
+      <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">EN</button>
+      <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">FR</button>
+    </div>
     <div id="authArea">
-      <a class="login-link" href="login.html">Log in</a>
-      <a class="btn-gold" href="start.html">Start an Archive</a>
+      <a class="login-link" href="login.html" data-i18n="nav_login">Log in</a>
+      <a class="btn-gold" href="start.html" data-i18n="nav_start_archive">Start an Archive</a>
     </div>
   </nav>
 </header>
 
 <section class="hero">
-  <div class="eyebrow">A LIVING RECORD OF PAINTED MINIATURES</div>
-  <h1>Every miniature<br><span class="accent">has a story.</span></h1>
-  <p class="lede">Mini Archive keeps the record straight — who painted it, how long it took, every colour that went into it, and where it's been since. Not just photos. Provenance.</p>
+  <div class="eyebrow" data-i18n="hero_eyebrow">A LIVING RECORD OF PAINTED MINIATURES</div>
+  <h1><span data-i18n="hero_title_line1">Every miniature</span><br><span class="accent" data-i18n="hero_title_accent">has a story.</span></h1>
+  <p class="lede" data-i18n="hero_lede">Mini Archive keeps the record straight — who painted it, how long it took, every colour that went into it, and where it's been since. Not just photos. Provenance.</p>
   <div class="hero-actions">
-    <a class="btn-gold" href="collection.html">View the Collection</a>
-    <a class="btn-ghost" href="#how">How it works</a>
+    <a class="btn-gold" href="collection.html" data-i18n="hero_cta_view_collection">View the Collection</a>
+    <a class="btn-ghost" href="#how" data-i18n="hero_cta_how_it_works">How it works</a>
   </div>
 </section>
 
@@ -497,11 +513,11 @@
 </section>
 
 <footer>
-  <div>© 2026 Mini Archive. Every miniature has a story.</div>
+  <div>© 2026 Mini Archive. <span data-i18n="footer_tagline">Every miniature has a story.</span></div>
   <div class="foot-links">
-    <a href="#collection">Collection</a>
-    <a href="#how">How it works</a>
-    <a href="#provenance">Provenance</a>
+    <a href="#collection" data-i18n="nav_collection">Collection</a>
+    <a href="#how" data-i18n="nav_how_it_works">How it works</a>
+    <a href="#provenance" data-i18n="nav_provenance">Provenance</a>
   </div>
 </footer>
 
@@ -531,7 +547,7 @@
       .limit(3);
 
     if (error || !data || !data.length){
-      featuredGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; color:var(--cream-dim); padding: 20px 0;">No public models yet — <a href="edit-model.html" style="color:var(--gold-bright);">be the first to log one →</a></div>`;
+      featuredGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; color:var(--cream-dim); padding: 20px 0;">${t("featured_empty_prefix")}<a href="edit-model.html" style="color:var(--gold-bright);">${t("featured_empty_link")}</a></div>`;
       return;
     }
 
@@ -560,6 +576,14 @@
   }
 
   loadFeaturedModels();
+  initLanguage(supabaseClient);
+
+  function onLanguageChanged(){
+    loadFeaturedModels();
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      if (session) renderLoggedInNav(session);
+    });
+  }
 
   (async () => {
     const { data: { session } } = await supabaseClient.auth.getSession();
@@ -615,10 +639,10 @@
     authArea.innerHTML = `
       <button class="user-menu-btn" id="userMenuBtn">${label} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
       <div class="dropdown" id="userDropdown">
-        <a href="collection.html?mine=true">My Collection</a>
-        <a href="edit-model.html">Add a Model</a>
-        <a href="account.html">Account Settings</a>
-        <button id="logoutBtn">Log out</button>
+        <a href="collection.html?mine=true">${t("nav_my_collection")}</a>
+        <a href="edit-model.html">${t("nav_add_model")}</a>
+        <a href="account.html">${t("nav_account_settings")}</a>
+        <button id="logoutBtn">${t("nav_logout")}</button>
       </div>
     `;
 
