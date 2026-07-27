@@ -1165,7 +1165,7 @@
 
       if (pendingTimelineEntries.some(e => e._status !== "existing") || deletedTimelineEntryIds.length){
         progressNote.textContent = "Saving timeline entries…";
-        await commitTimelineEntries(modelId);
+        await commitTimelineEntries(modelId, { logEdits: true });
         progressNote.textContent = "";
         renderTimelineEntriesList();
       }
@@ -1262,14 +1262,30 @@
   // Writes every pending timeline entry to the database — called from
   // saveDraft()/publishModel() right after the miniature row itself is
   // created/updated, so a real modelId always exists by this point.
-  async function commitTimelineEntries(miniatureId){
+  async function commitTimelineEntries(miniatureId, { logEdits = false } = {}){
+    const editLogRows = [];
+
     if (deletedTimelineEntryIds.length){
       await supabaseClient.from("timeline_entries").delete().in("id", deletedTimelineEntryIds);
+      if (logEdits){
+        deletedTimelineEntrySummaries.forEach(s => {
+          editLogRows.push({
+            miniature_id: miniatureId,
+            editor_profile_id: currentSession.user.id,
+            field_name: "Timeline Entry",
+            old_value: `${s.category} — ${s.entryDate}`,
+            new_value: "(removed)",
+          });
+        });
+      }
       deletedTimelineEntryIds = [];
+      deletedTimelineEntrySummaries = [];
     }
 
     for (const entry of pendingTimelineEntries){
       if (entry._status === "existing") continue; // untouched since load, nothing to do
+
+      const isNewEntry = !entry._dbId;
 
       const payload = {
         miniature_id: miniatureId,
@@ -1328,9 +1344,56 @@
         );
       }
 
+      if (logEdits){
+        if (isNewEntry){
+          editLogRows.push({
+            miniature_id: miniatureId,
+            editor_profile_id: currentSession.user.id,
+            field_name: "Timeline Entry",
+            old_value: "(none)",
+            new_value: `${entry.category} — ${entry.entryDate}`,
+          });
+        } else if (entry._original){
+          const changedParts = [];
+          const orig = entry._original;
+          if (orig.entryDate !== entry.entryDate) changedParts.push(`date ${orig.entryDate} → ${entry.entryDate}`);
+          if (orig.category !== entry.category) changedParts.push(`category ${orig.category} → ${entry.category}`);
+          if (orig.description !== entry.description) changedParts.push("description changed");
+          if (orig.hours !== entry.hours) changedParts.push(`hours ${orig.hours ?? "—"} → ${entry.hours ?? "—"}`);
+          if (orig.primerPaintId !== entry.primerPaintId) changedParts.push("primer changed");
+          if (JSON.stringify(orig.photoUrls) !== JSON.stringify(finalPhotoUrls)) changedParts.push(`photos updated (${orig.photoUrls.length} → ${finalPhotoUrls.length})`);
+          const newPaintSignature = entry.linkedPaints.map(p => `${p.id}:${p.role}`).sort().join(",");
+          if (orig.paintSignature !== newPaintSignature) changedParts.push("paints updated");
+
+          if (changedParts.length){
+            editLogRows.push({
+              miniature_id: miniatureId,
+              editor_profile_id: currentSession.user.id,
+              field_name: "Timeline Entry",
+              old_value: `${orig.category} — ${orig.entryDate}`,
+              new_value: changedParts.join("; "),
+            });
+          }
+        }
+      }
+
       entry._dbId = entryId;
       entry._status = "existing";
       entry.photos = finalPhotoUrls.map(url => ({ file: null, existingUrl: url }));
+      entry._original = {
+        entryDate: entry.entryDate,
+        category: entry.category,
+        description: entry.description,
+        hours: entry.hours,
+        primerPaintId: entry.primerPaintId,
+        photoUrls: finalPhotoUrls,
+        paintSignature: entry.linkedPaints.map(p => `${p.id}:${p.role}`).sort().join(","),
+      };
+    }
+
+    if (logEdits && editLogRows.length){
+      const { error: logError } = await supabaseClient.from("miniature_edits").insert(editLogRows);
+      if (logError) console.error("Failed to log timeline edit history (save still succeeded):", logError);
     }
   }
 
@@ -1551,7 +1614,7 @@
         .order("sort_order", { ascending: true });
       const photos = (photoRows || []).map(p => ({ file: null, existingUrl: p.image_url }));
 
-      pendingTimelineEntries.push({
+      const entryObj = {
         _localId: nextLocalId++,
         _dbId: entry.id,
         _status: "existing",
@@ -1564,7 +1627,17 @@
         primerName: entry.primer?.name || null,
         primerHex: entry.primer?.hex_color || null,
         linkedPaints,
-      });
+      };
+      entryObj._original = {
+        entryDate: entryObj.entryDate,
+        category: entryObj.category,
+        description: entryObj.description,
+        hours: entryObj.hours,
+        primerPaintId: entryObj.primerPaintId,
+        photoUrls: photos.map(p => p.existingUrl),
+        paintSignature: linkedPaints.map(p => `${p.id}:${p.role}`).sort().join(","),
+      };
+      pendingTimelineEntries.push(entryObj);
     }
 
     renderTimelineEntriesList();
@@ -1670,10 +1743,15 @@
     showTopSuccess("Entry added — it'll be saved when you save or publish this model.");
   });
 
+  let deletedTimelineEntrySummaries = []; // { category, entryDate } — captured before removal, for edit-history logging
+
   document.getElementById("deleteTimelineEntryBtn").addEventListener("click", () => {
     if (!editingLocalId) return;
     const entry = pendingTimelineEntries.find(e => e._localId === editingLocalId);
-    if (entry && entry._dbId) deletedTimelineEntryIds.push(entry._dbId);
+    if (entry && entry._dbId){
+      deletedTimelineEntryIds.push(entry._dbId);
+      deletedTimelineEntrySummaries.push({ category: entry.category, entryDate: entry.entryDate });
+    }
     pendingTimelineEntries = pendingTimelineEntries.filter(e => e._localId !== editingLocalId);
 
     document.getElementById("timelineForm").style.display = "none";
