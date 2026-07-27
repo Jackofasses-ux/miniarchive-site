@@ -112,6 +112,8 @@
 
   /* Timeline */
   .timeline-item{ display:grid; grid-template-columns: 50px 1fr; gap: 30px; padding: 30px 0; border-top:1px solid var(--hairline); position:relative; }
+  .timeline-item.marker-only{ padding: 18px 0; }
+  .timeline-item.marker-only h3{ font-size:1.15rem; }
   .timeline-item:last-child{ border-bottom:1px solid var(--hairline); }
   .timeline-item .t-meta{ font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); letter-spacing:0.05em; text-align:center; }
   .timeline-item .t-marker{
@@ -468,23 +470,20 @@
     verified: true,
     timeline: [
       { title: "Assembly", isMilestone: false, entries: [
-        { date: "12 Mar 2024", hours: 2.5, description: "Removed mold lines, pinned the cloak to the torso with a 0.8mm brass rod.", photoUrl: null },
-        { date: "13 Mar 2024", hours: 1.5, description: "Gap-filled the left shoulder pauldron joint with green stuff, sculpted to match the surrounding plate texture.", photoUrl: null },
+        { date: "12 Mar 2024", hours: 2.5, description: "Removed mold lines, pinned the cloak to the torso with a 0.8mm brass rod.", photos: [] },
+        { date: "13 Mar 2024", hours: 1.5, description: "Gap-filled the left shoulder pauldron joint with green stuff, sculpted to match the surrounding plate texture.", photos: [] },
       ] },
       { title: "Surface Prep", isMilestone: false, entries: [
-        { date: "14 Mar 2024", hours: 1, description: "Zenithal prime applied in three passes — black from below, grey from 45°, white from directly above.", photoUrl: null },
+        { date: "14 Mar 2024", hours: 1, description: "Zenithal prime applied in three passes — black from below, grey from 45°, white from directly above.", photos: [] },
       ] },
-      { title: "First Brushstroke", isMilestone: true, entries: [
-        { date: "16 Mar 2024", hours: 4, description: "The armour receives its first colour — Kantor Blue, thinned to near-glaze consistency. Two patient coats.", photoUrl: null },
-      ] },
+      { title: "First Brushstroke", isMilestone: true, isMarker: true, date: "16 Mar 2024" },
       { title: "Paint", isMilestone: false, entries: [
-        { date: "17 Mar 2024", hours: 3, description: "Skin — Ratskin Flesh, 3 thin coats over white zenithal. Leather — Rhinox Hide on straps and boot soles.", photoUrl: null },
-        { date: "19 Mar 2024", hours: 3, description: "Targeted Nuln Oil Gloss into all recesses — undiluted at joints, diluted 1:3 on flat plates.", photoUrl: null },
-        { date: "22 Mar 2024", hours: 2, description: "Edge highlights in Fenrisian Grey, sharpest on final edges. NMM gold begins on the chapter eagle.", photoUrl: null },
+        { date: "16 Mar 2024", hours: 4, description: "The armour receives its first colour — Kantor Blue, thinned to near-glaze consistency. Two patient coats.", photos: [] },
+        { date: "17 Mar 2024", hours: 3, description: "Skin — Ratskin Flesh, 3 thin coats over white zenithal. Leather — Rhinox Hide on straps and boot soles.", photos: [] },
+        { date: "19 Mar 2024", hours: 3, description: "Targeted Nuln Oil Gloss into all recesses — undiluted at joints, diluted 1:3 on flat plates.", photos: [] },
+        { date: "22 Mar 2024", hours: 2, description: "Edge highlights in Fenrisian Grey, sharpest on final edges. NMM gold begins on the chapter eagle.", photos: [] },
       ] },
-      { title: "Model Completed", isMilestone: true, entries: [
-        { date: "28 Mar 2024", hours: 1, description: "Gloss varnish on lenses and gems. Satin coat over armour plates. Matte finish on the cloak and base. Captain Cassian is complete.", photoUrl: null },
-      ] },
+      { title: "Model Completed", isMilestone: true, isMarker: true, date: "28 Mar 2024" },
     ],
     recipe: [
       { step: "Step 1 · Primer", title: "The Foundation", paint: "Black Surface Primer — Vallejo", swatch: "#1a1a1a", note: "Establish a light source before the brush ever touches colour." },
@@ -573,6 +572,22 @@
     }
 
     document.getElementById("timelineList").innerHTML = (m.timeline && m.timeline.length) ? m.timeline.map((group, i) => {
+      if (group.isMarker){
+        return `
+        <div class="timeline-item milestone marker-only">
+          <div class="t-meta">
+            ${String(i + 1).padStart(2, "0")}
+            <div class="t-marker"></div>
+          </div>
+          <div>
+            <div class="milestone-tag">◆ Milestone</div>
+            <h3>${group.title}</h3>
+            <div class="t-date-hours">${group.date}</div>
+          </div>
+        </div>
+      `;
+      }
+
       const allPhotos = group.entries.flatMap(e => e.photos || []);
       const dateRange = group.entries.length > 1
         ? `${group.entries[0].date} – ${group.entries[group.entries.length - 1].date}`
@@ -1091,10 +1106,6 @@
       ? completionCandidates[completionCandidates.length - 1] // entries already sorted ascending by date
       : null;
 
-    const milestoneIds = new Set();
-    if (firstPaintEntry) milestoneIds.add(firstPaintEntry.id);
-    if (completionEntry) milestoneIds.add(completionEntry.id);
-
     function toEntryShape(e){
       return {
         date: formatDate(e.entry_date),
@@ -1107,8 +1118,10 @@
     }
 
     // ---- Walk entries in date order, bundling consecutive same-category runs.
-    // Milestone entries are pulled out as their own standalone group, breaking
-    // whatever category run they'd otherwise have been part of.
+    // Milestones are standalone marker lines with no entries of their own —
+    // inserted right before the entry that triggers "First Brushstroke", and
+    // right after the entry that triggers "Model Completed". The triggering
+    // entry itself still shows normally in its real category group.
     const groups = [];
     let currentCategory = null;
     let currentEntries = [];
@@ -1122,12 +1135,9 @@
     }
 
     entries.forEach(e => {
-      if (milestoneIds.has(e.id)){
+      if (firstPaintEntry && e.id === firstPaintEntry.id){
         flushCurrent();
-        const isBoth = e.id === firstPaintEntry?.id && e.id === completionEntry?.id;
-        const title = isBoth ? "Model Completed" : (e.id === completionEntry?.id ? "Model Completed" : "First Brushstroke");
-        groups.push({ title, isMilestone: true, entries: [toEntryShape(e)] });
-        return;
+        groups.push({ title: "First Brushstroke", isMilestone: true, isMarker: true, date: formatDate(e.entry_date) });
       }
 
       if (currentCategory !== e.category){
@@ -1135,6 +1145,11 @@
         currentCategory = e.category;
       }
       currentEntries.push(toEntryShape(e));
+
+      if (completionEntry && e.id === completionEntry.id){
+        flushCurrent();
+        groups.push({ title: "Model Completed", isMilestone: true, isMarker: true, date: formatDate(e.entry_date) });
+      }
     });
     flushCurrent();
 
