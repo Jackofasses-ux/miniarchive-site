@@ -1,1 +1,85 @@
+// Mini Archive — shared i18n helper. Include this + translations.js on
+// every page, after the Supabase client is created.
+//
+// Usage:
+//   Static text:      <span data-i18n="hero_title_line1"></span>
+//   Placeholders:      <input data-i18n-placeholder="search_placeholder">
+//   Dynamic JS text:   `${t('featured_empty')}`
+//
+// Language source of truth, in priority order:
+//   1. Logged-in user's profiles.language (if session exists)
+//   2. localStorage 'miniarchive_lang'
+//   3. Browser language (navigator.language starts with 'fr' → 'fr')
+//   4. 'en'
 
+let CURRENT_LANG = "en";
+
+function t(key){
+  return (TRANSLATIONS[CURRENT_LANG] && TRANSLATIONS[CURRENT_LANG][key])
+    || (TRANSLATIONS.en && TRANSLATIONS.en[key])
+    || key;
+}
+
+function applyTranslations(){
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    el.textContent = t(el.dataset.i18n);
+  });
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    el.placeholder = t(el.dataset.i18nPlaceholder);
+  });
+  document.documentElement.lang = CURRENT_LANG;
+}
+
+async function initLanguage(supabaseClient){
+  const stored = localStorage.getItem("miniarchive_lang");
+  const browserDefault = navigator.language && navigator.language.toLowerCase().startsWith("fr") ? "fr" : "en";
+  CURRENT_LANG = stored || browserDefault;
+
+  if (supabaseClient){
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session){
+        const { data: profile } = await supabaseClient
+          .from("profiles")
+          .select("language")
+          .eq("id", session.user.id)
+          .maybeSingle();
+        if (profile?.language) CURRENT_LANG = profile.language;
+      }
+    } catch (err){
+      console.warn("Couldn't load language preference from profile:", err);
+    }
+  }
+
+  applyTranslations();
+  updateLangToggleUI();
+}
+
+async function setLanguage(lang, supabaseClient){
+  CURRENT_LANG = lang;
+  localStorage.setItem("miniarchive_lang", lang);
+  applyTranslations();
+  updateLangToggleUI();
+
+  if (supabaseClient){
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session){
+        await supabaseClient.from("profiles").update({ language: lang }).eq("id", session.user.id);
+      }
+    } catch (err){
+      console.warn("Couldn't save language preference to profile:", err);
+    }
+  }
+
+  // Re-run any page-specific dynamic render functions that build text via
+  // t() at runtime (e.g. rendered cards, lists) — each page defines this
+  // if it has dynamic content that needs to react to a language switch.
+  if (typeof onLanguageChanged === "function") onLanguageChanged();
+}
+
+function updateLangToggleUI(){
+  document.querySelectorAll(".lang-toggle button").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.lang === CURRENT_LANG);
+  });
+}
