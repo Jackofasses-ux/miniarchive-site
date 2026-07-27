@@ -1240,7 +1240,7 @@
   };
 
   function isPhotoField(fieldName){
-    return fieldName.startsWith("photo_");
+    return fieldName.startsWith("photo_") || fieldName === "Timeline Photo";
   }
 
   async function loadEditHistory(miniatureId){
@@ -1269,7 +1269,7 @@
     // Timeline (5)" is more useful at a glance than "Edits (3) — Jul 26".
     function categoryForField(fieldName){
       if (fieldName.startsWith("photo_")) return "Identity Photos";
-      if (fieldName === "Timeline Entry") return "Creation Timeline";
+      if (fieldName === "Timeline Entry" || fieldName === "Timeline Photo") return "Creation Timeline";
       return "Model Info";
     }
     const categoryOrder = ["Model Info", "Identity Photos", "Creation Timeline"];
@@ -1290,8 +1290,12 @@
         const fieldLabel = EDIT_FIELD_LABELS[e.field_name] || e.field_name;
         const editorLabel = e.profiles?.username || e.profiles?.display_name || "Unknown";
         const dateLabel = new Date(e.created_at).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
+        function photoSide(value, label){
+          if (!value || !value.startsWith("http")) return value || "—";
+          return `<span class="photo-link" onclick="openLightbox('${value}')">${label}<img class="hover-preview" src="${value}" alt=""></span>`;
+        }
         const valueLine = isPhotoField(e.field_name)
-          ? `<span class="photo-link" onclick="openLightbox('${e.old_value}')">View original<img class="hover-preview" src="${e.old_value}" alt=""></span> → <span class="photo-link" onclick="openLightbox('${e.new_value}')">View replacement<img class="hover-preview" src="${e.new_value}" alt=""></span>`
+          ? `${photoSide(e.old_value, "View original")} → ${photoSide(e.new_value, "View replacement")}`
           : `${e.old_value || "—"} → ${e.new_value || "—"}`;
         return `
           <div class="edit-history-row">
