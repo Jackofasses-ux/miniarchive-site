@@ -218,6 +218,22 @@
   .cert-verified.state-pending{ color: var(--mono); }
   .cert-verified.state-rejected{ color: var(--error); }
 
+  .edit-history-group{ border-top:1px solid var(--hairline); }
+  .edit-history-header{
+    padding:16px 0; display:flex; justify-content:space-between; align-items:center;
+    cursor:pointer; font-family:'IBM Plex Mono', monospace; font-size:0.78rem;
+  }
+  .edit-history-count{ color: var(--gold-bright); display:flex; align-items:center; gap:8px; }
+  .edit-history-date{ color: var(--mono); font-size:0.7rem; }
+  .collapse-arrow{ display:inline-block; transition: transform .2s ease; color: var(--gold); }
+  .edit-history-group.expanded .collapse-arrow{ transform: rotate(90deg); }
+  .edit-history-details{ display:none; padding-bottom:16px; }
+  .edit-history-group.expanded .edit-history-details{ display:block; }
+  .edit-history-row{ display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; padding-top:12px; }
+  .edit-history-field{ font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.06em; text-transform:uppercase; color: var(--gold); }
+  .edit-history-value{ margin-top:4px; color: var(--cream-dim); font-size:0.9rem; }
+  .edit-history-editor{ font-family:'IBM Plex Mono', monospace; font-size:0.68rem; color: var(--mono); white-space:nowrap; }
+
   /* Edit history photo links + lightbox */
   .photo-link{ position:relative; color: var(--gold-bright); cursor:pointer; text-decoration:underline; }
   .photo-link .hover-preview{
@@ -1249,24 +1265,51 @@
       return;
     }
 
-    document.getElementById("editHistoryList").innerHTML = data.map(e => {
-      const editorLabel = e.profiles?.username || e.profiles?.display_name || "Unknown";
-      const fieldLabel = EDIT_FIELD_LABELS[e.field_name] || e.field_name;
-      const dateLabel = new Date(e.created_at).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
+    // Group by calendar day — a single save can now generate several rows
+    // (e.g. editing multiple timeline entries at once), so show them under
+    // one shared date heading instead of repeating the date on every row.
+    const groups = [];
+    let currentDay = null;
+    let currentRows = [];
 
-      const valueLine = isPhotoField(e.field_name)
-        ? `<span class="photo-link" onclick="openLightbox('${e.old_value}')">View original<img class="hover-preview" src="${e.old_value}" alt=""></span> → <span class="photo-link" onclick="openLightbox('${e.new_value}')">View replacement<img class="hover-preview" src="${e.new_value}" alt=""></span>`
-        : `${e.old_value || "—"} → ${e.new_value || "—"}`;
+    data.forEach(e => {
+      const day = new Date(e.created_at).toDateString();
+      if (day !== currentDay){
+        if (currentRows.length) groups.push({ day: currentDay, rows: currentRows });
+        currentDay = day;
+        currentRows = [];
+      }
+      currentRows.push(e);
+    });
+    if (currentRows.length) groups.push({ day: currentDay, rows: currentRows });
+
+    document.getElementById("editHistoryList").innerHTML = groups.map(group => {
+      const dateLabel = new Date(group.rows[0].created_at).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
+
+      const rowsHtml = group.rows.map(e => {
+        const fieldLabel = EDIT_FIELD_LABELS[e.field_name] || e.field_name;
+        const editorLabel = e.profiles?.username || e.profiles?.display_name || "Unknown";
+        const valueLine = isPhotoField(e.field_name)
+          ? `<span class="photo-link" onclick="openLightbox('${e.old_value}')">View original<img class="hover-preview" src="${e.old_value}" alt=""></span> → <span class="photo-link" onclick="openLightbox('${e.new_value}')">View replacement<img class="hover-preview" src="${e.new_value}" alt=""></span>`
+          : `${e.old_value || "—"} → ${e.new_value || "—"}`;
+        return `
+          <div class="edit-history-row">
+            <div>
+              <div class="edit-history-field">${fieldLabel}</div>
+              <div class="edit-history-value">${valueLine}</div>
+            </div>
+            <div class="edit-history-editor">${editorLabel}</div>
+          </div>
+        `;
+      }).join("");
 
       return `
-        <div style="padding:16px 0; border-top:1px solid var(--hairline); display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap;">
-          <div>
-            <div style="font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--gold);">${fieldLabel}</div>
-            <div style="margin-top:6px; color:var(--cream-dim); font-size:0.9rem;">${valueLine}</div>
+        <div class="edit-history-group">
+          <div class="edit-history-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="edit-history-count">Edits (${group.rows.length}) <span class="collapse-arrow">▸</span></span>
+            <span class="edit-history-date">${dateLabel}</span>
           </div>
-          <div style="text-align:right; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color:var(--mono); white-space:nowrap;">
-            ${editorLabel}<br>${dateLabel}
-          </div>
+          <div class="edit-history-details">${rowsHtml}</div>
         </div>
       `;
     }).join("");
