@@ -7,15 +7,17 @@
 //   Dynamic JS text:   `${t('featured_empty')}`
 //
 // Language source of truth, in priority order:
-//   1. localStorage 'miniarchive_lang' (whatever you most recently picked
-//      in THIS browser — via the header dropdown OR a saved preference)
-//   2. Logged-in user's profiles.language (fallback for a fresh browser/
-//      device that's never picked a language here before)
-//   3. Browser language (navigator.language starts with 'fr' → 'fr')
-//   4. 'en'
+//   1. sessionStorage 'miniarchive_lang_session' — a casual pick made via
+//      the header dropdown THIS TAB, THIS SESSION ONLY. Clears itself when
+//      the tab closes, and is explicitly cleared on logout too, so logging
+//      out and back in always reverts to your actual saved default rather
+//      than whatever you were casually viewing before.
+//   2. Logged-in user's profiles.language (your actual saved preference).
+//   3. Browser language (navigator.language starts with 'fr' → 'fr').
+//   4. 'en'.
 //
 // Deliberately two separate functions below:
-//   setLanguage()          — quick, local, casual switch (header dropdown).
+//   setLanguage()          — quick, session-only switch (header dropdown).
 //                            Never touches the saved profile preference.
 //   savePreferredLanguage() — the ONLY path that writes to the profile.
 //                            Called exclusively from the Account →
@@ -50,14 +52,14 @@ function applyTranslations(){
 }
 
 async function initLanguage(supabaseClient){
-  const stored = localStorage.getItem("miniarchive_lang");
+  const sessionPick = sessionStorage.getItem("miniarchive_lang_session");
   const browserDefault = navigator.language && navigator.language.toLowerCase().startsWith("fr") ? "fr" : "en";
 
-  if (stored){
-    CURRENT_LANG = stored;
+  if (sessionPick){
+    CURRENT_LANG = sessionPick;
   } else if (supabaseClient){
-    // No local choice yet on this browser — seed from the saved profile
-    // preference if logged in, otherwise fall back to browser language.
+    // No casual pick yet this session — use the saved profile preference
+    // if logged in, otherwise fall back to browser language.
     CURRENT_LANG = browserDefault;
     try {
       const { data: { session } } = await supabaseClient.auth.getSession();
@@ -77,14 +79,23 @@ async function initLanguage(supabaseClient){
     CURRENT_LANG = browserDefault;
   }
 
-  localStorage.setItem("miniarchive_lang", CURRENT_LANG);
   applyTranslations();
   updateLangToggleUI();
+
+  // Clear the session-only pick the moment you log out, so logging back in
+  // (even in the same tab) starts fresh from the saved/default language
+  // rather than carrying over whatever you were casually viewing.
+  if (supabaseClient && !initLanguage._authListenerAttached){
+    initLanguage._authListenerAttached = true;
+    supabaseClient.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") sessionStorage.removeItem("miniarchive_lang_session");
+    });
+  }
 }
 
 function setLanguage(lang){
   CURRENT_LANG = lang;
-  localStorage.setItem("miniarchive_lang", lang);
+  sessionStorage.setItem("miniarchive_lang_session", lang);
   applyTranslations();
   updateLangToggleUI();
   document.querySelectorAll(".lang-dropdown-menu.open").forEach(m => m.classList.remove("open"));
