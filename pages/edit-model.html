@@ -306,10 +306,10 @@
 </div>
 
 <main id="formWrap" style="display:none;">
-  <div class="eyebrow" id="pageEyebrow" data-i18n="em_add_eyebrow">Add a Model</div>
-  <h1 id="pageTitle" data-i18n="em_add_title">Log a new miniature.</h1>
-  <p class="lede" id="pageLede" data-i18n="em_add_lede">Add whatever you know now. Save it as a draft, or publish it straight to the archive if it's ready.</p>
-  <div class="status-chip draft" id="statusChip" style="display:none;" data-i18n="em_status_draft">Draft</div>
+  <div class="eyebrow" id="pageEyebrow">Add a Model</div>
+  <h1 id="pageTitle">Log a new miniature.</h1>
+  <p class="lede" id="pageLede">Add whatever you know now. Save it as a draft, or publish it straight to the archive if it's ready.</p>
+  <div class="status-chip draft" id="statusChip" style="display:none;">Draft</div>
 
   <form id="modelForm" novalidate>
 
@@ -434,53 +434,53 @@
     </fieldset>
 
     <fieldset>
-      <div class="legend">Photos <span style="color:var(--mono); text-transform:none; letter-spacing:0;">— required to publish, optional for a draft</span></div>
+      <div class="legend"><span data-i18n="em_photos_legend">Photos</span> <span style="color:var(--mono); text-transform:none; letter-spacing:0;" data-i18n="em_photos_legend_hint">— required to publish, optional for a draft</span></div>
       <div class="photo-grid" id="photoGrid">
         <div class="photo-slot">
           <label class="drop" for="photo-front">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="plus-label">Drop or Click</span>
+            <span class="plus-label" data-i18n="em_drop_or_click">Drop or Click</span>
           </label>
           <input type="file" id="photo-front" accept="image/jpeg,image/png,image/webp" data-view="front">
-          <div class="view-label">Front</div>
+          <div class="view-label" data-i18n="view_front">Front</div>
         </div>
         <div class="photo-slot">
           <label class="drop" for="photo-left">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="plus-label">Drop or Click</span>
+            <span class="plus-label" data-i18n="em_drop_or_click">Drop or Click</span>
           </label>
           <input type="file" id="photo-left" accept="image/jpeg,image/png,image/webp" data-view="left">
-          <div class="view-label">Left</div>
+          <div class="view-label" data-i18n="view_left">Left</div>
         </div>
         <div class="photo-slot">
           <label class="drop" for="photo-rear">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="plus-label">Drop or Click</span>
+            <span class="plus-label" data-i18n="em_drop_or_click">Drop or Click</span>
           </label>
           <input type="file" id="photo-rear" accept="image/jpeg,image/png,image/webp" data-view="rear">
-          <div class="view-label">Rear</div>
+          <div class="view-label" data-i18n="view_rear">Rear</div>
         </div>
         <div class="photo-slot">
           <label class="drop" for="photo-right">
             <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="plus-label">Drop or Click</span>
+            <span class="plus-label" data-i18n="em_drop_or_click">Drop or Click</span>
           </label>
           <input type="file" id="photo-right" accept="image/jpeg,image/png,image/webp" data-view="right">
-          <div class="view-label">Right</div>
+          <div class="view-label" data-i18n="view_right">Right</div>
         </div>
       </div>
-      <div class="photo-error" id="photoError">All four angle photos are required to publish.</div>
+      <div class="photo-error" id="photoError" data-i18n="em_photo_error">All four angle photos are required to publish.</div>
     </fieldset>
 
     <fieldset id="timelineFieldset">
       <div class="legend collapsible-legend" id="timelineToggle">
-        Creation Timeline
-        <span class="collapse-hint">Optional — click to expand</span>
+        <span data-i18n="em_creation_timeline_legend">Creation Timeline</span>
+        <span class="collapse-hint" data-i18n="em_collapse_hint">Optional — click to expand</span>
         <span class="collapse-arrow">▸</span>
       </div>
       <div id="timelineContent" style="display:none;">
         <div id="timelineEntriesList"></div>
-        <button type="button" class="btn-ghost" id="addTimelineEntryBtn" style="margin-top:14px;">+ Log an Entry</button>
+        <button type="button" class="btn-ghost" id="addTimelineEntryBtn" style="margin-top:14px;" data-i18n="em_log_entry_btn">+ Log an Entry</button>
 
         <div class="timeline-form" id="timelineForm" style="display:none;">
         <div class="field-grid">
@@ -565,15 +565,15 @@
     <div class="owner-visible-row">
       <label>
         <input type="checkbox" id="ownerVisible" checked>
-        <span>Show ownership publicly</span>
+        <span data-i18n="em_show_ownership">Show ownership publicly</span>
       </label>
-      <p class="hint">Photos and details are always public once published. This just controls whether your name shows as the owner, in case that's a concern for valuable pieces.</p>
+      <p class="hint" data-i18n="em_show_ownership_hint">Photos and details are always public once published. This just controls whether your name shows as the owner, in case that's a concern for valuable pieces.</p>
     </div>
 
     <div class="submit-row">
-      <button type="submit" class="btn-ghost" id="draftBtn">Save Draft</button>
-      <button type="button" class="btn-gold" id="publishBtn">Publish to Archive</button>
-      <button type="button" class="btn-delete" id="deleteBtn" style="display:none;">Delete Draft</button>
+      <button type="submit" class="btn-ghost" id="draftBtn" data-i18n="em_save_draft_btn">Save Draft</button>
+      <button type="button" class="btn-gold" id="publishBtn" data-i18n="em_publish_btn">Publish to Archive</button>
+      <button type="button" class="btn-delete" id="deleteBtn" style="display:none;" data-i18n="em_delete_draft_btn">Delete Draft</button>
       <span class="progress-note" id="progressNote"></span>
     </div>
 
@@ -581,11 +581,11 @@
     <div class="top-success" id="topSuccess"></div>
 
     <div class="edit-confirm" id="editConfirm" style="display:none;">
-      <p>This model is published — the following changes will be recorded in its edit history. Continue?</p>
+      <p data-i18n="em_edit_confirm_text">This model is published — the following changes will be recorded in its edit history. Continue?</p>
       <div class="edit-diff-list" id="editConfirmList"></div>
       <div class="delete-confirm-actions">
-        <button type="button" class="btn-gold" id="confirmEditBtn">Yes, Save Changes</button>
-        <button type="button" class="btn-ghost" id="cancelEditBtn">Cancel</button>
+        <button type="button" class="btn-gold" id="confirmEditBtn" data-i18n="em_confirm_save_changes">Yes, Save Changes</button>
+        <button type="button" class="btn-ghost" id="cancelEditBtn" data-i18n="account_cancel">Cancel</button>
       </div>
     </div>
 
@@ -678,7 +678,7 @@
       dropLabel.innerHTML = `<img src="${previewSrc}" alt="${view} preview">`;
     } else {
       dropLabel.classList.remove("filled");
-      dropLabel.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg><span class="plus-label">Drop or Click</span>`;
+      dropLabel.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M12 5v14M5 12h14"/></svg><span class="plus-label">${t("em_drop_or_click")}</span>`;
     }
   }
 
@@ -957,13 +957,13 @@
       document.getElementById(`photo-${v}`).previousElementSibling.classList.toggle("invalid", missingPhotos.includes(v));
     });
     if (missingPhotos.length){
-      showTopError("All four angle photos are required to publish.");
+      showTopError(t("em_photo_error"));
       return;
     }
 
     draftBtn.disabled = true;
     publishBtn.disabled = true;
-    publishBtn.textContent = "Publishing…";
+    publishBtn.textContent = t("em_publishing_btn");
     saveInProgress = true;
 
     try {
@@ -1009,7 +1009,7 @@
     } finally {
       draftBtn.disabled = false;
       publishBtn.disabled = false;
-      publishBtn.textContent = "Publish to Archive";
+      publishBtn.textContent = t("em_publish_btn");
       saveInProgress = false;
     }
   }
@@ -1080,19 +1080,19 @@
       chip.style.display = "none";
       deleteBtn.style.display = "none";
     } else if (currentStatus === "completed"){
-      chip.textContent = "Published";
+      chip.textContent = t("em_status_published");
       chip.className = "status-chip completed";
       chip.style.display = "inline-block";
       draftBtn.style.display = "none";
-      publishBtn.textContent = "Save Changes";
+      publishBtn.textContent = t("em_save_changes_btn");
       document.getElementById("photoError").style.display = "none";
       deleteBtn.style.display = "none"; // published models are permanent — never deletable
     } else {
-      chip.textContent = "Draft";
+      chip.textContent = t("em_status_draft");
       chip.className = "status-chip draft";
       chip.style.display = "inline-block";
       draftBtn.style.display = "inline-block";
-      publishBtn.textContent = "Publish to Archive";
+      publishBtn.textContent = t("em_publish_btn");
       deleteBtn.style.display = "inline-block";
     }
   }
@@ -1171,7 +1171,7 @@
 
   async function performSaveCompleted(payload, changes, hasAnyNewPhoto){
     publishBtn.disabled = true;
-    publishBtn.textContent = "Saving…";
+    publishBtn.textContent = t("em_saving_btn");
     saveInProgress = true;
     try {
       const { error } = await supabaseClient.from("miniatures").update(payload).eq("id", modelId);
@@ -1209,7 +1209,7 @@
       showTopError(err.message || "Something went wrong saving your changes.");
     } finally {
       publishBtn.disabled = false;
-      publishBtn.textContent = "Save Changes";
+      publishBtn.textContent = t("em_save_changes_btn");
       saveInProgress = false;
     }
   }
@@ -1842,6 +1842,9 @@
     modelId = new URLSearchParams(window.location.search).get("id");
 
     if (!modelId){
+      document.getElementById("pageEyebrow").textContent = t("em_add_eyebrow");
+      document.getElementById("pageTitle").textContent = t("em_add_title");
+      document.getElementById("pageLede").textContent = t("em_add_lede");
       document.getElementById("formWrap").style.display = "block";
       applyStatusUI();
       return;
@@ -1883,11 +1886,11 @@
       };
     }
 
-    document.getElementById("pageEyebrow").textContent = "Edit Model";
-    document.getElementById("pageTitle").textContent = `Editing “${data.title}”`;
+    document.getElementById("pageEyebrow").textContent = t("em_edit_eyebrow");
+    document.getElementById("pageTitle").textContent = `${t("em_editing_title_prefix")}${data.title}${t("em_editing_title_suffix")}`;
     document.getElementById("pageLede").textContent = currentStatus === "completed"
-      ? "This model is published. Changes here update the live archive record."
-      : "This is still a private draft. Save your progress any time, or publish when it's ready.";
+      ? t("em_lede_published")
+      : t("em_lede_draft");
 
     document.getElementById("title").value = data.title || "";
     document.getElementById("painterName").value = data.painter_name || "";
@@ -1917,6 +1920,31 @@
     applyStatusUI();
     document.getElementById("formWrap").style.display = "block";
   })();
+
+  initLanguage(supabaseClient);
+
+  // Re-applies whatever dynamic, status-dependent text this page currently
+  // shows (status chip, publish button, page head) in the newly-selected
+  // language. These fields are intentionally NOT tagged with data-i18n,
+  // since their correct text depends on runtime state (new vs. editing,
+  // draft vs. published) that the generic translation sweep has no way to
+  // know — blindly resetting them caused a real bug (a published model's
+  // status chip flipping to "Draft" on every language switch).
+  function onLanguageChanged(){
+    if (!modelId){
+      document.getElementById("pageEyebrow").textContent = t("em_add_eyebrow");
+      document.getElementById("pageTitle").textContent = t("em_add_title");
+      document.getElementById("pageLede").textContent = t("em_add_lede");
+    } else {
+      document.getElementById("pageEyebrow").textContent = t("em_edit_eyebrow");
+      const currentTitle = document.getElementById("title").value;
+      document.getElementById("pageTitle").textContent = `${t("em_editing_title_prefix")}${currentTitle}${t("em_editing_title_suffix")}`;
+      document.getElementById("pageLede").textContent = currentStatus === "completed"
+        ? t("em_lede_published")
+        : t("em_lede_draft");
+    }
+    applyStatusUI();
+  }
 </script>
 
 </body>
