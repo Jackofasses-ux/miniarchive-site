@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/translations.js"></script>
+<script src="js/i18n.js"></script>
 <style>
   :root{
     --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
@@ -35,6 +37,27 @@
   .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
   header nav a{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); }
   header nav a:hover{ color: var(--gold-bright); }
+  .lang-dropdown{ position:relative; }
+  .lang-dropdown-btn{
+    display:flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase;
+    color: var(--cream-dim); background:transparent; border:1px solid var(--hairline); padding:8px 12px; cursor:pointer;
+    transition: border-color .2s ease, color .2s ease;
+  }
+  .lang-dropdown-btn:hover{ border-color: var(--gold); color: var(--cream); }
+  .lang-dropdown-btn svg{ width:9px; height:9px; }
+  .lang-dropdown-menu{
+    position:absolute; top:calc(100% + 8px); right:0; min-width:150px;
+    background: var(--bg-raised); border:1px solid var(--hairline); display:none; flex-direction:column; z-index:70;
+  }
+  .lang-dropdown-menu.open{ display:flex; }
+  .lang-dropdown-menu button{
+    text-align:left; padding:10px 14px; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.05em;
+    color: var(--cream-dim); background:none; border:none; border-bottom:1px solid var(--hairline); cursor:pointer; display:flex; align-items:center; gap:8px; width:100%;
+  }
+  .lang-dropdown-menu button:last-child{ border-bottom:none; }
+  .lang-dropdown-menu button:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
+  .lang-dropdown-menu button.active{ color: var(--gold); }
 
   .wrap{
     max-width: 1180px; margin: 0 auto;
@@ -125,99 +148,114 @@
     <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
     <div class="brand-name">MINI ARCHIVE</div>
   </a>
-  <nav><a href="index.html">← Back home</a></nav>
+  <div style="display:flex; align-items:center; gap:24px;">
+    <div class="lang-dropdown">
+      <button type="button" class="lang-dropdown-btn" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('open')">
+        <span class="lang-dropdown-label">EN</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="lang-dropdown-menu">
+        <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">🇬🇧 English</button>
+        <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">🇫🇷 Français</button>
+      </div>
+    </div>
+    <nav><a href="index.html" data-i18n="start_back_home">← Back home</a></nav>
+  </div>
 </header>
 
 <div class="wrap">
   <div class="pitch">
-    <div class="eyebrow">Start an Archive</div>
-    <h1>Give the hours you<br>put in <span class="accent">somewhere to live.</span></h1>
-    <p class="lede">Free to start, no card required. Log your first model in a few minutes — you can always add the fine detail later.</p>
+    <div class="eyebrow" data-i18n="start_eyebrow">Start an Archive</div>
+    <h1><span data-i18n="start_pitch_title_1">Give the hours you</span><br><span data-i18n="start_pitch_title_2">put in </span><span class="accent" data-i18n="start_pitch_title_accent">somewhere to live.</span></h1>
+    <p class="lede" data-i18n="start_pitch_lede">Free to start, no card required. Log your first model in a few minutes — you can always add the fine detail later.</p>
 
     <div class="perk-list">
       <div class="perk">
         <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
-        <div><h4>Up to 25 models, free forever</h4><p>No trial, no expiry — the free tier stays free.</p></div>
+        <div><h4 data-i18n="start_perk1_title">Up to 25 models, free forever</h4><p data-i18n="start_perk1_desc">No trial, no expiry — the free tier stays free.</p></div>
       </div>
       <div class="perk">
         <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg></div>
-        <div><h4>Full profile per model</h4><p>Photos, paint recipes, timeline, history — as much or as little as you want to log.</p></div>
+        <div><h4 data-i18n="start_perk2_title">Full profile per model</h4><p data-i18n="start_perk2_desc">Photos, paint recipes, timeline, history — as much or as little as you want to log.</p></div>
       </div>
       <div class="perk">
         <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg></div>
-        <div><h4>Verification when you need it</h4><p>NFC-tagged provenance is available any time as a paid add-on — never required.</p></div>
+        <div><h4 data-i18n="start_perk3_title">Verification when you need it</h4><p data-i18n="start_perk3_desc">NFC-tagged provenance is available any time as a paid add-on — never required.</p></div>
       </div>
     </div>
 
     <div class="tier-note">
-      <div class="label">Free Tier</div>
-      <div class="value">Up to <b>25 models</b> · full profiles · no verification/NFC. Upgrade any time from your archive settings.</div>
+      <div class="label" data-i18n="start_tier_label">Free Tier</div>
+      <div class="value">
+        <span data-i18n="start_tier_value_prefix">Up to </span><b data-i18n="start_tier_value_bold">25 models</b><span data-i18n="start_tier_value_suffix"> · full profiles · no verification/NFC. Upgrade any time from your archive settings.</span>
+      </div>
     </div>
   </div>
 
   <div class="form-card">
     <div id="formState">
-      <h2>Create your archive</h2>
-      <div class="sub">A couple of minutes, that's it.</div>
+      <h2 data-i18n="start_form_title">Create your archive</h2>
+      <div class="sub" data-i18n="start_form_sub">A couple of minutes, that's it.</div>
 
       <form id="archiveForm" novalidate>
         <div class="field" id="field-archiveName">
-          <label for="archiveName">Archive name</label>
-          <input id="archiveName" type="text" placeholder="e.g. Paint or Die Studios">
-          <div class="hint">This is the name shown on your public collection page.</div>
-          <div class="error-msg">Give your archive a name.</div>
+          <label for="archiveName" data-i18n="start_archive_name_label">Archive name</label>
+          <input id="archiveName" type="text" placeholder="e.g. Paint or Die Studios" data-i18n-placeholder="start_archive_name_placeholder">
+          <div class="hint" data-i18n="start_archive_name_hint">This is the name shown on your public collection page.</div>
+          <div class="error-msg" data-i18n="start_archive_name_error">Give your archive a name.</div>
         </div>
 
         <div class="field-row">
           <div class="field" id="field-firstName">
-            <label for="firstName">First name</label>
-            <input id="firstName" type="text" placeholder="Jane">
-            <div class="error-msg">Required.</div>
+            <label for="firstName" data-i18n="start_first_name_label">First name</label>
+            <input id="firstName" type="text" placeholder="Jane" data-i18n-placeholder="start_first_name_placeholder">
+            <div class="error-msg" data-i18n="start_required_error">Required.</div>
           </div>
           <div class="field" id="field-lastName">
-            <label for="lastName">Last name</label>
-            <input id="lastName" type="text" placeholder="Doe">
-            <div class="error-msg">Required.</div>
+            <label for="lastName" data-i18n="start_last_name_label">Last name</label>
+            <input id="lastName" type="text" placeholder="Doe" data-i18n-placeholder="start_last_name_placeholder">
+            <div class="error-msg" data-i18n="start_required_error">Required.</div>
           </div>
         </div>
 
         <div class="field" id="field-email">
-          <label for="email">Email</label>
-          <input id="email" type="email" placeholder="you@example.com">
-          <div class="error-msg">Enter a valid email address.</div>
+          <label for="email" data-i18n="start_email_label">Email</label>
+          <input id="email" type="email" placeholder="you@example.com" data-i18n-placeholder="start_email_placeholder">
+          <div class="error-msg" data-i18n="start_email_error">Enter a valid email address.</div>
         </div>
 
         <div class="field" id="field-password">
-          <label for="password">Password</label>
-          <input id="password" type="password" placeholder="At least 8 characters">
-          <div class="error-msg">Password must be at least 8 characters.</div>
+          <label for="password" data-i18n="start_password_label">Password</label>
+          <input id="password" type="password" placeholder="At least 8 characters" data-i18n-placeholder="start_password_placeholder">
+          <div class="error-msg" data-i18n="start_password_error">Password must be at least 8 characters.</div>
         </div>
 
-        <button type="submit" class="submit-btn">Create My Archive</button>
+        <button type="submit" class="submit-btn" data-i18n="start_submit">Create My Archive</button>
       </form>
 
-      <div class="form-foot">Already have an archive? <a href="login.html">Log in</a></div>
+      <div class="form-foot"><span data-i18n="start_already_have">Already have an archive? </span><a href="login.html" data-i18n="start_login_link">Log in</a></div>
     </div>
 
     <div class="success-state" id="successState">
       <div class="shield"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
-      <h2>Archive created</h2>
-      <p>A confirmation email has been sent to <b id="confirmedEmail"></b>. Click the link inside to activate your account, then log in to start logging models.</p>
-      <p style="margin-top:14px; font-size:0.85rem;">Didn't get it? <a href="#" id="resendFromSignup" style="color:var(--gold-bright);">Resend the confirmation email</a></p>
+      <h2 data-i18n="start_success_title">Archive created</h2>
+      <p><span data-i18n="start_success_desc">A confirmation email has been sent to </span><b id="confirmedEmail"></b><span data-i18n="start_success_desc_suffix">. Click the link inside to activate your account, then log in to start logging models.</span></p>
+      <p style="margin-top:14px; font-size:0.85rem;"><span data-i18n="start_success_no_email">Didn't get it? </span><a href="#" id="resendFromSignup" style="color:var(--gold-bright);" data-i18n="start_success_resend">Resend the confirmation email</a></p>
       <p id="resendSignupStatus" style="margin-top:10px; font-size:0.85rem; color:var(--green); display:none;"></p>
     </div>
   </div>
 </div>
 
 <footer>
-  <div>© 2026 Mini Archive. Every miniature has a story.</div>
-  <div><a href="index.html">Home</a></div>
+  <div>© 2026 Mini Archive. <span data-i18n="footer_tagline">Every miniature has a story.</span></div>
+  <div><a href="index.html" data-i18n="footer_home">Home</a></div>
 </footer>
 
 <script>
   const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  initLanguage(supabaseClient);
 
   const form = document.getElementById("archiveForm");
   const formState = document.getElementById("formState");
@@ -268,7 +306,7 @@
     if (!(archiveName && firstName && lastName && emailValid && passwordValid)) return;
 
     submitBtn.disabled = true;
-    submitBtn.textContent = "Creating…";
+    submitBtn.textContent = t("start_submit_loading");
 
     // 1. Create the auth user
     const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
@@ -282,8 +320,8 @@
     if (signUpError){
       console.error("Supabase signUp error:", signUpError);
       submitBtn.disabled = false;
-      submitBtn.textContent = "Create My Archive";
-      showTopError(signUpError.message || `Signup failed (${signUpError.status || "unknown error"}). Check the console for details.`);
+      submitBtn.textContent = t("start_submit");
+      showTopError(signUpError.message || t("start_error_generic"));
       return;
     }
 
@@ -294,8 +332,8 @@
     // an empty one, even though the call itself "succeeds."
     if (signUpData.user && signUpData.user.identities && signUpData.user.identities.length === 0){
       submitBtn.disabled = false;
-      submitBtn.textContent = "Create My Archive";
-      showTopError("An account already exists with this email. Try logging in instead, or use \"Resend confirmation email\" from the login page if you never confirmed it.");
+      submitBtn.textContent = t("start_submit");
+      showTopError(t("start_error_existing_account"));
       return;
     }
 
@@ -330,7 +368,7 @@
 
     statusEl.style.display = "block";
     statusEl.style.color = error ? "var(--error)" : "var(--green)";
-    statusEl.textContent = error ? (error.message || "Couldn't resend the email.") : "Sent — check your inbox.";
+    statusEl.textContent = error ? (error.message || t("start_resend_error")) : t("start_resend_success");
   });
 </script>
 
