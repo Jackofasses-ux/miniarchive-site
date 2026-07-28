@@ -327,7 +327,7 @@ const TRANSLATIONS = {
 
     // ---- model.html: additional fixes ----
     model_no_description: "No description added yet.",
-    model_history_campaigns: "Campaigns",
+    model_history_campaigns: "Game History",
     model_history_achievements: "Achievements",
     model_history_ownership: "Ownership Record",
     ownership_current_owner: "Current Owner",
@@ -336,6 +336,9 @@ const TRANSLATIONS = {
     achievement_first_game: "First Game",
     achievement_first_win: "First Win",
     achievement_unlocked: "Achievement Unlocked",
+    stat_wins: "Wins",
+    stat_losses: "Losses",
+    stat_draws: "Draws",
     model_history_none_logged: "None logged",
     model_history_not_recorded: "Not recorded",
     gallery_no_photos: "No photos uploaded yet.",
@@ -840,7 +843,7 @@ const TRANSLATIONS = {
 
     // ---- model.html: additional fixes ----
     model_no_description: "Aucune description ajoutée pour l'instant.",
-    model_history_campaigns: "Campagnes",
+    model_history_campaigns: "Historique des parties",
     model_history_achievements: "Exploits",
     model_history_ownership: "Historique de propriété",
     ownership_current_owner: "Propriétaire actuel",
@@ -849,6 +852,9 @@ const TRANSLATIONS = {
     achievement_first_game: "Première partie",
     achievement_first_win: "Première victoire",
     achievement_unlocked: "Haut fait débloqué",
+    stat_wins: "Victoires",
+    stat_losses: "Défaites",
+    stat_draws: "Nuls",
     model_history_none_logged: "Aucun consigné",
     model_history_not_recorded: "Non enregistré",
     gallery_no_photos: "Aucune photo téléversée pour l'instant.",
