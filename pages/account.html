@@ -108,12 +108,12 @@
     font-size:0.62rem; text-transform:none; letter-spacing:0; color: var(--cream-dim); cursor:pointer;
   }
   .field-public-toggle input{ width:auto !important; accent-color: var(--gold); cursor:pointer; }
-  .field input, .field textarea{
+  .field input, .field textarea, .field select{
     width:100%; background: var(--bg-raised); border:1px solid var(--hairline);
     padding: 12px 14px; color: var(--cream); font-family:'Jost', sans-serif; font-size:0.94rem;
   }
   .field textarea{ resize: vertical; min-height: 80px; }
-  .field input:focus, .field textarea:focus{ outline:none; border-color: var(--gold); }
+  .field input:focus, .field textarea:focus, .field select:focus{ outline:none; border-color: var(--gold); }
   .field .hint{ margin-top:6px; font-size:0.78rem; color: var(--mono); }
   .field .error-msg{ margin-top:6px; font-size:0.78rem; color: var(--error); display:none; }
   .field.invalid input{ border-color: var(--error); }
@@ -252,6 +252,7 @@
   <div class="tab-row">
     <button type="button" class="tab-btn active" data-tab="profile" data-i18n="tab_profile">Profile</button>
     <button type="button" class="tab-btn" data-tab="security" data-i18n="tab_security">Account &amp; Security</button>
+    <button type="button" class="tab-btn" data-tab="preferences" data-i18n="tab_preferences">Preferences</button>
   </div>
 
   <div class="top-error" id="topError"></div>
@@ -315,22 +316,6 @@
       <div style="font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--mono);" id="emailValue"></div>
     </div>
 
-    <div class="tier-box">
-      <div>
-        <div class="label" data-i18n="account_language_label">Language</div>
-      </div>
-      <div class="lang-dropdown">
-        <button type="button" class="lang-dropdown-btn" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('open')">
-          <span class="lang-dropdown-label">EN</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-        <div class="lang-dropdown-menu">
-          <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">🇬🇧 English</button>
-          <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">🇫🇷 Français</button>
-        </div>
-      </div>
-    </div>
-
     <div class="section-head">
       <div class="eyebrow" data-i18n="account_change_password">Change Password</div>
       <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
@@ -392,6 +377,21 @@
         <button type="button" class="btn-delete" id="confirmDeleteAccountBtn" data-i18n="account_delete_confirm_yes">Yes, Request Deletion</button>
         <button type="button" class="btn-ghost" id="cancelDeleteAccountBtn" data-i18n="account_cancel">Cancel</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ================= PREFERENCES TAB ================= -->
+  <div class="tab-panel" id="tab-preferences" style="display:none;">
+    <div class="field" style="max-width:280px;">
+      <label for="prefLanguage" data-i18n="account_language_label">Language</label>
+      <select id="prefLanguage">
+        <option value="en">English</option>
+        <option value="fr">Français</option>
+      </select>
+    </div>
+
+    <div class="quick-links">
+      <button type="button" class="btn-gold" id="savePreferencesBtn" data-i18n="account_save_preferences">Save Preferences</button>
     </div>
   </div>
 </main>
@@ -820,7 +820,8 @@
   (async () => {
     const { data: { session } } = await supabaseClient.auth.getSession();
     currentSession = session;
-    initLanguage(supabaseClient);
+    await initLanguage(supabaseClient);
+    document.getElementById("prefLanguage").value = CURRENT_LANG;
 
     if (!session){
       document.getElementById("gate").style.display = "block";
@@ -837,7 +838,14 @@
       renderLoggedInNav(currentSession);
       loadDashboard(currentSession);
     }
+    document.getElementById("prefLanguage").value = CURRENT_LANG;
   }
+
+  document.getElementById("savePreferencesBtn").addEventListener("click", async () => {
+    const chosen = document.getElementById("prefLanguage").value;
+    await setLanguage(chosen, supabaseClient);
+    showTopSuccess(t("account_success_preferences_saved"));
+  });
 </script>
 
 </body>
