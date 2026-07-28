@@ -218,6 +218,11 @@ const TRANSLATIONS = {
     info_started: "Started",
     info_completed: "Completed",
     info_hours_worked: "Hours Worked",
+    info_total_hours: "Total Hours",
+    info_nfc_verified: "NFC Verified",
+    info_nfc_verified_desc: "Scan to view model history",
+    info_not_verified: "Not Verified",
+    info_no_nfc: "No NFC tag registered",
     info_status: "Status",
     status_in_progress: "In Progress",
     status_completed: "Completed",
@@ -238,6 +243,9 @@ const TRANSLATIONS = {
 
     // ---- model.html: edit history ----
     edit_history_none: "None",
+    edit_history_load_error: "Couldn't load edit history.",
+    edit_history_empty: "None — this record hasn't been edited since it was published.",
+    edit_history_unknown_editor: "Unknown",
     edit_field_title: "Model Name",
     edit_field_painter_name: "Painter",
     edit_field_manufacturer: "Manufacturer",
@@ -263,9 +271,12 @@ const TRANSLATIONS = {
     edit_view_removed: "(removed)",
 
     // ---- model.html: certificate ----
-    cert_state_verified: "✓ Verified",
-    cert_state_awaiting: "✕ Awaiting Verification",
-    cert_state_rejected: "✕ Rejected",
+    cert_state_verified: "Painter Verified",
+    cert_state_awaiting: "Awaiting Verification",
+    cert_state_rejected: "Verification Rejected",
+    cert_field_model_name: "Model Name",
+    cert_field_unique_id: "Unique Model ID",
+    cert_field_completion_date: "Completion Date",
 
     // ---- model.html: footer ----
     model_footer_back: "← Back to Collection",
@@ -602,6 +613,11 @@ const TRANSLATIONS = {
     info_started: "Commencé",
     info_completed: "Terminé",
     info_hours_worked: "Heures de travail",
+    info_total_hours: "Heures totales",
+    info_nfc_verified: "Vérifié par NFC",
+    info_nfc_verified_desc: "Numériser pour voir l'historique du modèle",
+    info_not_verified: "Non vérifié",
+    info_no_nfc: "Aucune puce NFC enregistrée",
     info_status: "Statut",
     status_in_progress: "En cours",
     status_completed: "Terminé",
@@ -622,6 +638,9 @@ const TRANSLATIONS = {
 
     // ---- model.html: edit history ----
     edit_history_none: "Aucune",
+    edit_history_load_error: "Impossible de charger l'historique des modifications.",
+    edit_history_empty: "Aucun — cette fiche n'a pas été modifiée depuis sa publication.",
+    edit_history_unknown_editor: "Inconnu",
     edit_field_title: "Nom du modèle",
     edit_field_painter_name: "Peintre",
     edit_field_manufacturer: "Fabricant",
@@ -647,9 +666,12 @@ const TRANSLATIONS = {
     edit_view_removed: "(supprimée)",
 
     // ---- model.html: certificate ----
-    cert_state_verified: "✓ Vérifié",
-    cert_state_awaiting: "✕ En attente de vérification",
-    cert_state_rejected: "✕ Rejeté",
+    cert_state_verified: "Peintre vérifié",
+    cert_state_awaiting: "En attente de vérification",
+    cert_state_rejected: "Vérification rejetée",
+    cert_field_model_name: "Nom du modèle",
+    cert_field_unique_id: "ID unique du modèle",
+    cert_field_completion_date: "Date d'achèvement",
 
     // ---- model.html: footer ----
     model_footer_back: "← Retour à la collection",
