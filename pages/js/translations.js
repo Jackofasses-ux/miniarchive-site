@@ -355,6 +355,25 @@ const TRANSLATIONS = {
     em_te_unsaved: "(unsaved)",
     em_te_completion_badge: "✓ Completion",
 
+    // ---- edit-model.html: photos, timeline toggle, ownership, buttons ----
+    em_photos_legend: "Photos",
+    em_photos_legend_hint: "— required to publish, optional for a draft",
+    em_creation_timeline_legend: "Creation Timeline",
+    em_collapse_hint: "Optional — click to expand",
+    em_log_entry_btn: "+ Log an Entry",
+    em_show_ownership: "Show ownership publicly",
+    em_show_ownership_hint: "Photos and details are always public once published. This just controls whether your name shows as the owner, in case that's a concern for valuable pieces.",
+    em_save_draft_btn: "Save Draft",
+    em_publish_btn: "Publish to Archive",
+    em_save_changes_btn: "Save Changes",
+    em_confirm_save_changes: "Yes, Save Changes",
+    em_drop_or_click: "Drop or Click",
+    em_photo_error: "All four angle photos are required to publish.",
+    em_delete_draft_btn: "Delete Draft",
+    em_edit_confirm_text: "This model is published — the following changes will be recorded in its edit history. Continue?",
+    em_publishing_btn: "Publishing…",
+    em_saving_btn: "Saving…",
+
     // ---- confirm.html ----
     confirm_loading: "Confirming your account…",
     confirm_eyebrow: "Account Confirmed",
@@ -473,6 +492,12 @@ const TRANSLATIONS = {
     start_error_existing_account: "An account already exists with this email. Try logging in instead, or use \"Resend confirmation email\" from the login page if you never confirmed it.",
     start_resend_error: "Couldn't resend the email.",
     start_resend_success: "Sent — check your inbox.",
+    em_status_published: "Published",
+    em_edit_eyebrow: "Edit Model",
+    em_editing_title_prefix: "Editing “",
+    em_editing_title_suffix: "”",
+    em_lede_published: "This model is published. Changes here update the live archive record.",
+    em_lede_draft: "This is still a private draft. Save your progress any time, or publish when it's ready.",
   },
   fr: {
     // ---- Shared: header/nav ----
@@ -824,6 +849,25 @@ const TRANSLATIONS = {
     em_te_unsaved: "(non enregistré)",
     em_te_completion_badge: "✓ Achèvement",
 
+    // ---- edit-model.html: photos, timeline toggle, ownership, buttons ----
+    em_photos_legend: "Photos",
+    em_photos_legend_hint: "— requises pour publier, optionnelles pour un brouillon",
+    em_creation_timeline_legend: "Chronologie de création",
+    em_collapse_hint: "Optionnel — cliquez pour développer",
+    em_log_entry_btn: "+ Consigner une entrée",
+    em_show_ownership: "Afficher la propriété publiquement",
+    em_show_ownership_hint: "Les photos et détails sont toujours publics une fois publiés. Ceci contrôle seulement si votre nom apparaît comme propriétaire, en cas de préoccupation pour des pièces de valeur.",
+    em_save_draft_btn: "Enregistrer le brouillon",
+    em_publish_btn: "Publier dans l'archive",
+    em_save_changes_btn: "Enregistrer les changements",
+    em_confirm_save_changes: "Oui, enregistrer les changements",
+    em_drop_or_click: "Glisser ou cliquer",
+    em_photo_error: "Les quatre photos d'angle sont requises pour publier.",
+    em_delete_draft_btn: "Supprimer le brouillon",
+    em_edit_confirm_text: "Ce modèle est publié — les changements suivants seront enregistrés dans son historique de modifications. Continuer?",
+    em_publishing_btn: "Publication…",
+    em_saving_btn: "Enregistrement…",
+
     // ---- confirm.html ----
     confirm_loading: "Confirmation de votre compte…",
     confirm_eyebrow: "Compte confirmé",
@@ -942,5 +986,11 @@ const TRANSLATIONS = {
     start_error_existing_account: "Un compte existe déjà avec ce courriel. Essayez de vous connecter, ou utilisez « Renvoyer le courriel de confirmation » depuis la page de connexion si vous ne l'avez jamais confirmé.",
     start_resend_error: "Impossible de renvoyer le courriel.",
     start_resend_success: "Envoyé — vérifiez votre boîte de réception.",
+    em_status_published: "Publié",
+    em_edit_eyebrow: "Modifier le modèle",
+    em_editing_title_prefix: "Modification de « ",
+    em_editing_title_suffix: " »",
+    em_lede_published: "Ce modèle est publié. Les changements ici mettent à jour la fiche vivante de l'archive.",
+    em_lede_draft: "Ceci est toujours un brouillon privé. Enregistrez votre progrès en tout temps, ou publiez quand c'est prêt.",
   },
 };
