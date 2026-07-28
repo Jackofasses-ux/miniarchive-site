@@ -281,6 +281,40 @@ const TRANSLATIONS = {
     // ---- model.html: footer ----
     model_footer_back: "← Back to Collection",
 
+    // ---- edit-model.html: page head ----
+    em_add_eyebrow: "Add a Model",
+    em_add_title: "Log a new miniature.",
+    em_add_lede: "Add whatever you know now. Save it as a draft, or publish it straight to the archive if it's ready.",
+    em_error_title: "Couldn't find that model.",
+    em_error_desc: "It may not exist, or it isn't yours to edit.",
+    em_error_back: "Back to My Collection",
+    em_status_draft: "Draft",
+
+    // ---- edit-model.html: basics fieldset ----
+    em_legend_basics: "Basics",
+    em_model_name: "Model Name",
+    em_model_name_placeholder: "e.g. Captain Cassian",
+    em_model_name_error: "Give the model a name.",
+    em_painter: "Painter",
+    em_painter_placeholder: "e.g. E. Stegosaurus",
+    em_painter_hint: "Leave blank if that's you.",
+    em_manufacturer: "Manufacturer",
+    em_manufacturer_placeholder: "e.g. Games Workshop",
+    em_material: "Material",
+    em_material_placeholder: "e.g. Resin",
+    em_scale: "Scale",
+    em_scale_placeholder: "e.g. 1:56",
+    em_base_size: "Base Size (mm)",
+    em_base_size_placeholder: "e.g. 32",
+    em_hours_worked: "Hours Worked",
+    em_hours_worked_placeholder: "e.g. 12.5",
+    em_started: "Started",
+    em_date_placeholder: "YYYY-MM-DD",
+    em_date_error: "Must be a complete date (YYYY-MM-DD) or left blank.",
+    em_completed: "Completed",
+    em_description: "Description",
+    em_description_placeholder: "A few lines about this piece…",
+
     // ---- confirm.html ----
     confirm_loading: "Confirming your account…",
     confirm_eyebrow: "Account Confirmed",
@@ -675,6 +709,40 @@ const TRANSLATIONS = {
 
     // ---- model.html: footer ----
     model_footer_back: "← Retour à la collection",
+
+    // ---- edit-model.html: page head ----
+    em_add_eyebrow: "Ajouter un modèle",
+    em_add_title: "Archivez une nouvelle figurine.",
+    em_add_lede: "Ajoutez ce que vous savez déjà. Enregistrez comme brouillon, ou publiez directement dans l'archive si c'est prêt.",
+    em_error_title: "Modèle introuvable.",
+    em_error_desc: "Il n'existe peut-être pas, ou il ne vous appartient pas de le modifier.",
+    em_error_back: "Retour à ma collection",
+    em_status_draft: "Brouillon",
+
+    // ---- edit-model.html: basics fieldset ----
+    em_legend_basics: "Informations de base",
+    em_model_name: "Nom du modèle",
+    em_model_name_placeholder: "ex. Capitaine Cassian",
+    em_model_name_error: "Donnez un nom au modèle.",
+    em_painter: "Peintre",
+    em_painter_placeholder: "ex. E. Stégosaure",
+    em_painter_hint: "Laissez vide si c'est vous.",
+    em_manufacturer: "Fabricant",
+    em_manufacturer_placeholder: "ex. Games Workshop",
+    em_material: "Matériau",
+    em_material_placeholder: "ex. Résine",
+    em_scale: "Échelle",
+    em_scale_placeholder: "ex. 1:56",
+    em_base_size: "Taille du socle (mm)",
+    em_base_size_placeholder: "ex. 32",
+    em_hours_worked: "Heures de travail",
+    em_hours_worked_placeholder: "ex. 12,5",
+    em_started: "Commencé",
+    em_date_placeholder: "AAAA-MM-JJ",
+    em_date_error: "Doit être une date complète (AAAA-MM-JJ) ou laissée vide.",
+    em_completed: "Terminé",
+    em_description: "Description",
+    em_description_placeholder: "Quelques lignes sur cette pièce…",
 
     // ---- confirm.html ----
     confirm_loading: "Confirmation de votre compte…",
