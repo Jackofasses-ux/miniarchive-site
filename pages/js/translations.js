@@ -358,6 +358,10 @@ const TRANSLATIONS = {
     role_other: "Other",
     em_te_unsaved: "(unsaved)",
     em_te_completion_badge: "✓ Completion",
+    em_te_photos_label: "Photos",
+    em_te_photos_hint: "(optional — add as many as you want)",
+    em_te_save_entry: "Save Entry",
+    em_te_delete_entry: "Delete Entry",
 
     // ---- edit-model.html: photos, timeline toggle, ownership, buttons ----
     em_photos_legend: "Photos",
@@ -856,6 +860,10 @@ const TRANSLATIONS = {
     role_other: "Autre",
     em_te_unsaved: "(non enregistré)",
     em_te_completion_badge: "✓ Achèvement",
+    em_te_photos_label: "Photos",
+    em_te_photos_hint: "(optionnel — ajoutez-en autant que vous voulez)",
+    em_te_save_entry: "Enregistrer l'entrée",
+    em_te_delete_entry: "Supprimer l'entrée",
 
     // ---- edit-model.html: photos, timeline toggle, ownership, buttons ----
     em_photos_legend: "Photos",
