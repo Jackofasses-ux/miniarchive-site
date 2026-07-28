@@ -176,6 +176,100 @@ const TRANSLATIONS = {
     account_error_deactivate_generic: "Couldn't deactivate your account.",
     account_error_delete_generic: "Couldn't request account deletion.",
 
+    // ---- model.html: header/nav ----
+    model_edit_this: "Edit This Model",
+    model_back_to_collection: "← Back to Collection",
+    model_eyebrow_prefix: "Miniature Profile · ",
+
+    // ---- model.html: photo viewer ----
+    view_front: "Front",
+    view_left: "Left",
+    view_rear: "Rear",
+    view_right: "Right",
+    view_label_front: "FRONT VIEW",
+    view_label_left: "LEFT VIEW",
+    view_label_rear: "REAR VIEW",
+    view_label_right: "RIGHT VIEW",
+
+    // ---- model.html: sections ----
+    model_section_1: "Section I",
+    model_section_2: "Section II",
+    model_section_3: "Section III",
+    model_section_4: "Section IV",
+    model_section_5: "Section V",
+    model_section_6: "Section VI",
+    model_gallery_title: "Gallery",
+    model_timeline_title: "Creation Timeline",
+    model_recipe_title: "Paint Recipe",
+    model_history_title: "Model History",
+    model_edit_history_title: "Edit History",
+    model_edit_history_desc: "Changes made to this record since it was published.",
+    model_cert_title: "Certificate of Authenticity",
+
+    // ---- model.html: info grid labels ----
+    info_manufacturer: "Manufacturer",
+    info_material: "Material",
+    info_scale: "Scale",
+    info_base_size: "Base Size",
+    info_game_system: "Game System",
+    info_faction: "Faction",
+    info_painter: "Painter",
+    info_owner: "Owner",
+    info_started: "Started",
+    info_completed: "Completed",
+    info_hours_worked: "Hours Worked",
+    info_status: "Status",
+    status_in_progress: "In Progress",
+    status_completed: "Completed",
+
+    // ---- model.html: timeline ----
+    timeline_first_brushstroke: "First Brushstroke",
+    timeline_model_completed: "Model Completed",
+    timeline_milestone: "◆ Milestone",
+    timeline_empty: "No timeline logged for this model yet.",
+    timeline_drag: "↔ DRAG",
+    role_primer: "Primer",
+
+    // ---- model.html: paint recipe ----
+    recipe_empty: "No paints logged for this model yet.",
+    recipe_see_comparables: "See comparable paints ▸",
+    comparable_none: "No known equivalents in the database yet for this paint.",
+    comparable_searching: "Searching…",
+
+    // ---- model.html: edit history ----
+    edit_history_none: "None",
+    edit_field_title: "Model Name",
+    edit_field_painter_name: "Painter",
+    edit_field_manufacturer: "Manufacturer",
+    edit_field_scale: "Scale",
+    edit_field_base_size: "Base Size",
+    edit_field_hours_worked: "Hours Worked",
+    edit_field_started_at: "Started",
+    edit_field_completed_at: "Completed",
+    edit_field_description: "Description",
+    edit_field_owner_visible: "Owner Visibility",
+    edit_field_photo_front: "Front Photo",
+    edit_field_photo_left: "Left Photo",
+    edit_field_photo_rear: "Rear Photo",
+    edit_field_photo_right: "Right Photo",
+    edit_field_timeline_entry: "Timeline Entry",
+    edit_field_timeline_photo: "Timeline Photo",
+    edit_category_model_info: "Model Info",
+    edit_category_identity_photos: "Identity Photos",
+    edit_category_timeline: "Creation Timeline",
+    edit_view_original: "View original",
+    edit_view_replacement: "View replacement",
+    edit_view_new: "(none)",
+    edit_view_removed: "(removed)",
+
+    // ---- model.html: certificate ----
+    cert_state_verified: "✓ Verified",
+    cert_state_awaiting: "✕ Awaiting Verification",
+    cert_state_rejected: "✕ Rejected",
+
+    // ---- model.html: footer ----
+    model_footer_back: "← Back to Collection",
+
     // ---- confirm.html ----
     confirm_loading: "Confirming your account…",
     confirm_eyebrow: "Account Confirmed",
@@ -465,6 +559,100 @@ const TRANSLATIONS = {
     account_success_photo_updated: "Photo mise à jour.",
     account_error_deactivate_generic: "Impossible de désactiver votre compte.",
     account_error_delete_generic: "Impossible de demander la suppression du compte.",
+
+    // ---- model.html: header/nav ----
+    model_edit_this: "Modifier ce modèle",
+    model_back_to_collection: "← Retour à la collection",
+    model_eyebrow_prefix: "Profil de la figurine · ",
+
+    // ---- model.html: photo viewer ----
+    view_front: "Avant",
+    view_left: "Gauche",
+    view_rear: "Arrière",
+    view_right: "Droite",
+    view_label_front: "VUE DE FACE",
+    view_label_left: "VUE DE GAUCHE",
+    view_label_rear: "VUE ARRIÈRE",
+    view_label_right: "VUE DE DROITE",
+
+    // ---- model.html: sections ----
+    model_section_1: "Section I",
+    model_section_2: "Section II",
+    model_section_3: "Section III",
+    model_section_4: "Section IV",
+    model_section_5: "Section V",
+    model_section_6: "Section VI",
+    model_gallery_title: "Galerie",
+    model_timeline_title: "Chronologie de création",
+    model_recipe_title: "Recette de peinture",
+    model_history_title: "Historique du modèle",
+    model_edit_history_title: "Historique des modifications",
+    model_edit_history_desc: "Modifications apportées à cette fiche depuis sa publication.",
+    model_cert_title: "Certificat d'authenticité",
+
+    // ---- model.html: info grid labels ----
+    info_manufacturer: "Fabricant",
+    info_material: "Matériau",
+    info_scale: "Échelle",
+    info_base_size: "Taille du socle",
+    info_game_system: "Système de jeu",
+    info_faction: "Faction",
+    info_painter: "Peintre",
+    info_owner: "Propriétaire",
+    info_started: "Commencé",
+    info_completed: "Terminé",
+    info_hours_worked: "Heures de travail",
+    info_status: "Statut",
+    status_in_progress: "En cours",
+    status_completed: "Terminé",
+
+    // ---- model.html: timeline ----
+    timeline_first_brushstroke: "Premier coup de pinceau",
+    timeline_model_completed: "Modèle terminé",
+    timeline_milestone: "◆ Étape marquante",
+    timeline_empty: "Aucune chronologie consignée pour ce modèle pour l'instant.",
+    timeline_drag: "↔ GLISSER",
+    role_primer: "Apprêt",
+
+    // ---- model.html: paint recipe ----
+    recipe_empty: "Aucune peinture consignée pour ce modèle pour l'instant.",
+    recipe_see_comparables: "Voir les peintures comparables ▸",
+    comparable_none: "Aucun équivalent connu dans la base de données pour cette peinture.",
+    comparable_searching: "Recherche…",
+
+    // ---- model.html: edit history ----
+    edit_history_none: "Aucune",
+    edit_field_title: "Nom du modèle",
+    edit_field_painter_name: "Peintre",
+    edit_field_manufacturer: "Fabricant",
+    edit_field_scale: "Échelle",
+    edit_field_base_size: "Taille du socle",
+    edit_field_hours_worked: "Heures de travail",
+    edit_field_started_at: "Commencé",
+    edit_field_completed_at: "Terminé",
+    edit_field_description: "Description",
+    edit_field_owner_visible: "Visibilité du propriétaire",
+    edit_field_photo_front: "Photo de face",
+    edit_field_photo_left: "Photo de gauche",
+    edit_field_photo_rear: "Photo arrière",
+    edit_field_photo_right: "Photo de droite",
+    edit_field_timeline_entry: "Entrée de chronologie",
+    edit_field_timeline_photo: "Photo de chronologie",
+    edit_category_model_info: "Infos du modèle",
+    edit_category_identity_photos: "Photos d'identité",
+    edit_category_timeline: "Chronologie de création",
+    edit_view_original: "Voir l'originale",
+    edit_view_replacement: "Voir le remplacement",
+    edit_view_new: "(aucune)",
+    edit_view_removed: "(supprimée)",
+
+    // ---- model.html: certificate ----
+    cert_state_verified: "✓ Vérifié",
+    cert_state_awaiting: "✕ En attente de vérification",
+    cert_state_rejected: "✕ Rejeté",
+
+    // ---- model.html: footer ----
+    model_footer_back: "← Retour à la collection",
 
     // ---- confirm.html ----
     confirm_loading: "Confirmation de votre compte…",
