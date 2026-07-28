@@ -239,7 +239,7 @@
 
 <main id="dashWrap" style="display:none;">
   <div class="eyebrow" data-i18n="account_eyebrow">My Archive</div>
-  <h1 id="greeting" data-i18n="account_greeting_default">Welcome back.</h1>
+  <h1 id="greeting">Welcome back.</h1>
   <p class="lede" data-i18n="account_lede">Everything you've logged, at a glance.</p>
 
   <div class="stats-row">
@@ -310,9 +310,25 @@
     <div class="tier-box">
       <div>
         <div class="label" data-i18n="account_current_tier">Current Tier</div>
-        <div class="value" id="tierValue" data-i18n="account_tier_free">Free</div>
+        <div class="value" id="tierValue">Free</div>
       </div>
       <div style="font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--mono);" id="emailValue"></div>
+    </div>
+
+    <div class="tier-box">
+      <div>
+        <div class="label" data-i18n="account_language_label">Language</div>
+      </div>
+      <div class="lang-dropdown">
+        <button type="button" class="lang-dropdown-btn" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('open')">
+          <span class="lang-dropdown-label">EN</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="lang-dropdown-menu">
+          <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">🇬🇧 English</button>
+          <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">🇫🇷 Français</button>
+        </div>
+      </div>
     </div>
 
     <div class="section-head">
@@ -371,7 +387,7 @@
     </div>
 
     <div class="confirm-box" id="deleteConfirm" style="display:none;">
-      <p id="deleteConfirmText" data-i18n="account_delete_confirm_default">Request account deletion? This starts a 21-day grace period — log back in any time before then to cancel.</p>
+      <p id="deleteConfirmText">Request account deletion? This starts a 21-day grace period — log back in any time before then to cancel.</p>
       <div class="confirm-actions">
         <button type="button" class="btn-delete" id="confirmDeleteAccountBtn" data-i18n="account_delete_confirm_yes">Yes, Request Deletion</button>
         <button type="button" class="btn-ghost" id="cancelDeleteAccountBtn" data-i18n="account_cancel">Cancel</button>
@@ -462,6 +478,7 @@
       topError.style.display = "block";
     }
 
+    document.getElementById("greeting").textContent = t("account_greeting_default");
     if (profile){
       document.getElementById("greeting").textContent = `${t("account_greeting_named")}${profile.display_name || profile.username}.`;
       document.getElementById("username").value = profile.username || "";
