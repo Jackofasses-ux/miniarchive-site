@@ -608,7 +608,7 @@
       </div>
       <div id="gameLogContent" style="display:none;">
         <div id="gameLogEntriesList"></div>
-        <button type="button" class="btn-ghost" id="addGameLogEntryBtn" style="margin-top:14px;">+ Log Activity</button>
+        <button type="button" class="btn-ghost" id="addGameLogEntryBtn" style="margin-top:14px;">+ Log a Game</button>
 
         <div class="timeline-form" id="gameLogForm" style="display:none;">
           <div class="field-grid">
@@ -617,18 +617,22 @@
               <input id="glDate" type="text" inputmode="numeric" placeholder="YYYY-MM-DD" maxlength="10">
             </div>
             <div class="field">
-              <label for="glActivityType">Activity <span class="req">*</span></label>
-              <select id="glActivityType">
-                <option value="Game">Game</option>
-                <option value="Tournament">Tournament</option>
-                <option value="Painting Competition">Painting Competition</option>
-                <option value="Repair">Repair</option>
-                <option value="Restoration">Restoration</option>
-              </select>
+              <label for="glGameSystem">Game System</label>
+              <input id="glGameSystem" type="text" placeholder="e.g. Warhammer 40,000" list="gameSystemSuggestions">
+              <datalist id="gameSystemSuggestions">
+                <option value="Warhammer 40,000">
+                <option value="Kill Team">
+                <option value="Age of Sigmar">
+                <option value="Warhammer: The Old World">
+                <option value="Necromunda">
+                <option value="Frostgrave">
+                <option value="Mordheim">
+                <option value="D&D">
+              </datalist>
             </div>
           </div>
 
-          <div class="field-grid" id="glGameFields" style="margin-top:16px;">
+          <div class="field-grid" style="margin-top:16px;">
             <div class="field">
               <label for="glContext">Context</label>
               <select id="glContext">
@@ -1639,30 +1643,23 @@
     content.style.display = isOpen ? "block" : "none";
   });
 
-  function updateGameFieldVisibility(){
-    const activityType = document.getElementById("glActivityType").value;
-    const isGameLike = activityType === "Game" || activityType === "Tournament";
-    document.getElementById("glGameFields").style.display = isGameLike ? "grid" : "none";
-    updateCampaignFieldVisibility();
-  }
   function updateCampaignFieldVisibility(){
     document.getElementById("glCampaignField").style.display = document.getElementById("glContext").value === "Campaign" ? "block" : "none";
   }
-  document.getElementById("glActivityType").addEventListener("change", updateGameFieldVisibility);
   document.getElementById("glContext").addEventListener("change", updateCampaignFieldVisibility);
 
   function resetGameLogForm(){
     editingGameLogLocalId = null;
     currentTallies = [];
     document.getElementById("glDate").value = todayDateString();
-    document.getElementById("glActivityType").value = "Game";
+    document.getElementById("glGameSystem").value = "";
     document.getElementById("glContext").value = "Casual";
     document.getElementById("glCampaignName").value = "";
     document.getElementById("glResult").value = "";
     document.getElementById("glNotes").value = "";
     document.getElementById("glCustomTallyType").value = "";
     document.getElementById("deleteGameLogEntryBtn").style.display = "none";
-    updateGameFieldVisibility();
+    updateCampaignFieldVisibility();
     renderTallyRows();
   }
 
@@ -1800,7 +1797,7 @@
       return `
         <div class="timeline-event-card" data-local-id="${entry._localId}">
           <div>
-            <div class="te-title">${entry.activityType}${resultTag}${entry._status !== "existing" ? ` <span style="color:var(--gold); font-size:0.65rem;">(unsaved)</span>` : ""}</div>
+            <div class="te-title">${entry.gameSystem || "Game"}${resultTag}${entry._status !== "existing" ? ` <span style="color:var(--gold); font-size:0.65rem;">(unsaved)</span>` : ""}</div>
             <div class="te-meta">${entry.entryDate}${tallySummary ? ` · ${tallySummary}` : ""}</div>
           </div>
         </div>
@@ -1817,12 +1814,12 @@
     resetGameLogForm();
     editingGameLogLocalId = localId;
     document.getElementById("glDate").value = entry.entryDate;
-    document.getElementById("glActivityType").value = entry.activityType;
+    document.getElementById("glGameSystem").value = entry.gameSystem || "";
     document.getElementById("glContext").value = entry.context || "Casual";
     document.getElementById("glCampaignName").value = entry.campaignName || "";
     document.getElementById("glResult").value = entry.result || "";
     document.getElementById("glNotes").value = entry.notes || "";
-    updateGameFieldVisibility();
+    updateCampaignFieldVisibility();
     currentTallies = entry.tallies.map(t => ({ ...t, _localId: nextTallyLocalId++, _detailsOpen: false }));
     renderTallyRows();
     document.getElementById("deleteGameLogEntryBtn").style.display = "inline-block";
@@ -1847,15 +1844,12 @@
       return;
     }
 
-    const activityType = document.getElementById("glActivityType").value;
-    const isGameLike = activityType === "Game" || activityType === "Tournament";
-
     const entryData = {
       entryDate: dateValue,
-      activityType,
-      context: isGameLike ? document.getElementById("glContext").value : null,
-      campaignName: (isGameLike && document.getElementById("glContext").value === "Campaign") ? document.getElementById("glCampaignName").value.trim() || null : null,
-      result: isGameLike ? (document.getElementById("glResult").value || null) : null,
+      gameSystem: document.getElementById("glGameSystem").value.trim() || null,
+      context: document.getElementById("glContext").value,
+      campaignName: document.getElementById("glContext").value === "Campaign" ? document.getElementById("glCampaignName").value.trim() || null : null,
+      result: document.getElementById("glResult").value || null,
       notes: document.getElementById("glNotes").value.trim() || null,
       tallies: currentTallies.map(t => ({ tallyType: t.tallyType, count: t.count, targetMiniatureId: t.targetMiniatureId, targetName: t.targetName, targetFreetext: t.targetFreetext, notes: t.notes })),
     };
@@ -1888,7 +1882,7 @@
     if (!modelId) return;
     const { data: entries } = await supabaseClient
       .from("game_log_entries")
-      .select("id, entry_date, activity_type, context, campaign_name, result, notes")
+      .select("id, entry_date, game_system, context, campaign_name, result, notes")
       .eq("miniature_id", modelId)
       .order("entry_date", { ascending: false });
 
@@ -1903,7 +1897,7 @@
         _dbId: entry.id,
         _status: "existing",
         entryDate: entry.entry_date,
-        activityType: entry.activity_type,
+        gameSystem: entry.game_system,
         context: entry.context,
         campaignName: entry.campaign_name,
         result: entry.result,
@@ -1933,7 +1927,7 @@
       const payload = {
         miniature_id: miniatureId,
         entry_date: entry.entryDate,
-        activity_type: entry.activityType,
+        game_system: entry.gameSystem,
         context: entry.context,
         campaign_name: entry.campaignName,
         result: entry.result,
