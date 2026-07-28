@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Start an Archive — Mini Archive</title>
+<title>Log In — Mini Archive</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -15,22 +15,19 @@
     --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
     --gold:#c9a24b; --gold-bright:#e8c877;
     --cream:#ece6d8; --cream-dim:#a89f8c; --mono:#8a8072;
-    --green:#8fae7a; --error:#c97b6a;
+    --error:#c97b6a; --green:#8fae7a;
   }
   *{ margin:0; padding:0; box-sizing:border-box; }
-  body{ background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif; font-weight:300; line-height:1.6; min-height:100vh; }
+  body{
+    background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif; font-weight:300; line-height:1.6;
+    min-height:100vh; display:flex; flex-direction:column;
+  }
   a{ color:inherit; text-decoration:none; }
   @media (prefers-reduced-motion: reduce){ *{ animation-duration:.01ms !important; transition-duration:.01ms !important; } }
 
   .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.22em; text-transform:uppercase; color: var(--gold); }
-  .rule-row{ display:flex; align-items:center; gap:14px; margin:16px 0 0; }
-  .rule-row .line{ height:1px; background: var(--hairline); flex:1; }
-  .rule-row .diamond{ width:6px; height:6px; background: var(--gold); transform:rotate(45deg); flex-shrink:0; }
 
-  header{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:22px 56px; border-bottom:1px solid var(--hairline);
-  }
+  header{ display:flex; align-items:center; justify-content:space-between; padding:22px 56px; border-bottom:1px solid var(--hairline); }
   .brand{ display:flex; align-items:center; gap:12px; }
   .brand-mark{ width:30px; height:30px; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; }
   .brand-mark svg{ width:16px; height:16px; fill: var(--gold); }
@@ -59,83 +56,68 @@
   .lang-dropdown-menu button:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
   .lang-dropdown-menu button.active{ color: var(--gold); }
 
-  .wrap{
-    max-width: 1180px; margin: 0 auto;
-    display:grid; grid-template-columns: 1fr 460px;
-    gap: 70px; align-items:start;
-    padding: 80px 56px 100px;
-  }
+  .center-wrap{ flex:1; display:flex; align-items:center; justify-content:center; padding: 60px 24px; }
 
-  .pitch h1{
-    font-family:'Cormorant Garamond', serif; font-weight:500;
-    font-size: clamp(2.2rem, 4.2vw, 3rem); line-height:1.1; margin-top:16px;
-  }
-  .pitch h1 .accent{ color: var(--gold); font-style: italic; font-weight:400; }
-  .pitch p.lede{ margin-top:20px; color: var(--cream-dim); max-width: 460px; font-size: 0.98rem; }
+  .form-card{ width:100%; max-width: 420px; border:1px solid var(--hairline); background: var(--bg-raised); padding: 42px 38px; }
+  .form-card .eyebrow{ display:block; text-align:center; }
+  .form-card h1{ font-family:'Cormorant Garamond', serif; font-size:1.8rem; font-weight:600; text-align:center; margin-top:12px; }
+  .form-card .sub{ margin-top:8px; text-align:center; color: var(--cream-dim); font-size:0.86rem; }
 
-  .perk-list{ margin-top: 44px; display:flex; flex-direction:column; gap: 22px; max-width: 440px; }
-  .perk{ display:flex; gap:16px; align-items:flex-start; }
-  .perk .icon{ width:20px; height:20px; flex-shrink:0; margin-top:2px; }
-  .perk .icon svg{ width:100%; height:100%; stroke: var(--gold); fill:none; stroke-width:1.6; }
-  .perk h4{ font-family:'Cormorant Garamond', serif; font-size:1.1rem; font-weight:600; }
-  .perk p{ color: var(--cream-dim); font-size:0.86rem; margin-top:3px; }
-
-  .tier-note{
-    margin-top: 46px; border:1px solid var(--hairline); background: var(--bg-raised);
-    padding: 20px 22px; max-width: 440px;
-  }
-  .tier-note .label{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); }
-  .tier-note .value{ margin-top:6px; font-size:0.9rem; color: var(--cream-dim); }
-  .tier-note .value b{ color: var(--gold-bright); font-weight:500; }
-
-  /* Form card */
-  .form-card{ border:1px solid var(--hairline); background: var(--bg-raised); padding: 40px 36px; }
-  .form-card h2{ font-family:'Cormorant Garamond', serif; font-size:1.6rem; font-weight:600; }
-  .form-card .sub{ margin-top: 6px; color: var(--cream-dim); font-size:0.85rem; }
-
-  .field{ margin-top: 22px; }
-  .field label{
-    display:block; font-family:'IBM Plex Mono', monospace; font-size:0.65rem;
-    letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); margin-bottom:8px;
-  }
+  .field{ margin-top: 24px; }
+  .field label{ display:block; font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); margin-bottom:8px; }
   .field input{
     width:100%; background: var(--bg); border:1px solid var(--hairline);
     padding: 12px 14px; color: var(--cream); font-family:'Jost', sans-serif; font-size:0.94rem;
     transition: border-color .2s ease;
   }
   .field input:focus{ outline:none; border-color: var(--gold); }
-  .field .hint{ margin-top:6px; font-size:0.78rem; color: var(--mono); }
   .field .error-msg{ margin-top:6px; font-size:0.78rem; color: var(--error); display:none; }
   .field.invalid input{ border-color: var(--error); }
   .field.invalid .error-msg{ display:block; }
 
-  .field-row{ display:grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .field-foot{ margin-top:10px; text-align:right; }
+  .field-foot a{ font-size:0.8rem; color: var(--gold-bright); }
+  .field-foot a:hover{ text-decoration: underline; }
 
   .submit-btn{
-    width:100%; margin-top: 30px;
+    width:100%; margin-top: 28px;
     font-family:'IBM Plex Mono', monospace; font-size:0.75rem; letter-spacing:0.14em; text-transform:uppercase;
     color:#0c0b09; background: var(--gold); padding: 15px 22px; border:1px solid var(--gold);
     cursor:pointer; transition: background .25s ease;
   }
   .submit-btn:hover{ background: var(--gold-bright); }
 
-  .form-foot{ margin-top: 18px; text-align:center; font-size:0.82rem; color: var(--cream-dim); }
+  .form-foot{ margin-top: 22px; text-align:center; font-size:0.85rem; color: var(--cream-dim); }
   .form-foot a{ color: var(--gold-bright); }
   .form-foot a:hover{ text-decoration: underline; }
 
-  .success-state{ display:none; text-align:center; padding: 20px 0 6px; }
-  .success-state .shield{ width:46px; height:46px; margin:0 auto 18px; border:1px solid var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; }
-  .success-state .shield svg{ width:20px; height:20px; fill: var(--gold); }
-  .success-state h2{ font-family:'Cormorant Garamond', serif; font-size:1.5rem; font-weight:600; }
-  .success-state p{ margin-top:10px; color: var(--cream-dim); font-size:0.9rem; }
+  .top-error{
+    margin-top: 20px; border:1px solid rgba(201,123,106,0.4); background: rgba(201,123,106,0.08);
+    padding: 12px 14px; font-size:0.82rem; color: var(--error); display:none;
+  }
+  .top-success{
+    margin-top: 20px; border:1px solid rgba(143,174,122,0.4); background: rgba(143,174,122,0.08);
+    padding: 12px 14px; font-size:0.82rem; color: var(--green); display:none;
+  }
+  .resend-box{
+    margin-top: 20px; border:1px solid rgba(201,162,75,0.4); background: rgba(201,162,75,0.06);
+    padding: 16px 18px; display:none;
+  }
+  .resend-box p{ font-size:0.85rem; color: var(--cream); }
+  .btn-resend{
+    margin-top: 12px; width:100%;
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase;
+    color: #0c0b09; background: var(--gold); padding: 11px 16px; border:1px solid var(--gold); cursor:pointer;
+    transition: background .25s ease;
+  }
+  .btn-resend:hover{ background: var(--gold-bright); }
+  .btn-resend:disabled{ opacity:0.6; cursor:not-allowed; }
 
   footer{ border-top:1px solid var(--hairline); padding:28px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); }
 
-  @media (max-width: 950px){
+  @media (max-width: 600px){
     header{ padding:18px 24px; }
-    .wrap{ grid-template-columns: 1fr; padding: 50px 24px 70px; gap: 50px; }
     .form-card{ padding: 32px 24px; }
-    .field-row{ grid-template-columns: 1fr; }
     footer{ flex-direction:column; gap:14px; text-align:center; padding:24px; }
   }
   :focus-visible{ outline:1px solid var(--gold-bright); outline-offset:3px; }
@@ -159,90 +141,46 @@
         <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">🇫🇷 Français</button>
       </div>
     </div>
-    <nav><a href="index.html" data-i18n="start_back_home">← Back home</a></nav>
+    <nav><a href="index.html" data-i18n="login_back_home">← Back home</a></nav>
   </div>
 </header>
 
-<div class="wrap">
-  <div class="pitch">
-    <div class="eyebrow" data-i18n="start_eyebrow">Start an Archive</div>
-    <h1><span data-i18n="start_pitch_title_1">Give the hours you</span><br><span data-i18n="start_pitch_title_2">put in </span><span class="accent" data-i18n="start_pitch_title_accent">somewhere to live.</span></h1>
-    <p class="lede" data-i18n="start_pitch_lede">Free to start, no card required. Log your first model in a few minutes — you can always add the fine detail later.</p>
-
-    <div class="perk-list">
-      <div class="perk">
-        <div class="icon"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
-        <div><h4 data-i18n="start_perk1_title">Up to 25 models, free forever</h4><p data-i18n="start_perk1_desc">No trial, no expiry — the free tier stays free.</p></div>
-      </div>
-      <div class="perk">
-        <div class="icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg></div>
-        <div><h4 data-i18n="start_perk2_title">Full profile per model</h4><p data-i18n="start_perk2_desc">Photos, paint recipes, timeline, history — as much or as little as you want to log.</p></div>
-      </div>
-      <div class="perk">
-        <div class="icon"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg></div>
-        <div><h4 data-i18n="start_perk3_title">Verification when you need it</h4><p data-i18n="start_perk3_desc">NFC-tagged provenance is available any time as a paid add-on — never required.</p></div>
-      </div>
-    </div>
-
-    <div class="tier-note">
-      <div class="label" data-i18n="start_tier_label">Free Tier</div>
-      <div class="value">
-        <span data-i18n="start_tier_value_prefix">Up to </span><b data-i18n="start_tier_value_bold">25 models</b><span data-i18n="start_tier_value_suffix"> · full profiles · no verification/NFC. Upgrade any time from your archive settings.</span>
-      </div>
-    </div>
-  </div>
-
+<div class="center-wrap">
   <div class="form-card">
-    <div id="formState">
-      <h2 data-i18n="start_form_title">Create your archive</h2>
-      <div class="sub" data-i18n="start_form_sub">A couple of minutes, that's it.</div>
+    <div class="eyebrow" data-i18n="login_eyebrow">Welcome Back</div>
+    <h1 data-i18n="login_title">Log in to your archive</h1>
+    <div class="sub" data-i18n="login_sub">Pick up right where you left off.</div>
 
-      <form id="archiveForm" novalidate>
-        <div class="field" id="field-archiveName">
-          <label for="archiveName" data-i18n="start_archive_name_label">Archive name</label>
-          <input id="archiveName" type="text" placeholder="e.g. Paint or Die Studios" data-i18n-placeholder="start_archive_name_placeholder">
-          <div class="hint" data-i18n="start_archive_name_hint">This is the name shown on your public collection page.</div>
-          <div class="error-msg" data-i18n="start_archive_name_error">Give your archive a name.</div>
-        </div>
-
-        <div class="field-row">
-          <div class="field" id="field-firstName">
-            <label for="firstName" data-i18n="start_first_name_label">First name</label>
-            <input id="firstName" type="text" placeholder="Jane" data-i18n-placeholder="start_first_name_placeholder">
-            <div class="error-msg" data-i18n="start_required_error">Required.</div>
-          </div>
-          <div class="field" id="field-lastName">
-            <label for="lastName" data-i18n="start_last_name_label">Last name</label>
-            <input id="lastName" type="text" placeholder="Doe" data-i18n-placeholder="start_last_name_placeholder">
-            <div class="error-msg" data-i18n="start_required_error">Required.</div>
-          </div>
-        </div>
-
-        <div class="field" id="field-email">
-          <label for="email" data-i18n="start_email_label">Email</label>
-          <input id="email" type="email" placeholder="you@example.com" data-i18n-placeholder="start_email_placeholder">
-          <div class="error-msg" data-i18n="start_email_error">Enter a valid email address.</div>
-        </div>
-
-        <div class="field" id="field-password">
-          <label for="password" data-i18n="start_password_label">Password</label>
-          <input id="password" type="password" placeholder="At least 8 characters" data-i18n-placeholder="start_password_placeholder">
-          <div class="error-msg" data-i18n="start_password_error">Password must be at least 8 characters.</div>
-        </div>
-
-        <button type="submit" class="submit-btn" data-i18n="start_submit">Create My Archive</button>
-      </form>
-
-      <div class="form-foot"><span data-i18n="start_already_have">Already have an archive? </span><a href="login.html" data-i18n="start_login_link">Log in</a></div>
+    <div class="top-error" id="topError"></div>
+    <div class="top-success" id="topSuccess"></div>
+    <div class="resend-box" id="resendBox" style="display:none;">
+      <p data-i18n="login_resend_notice">Your account exists but hasn't been confirmed yet.</p>
+      <button type="button" class="btn-resend" id="resendBtn" data-i18n="login_resend_btn">Resend Confirmation Email</button>
+    </div>
+    <div class="resend-box" id="forgotBox" style="display:none;">
+      <p data-i18n="login_forgot_notice">Enter your email below, then click here to get a password reset link.</p>
+      <button type="button" class="btn-resend" id="sendResetBtn" data-i18n="login_send_reset_btn">Send Reset Link</button>
     </div>
 
-    <div class="success-state" id="successState">
-      <div class="shield"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
-      <h2 data-i18n="start_success_title">Archive created</h2>
-      <p><span data-i18n="start_success_desc">A confirmation email has been sent to </span><b id="confirmedEmail"></b><span data-i18n="start_success_desc_suffix">. Click the link inside to activate your account, then log in to start logging models.</span></p>
-      <p style="margin-top:14px; font-size:0.85rem;"><span data-i18n="start_success_no_email">Didn't get it? </span><a href="#" id="resendFromSignup" style="color:var(--gold-bright);" data-i18n="start_success_resend">Resend the confirmation email</a></p>
-      <p id="resendSignupStatus" style="margin-top:10px; font-size:0.85rem; color:var(--green); display:none;"></p>
-    </div>
+    <form id="loginForm" novalidate>
+      <div class="field" id="field-email">
+        <label for="email" data-i18n="login_email_label">Email</label>
+        <input id="email" type="email" placeholder="you@example.com" data-i18n-placeholder="login_email_placeholder">
+        <div class="error-msg" data-i18n="login_email_error">Enter a valid email address.</div>
+      </div>
+
+      <div class="field" id="field-password">
+        <label for="password" data-i18n="login_password_label">Password</label>
+        <input id="password" type="password" placeholder="Your password" data-i18n-placeholder="login_password_placeholder">
+        <div class="error-msg" data-i18n="login_password_error">Enter your password.</div>
+        <div class="field-foot"><a href="#" id="forgotPasswordLink" data-i18n="login_forgot_link">Forgot password?</a></div>
+      </div>
+
+      <button type="submit" class="submit-btn" data-i18n="login_submit">Log In</button>
+    </form>
+
+    <div class="form-foot"><span data-i18n="login_no_archive">Don't have an archive yet? </span><a href="start.html" data-i18n="login_start_free">Start one for free</a></div>
+    <div class="form-foot"><span data-i18n="login_no_email">Didn't get a confirmation email? </span><a href="#" id="manualResendLink" data-i18n="login_resend_it">Resend it</a></div>
   </div>
 </div>
 
@@ -257,118 +195,172 @@
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   initLanguage(supabaseClient);
 
-  const form = document.getElementById("archiveForm");
-  const formState = document.getElementById("formState");
-  const successState = document.getElementById("successState");
+  const form = document.getElementById("loginForm");
+  const topError = document.getElementById("topError");
+  const topSuccess = document.getElementById("topSuccess");
+  const resendBox = document.getElementById("resendBox");
+  const resendBtn = document.getElementById("resendBtn");
   const submitBtn = form.querySelector(".submit-btn");
 
   function setInvalid(fieldId, invalid){
-    const el = document.getElementById(fieldId);
-    el.classList.toggle("invalid", invalid);
+    document.getElementById(fieldId).classList.toggle("invalid", invalid);
   }
 
-  function showTopError(message){
-    let box = document.getElementById("signupTopError");
-    if (!box){
-      box = document.createElement("div");
-      box.id = "signupTopError";
-      box.style.cssText = "margin-top:16px;border:1px solid rgba(201,123,106,0.4);background:rgba(201,123,106,0.08);padding:12px 14px;font-size:0.82rem;color:#c97b6a;";
-      form.prepend(box);
-    }
-    box.textContent = message;
-    box.style.display = "block";
-  }
-
-  function hideTopError(){
-    const box = document.getElementById("signupTopError");
-    if (box) box.style.display = "none";
+  async function sendConfirmation(email){
+    return supabaseClient.auth.resend({ type: "signup", email });
   }
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
-    hideTopError();
+    topError.style.display = "none";
+    topSuccess.style.display = "none";
+    resendBox.style.display = "none";
 
-    const archiveName = document.getElementById("archiveName").value.trim();
-    const firstName = document.getElementById("firstName").value.trim();
-    const lastName = document.getElementById("lastName").value.trim();
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
-
     const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    const passwordValid = password.length >= 8;
+    const passwordValid = password.length > 0;
 
-    setInvalid("field-archiveName", !archiveName);
-    setInvalid("field-firstName", !firstName);
-    setInvalid("field-lastName", !lastName);
     setInvalid("field-email", !emailValid);
     setInvalid("field-password", !passwordValid);
 
-    if (!(archiveName && firstName && lastName && emailValid && passwordValid)) return;
+    if (!(emailValid && passwordValid)) return;
 
     submitBtn.disabled = true;
-    submitBtn.textContent = t("start_submit_loading");
+    submitBtn.textContent = t("login_submit_loading");
 
-    // 1. Create the auth user
-    const { data: signUpData, error: signUpError } = await supabaseClient.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: "https://www.miniarchive.net/confirm.html",
-      },
-    });
+    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
-    if (signUpError){
-      console.error("Supabase signUp error:", signUpError);
-      submitBtn.disabled = false;
-      submitBtn.textContent = t("start_submit");
-      showTopError(signUpError.message || t("start_error_generic"));
+    submitBtn.disabled = false;
+    submitBtn.textContent = t("login_submit");
+
+    if (error){
+      // This is the specific, distinct error Supabase returns when the
+      // credentials are correct but the account was never confirmed —
+      // not a generic auth failure, so this is the real trigger for
+      // offering a resend, not a guess based on time elapsed.
+      const isUnconfirmed = error.message?.toLowerCase().includes("email not confirmed") || error.code === "email_not_confirmed";
+
+      if (isUnconfirmed){
+        resendBox.style.display = "block";
+        resendBtn.dataset.email = email;
+      } else {
+        topError.textContent = error.message;
+        topError.style.display = "block";
+      }
       return;
     }
 
-    // Supabase deliberately never says "this email is already registered"
-    // directly (an anti-enumeration measure) — but it leaves a detectable
-    // signal: a genuinely new signup gets a populated identities array,
-    // while an email that already belongs to an account comes back with
-    // an empty one, even though the call itself "succeeds."
-    if (signUpData.user && signUpData.user.identities && signUpData.user.identities.length === 0){
-      submitBtn.disabled = false;
-      submitBtn.textContent = t("start_submit");
-      showTopError(t("start_error_existing_account"));
+    // Successful login — check for deactivation/pending deletion before
+    // continuing. Logging in is itself the "cancel" action for both.
+    const { data: status } = await supabaseClient
+      .from("account_status")
+      .select("deactivated_at, pending_deletion_at")
+      .eq("profile_id", data.user.id)
+      .maybeSingle();
+
+    if (status && (status.deactivated_at || status.pending_deletion_at)){
+      const wasPendingDeletion = !!status.pending_deletion_at;
+
+      await supabaseClient
+        .from("account_status")
+        .update({ deactivated_at: null, pending_deletion_at: null })
+        .eq("profile_id", data.user.id);
+
+      submitBtn.disabled = true;
+      topSuccess.textContent = wasPendingDeletion
+        ? t("login_success_cancelled_deletion")
+        : t("login_success_reactivated");
+      topSuccess.style.display = "block";
+
+      setTimeout(() => { window.location.href = "collection.html"; }, 1800);
       return;
     }
 
-    // Email confirmation is required, so there's no active session yet —
-    // we can't create the profiles row now (RLS would block it since
-    // auth.uid() is null until the user confirms). Stash the details and
-    // finish profile creation once they land back on the site, logged in,
-    // after clicking the confirmation link. See index.html for that step.
-    localStorage.setItem("pendingProfile", JSON.stringify({
-      username: archiveName,
-      display_name: `${firstName} ${lastName}`,
-    }));
-
-    formState.style.display = "none";
-    document.getElementById("confirmedEmail").textContent = email;
-    successState.style.display = "block";
+    window.location.href = "collection.html";
   });
 
-  document.getElementById("resendFromSignup").addEventListener("click", async (e) => {
+  resendBtn.addEventListener("click", async () => {
+    const email = resendBtn.dataset.email;
+    resendBtn.disabled = true;
+    resendBtn.textContent = t("login_resend_sending");
+
+    const { error } = await sendConfirmation(email);
+
+    resendBtn.disabled = false;
+    resendBtn.textContent = t("login_resend_btn");
+
+    if (error){
+      topError.textContent = error.message || t("login_error_resend_generic");
+      topError.style.display = "block";
+      return;
+    }
+
+    resendBox.style.display = "none";
+    topSuccess.textContent = t("login_success_confirmation_sent");
+    topSuccess.style.display = "block";
+  });
+
+  document.getElementById("manualResendLink").addEventListener("click", async (e) => {
     e.preventDefault();
-    const email = document.getElementById("confirmedEmail").textContent;
-    const link = e.target;
-    const statusEl = document.getElementById("resendSignupStatus");
+    const email = document.getElementById("email").value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      topError.textContent = t("login_error_enter_email_resend");
+      topError.style.display = "block";
+      document.getElementById("email").focus();
+      return;
+    }
 
-    link.style.pointerEvents = "none";
-    link.style.opacity = "0.6";
+    topError.style.display = "none";
+    const { error } = await sendConfirmation(email);
 
-    const { error } = await supabaseClient.auth.resend({ type: "signup", email });
+    if (error){
+      topError.textContent = error.message || t("login_error_resend_generic");
+      topError.style.display = "block";
+      return;
+    }
 
-    link.style.pointerEvents = "auto";
-    link.style.opacity = "1";
+    topSuccess.textContent = t("login_success_confirmation_sent");
+    topSuccess.style.display = "block";
+  });
 
-    statusEl.style.display = "block";
-    statusEl.style.color = error ? "var(--error)" : "var(--green)";
-    statusEl.textContent = error ? (error.message || t("start_resend_error")) : t("start_resend_success");
+  document.getElementById("forgotPasswordLink").addEventListener("click", (e) => {
+    e.preventDefault();
+    topError.style.display = "none";
+    topSuccess.style.display = "none";
+    resendBox.style.display = "none";
+    document.getElementById("forgotBox").style.display = "block";
+  });
+
+  document.getElementById("sendResetBtn").addEventListener("click", async () => {
+    const email = document.getElementById("email").value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      topError.textContent = t("login_error_enter_email_reset");
+      topError.style.display = "block";
+      document.getElementById("email").focus();
+      return;
+    }
+
+    const btn = document.getElementById("sendResetBtn");
+    btn.disabled = true;
+    btn.textContent = t("login_resend_sending");
+
+    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+      redirectTo: "https://www.miniarchive.net/reset-password.html",
+    });
+
+    btn.disabled = false;
+    btn.textContent = t("login_send_reset_btn");
+
+    if (error){
+      topError.textContent = error.message || t("login_error_reset_generic");
+      topError.style.display = "block";
+      return;
+    }
+
+    document.getElementById("forgotBox").style.display = "none";
+    topSuccess.textContent = t("login_reset_sent");
+    topSuccess.style.display = "block";
   });
 </script>
 
