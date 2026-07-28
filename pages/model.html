@@ -650,7 +650,7 @@
         </div>
         <div>
           ${group.isMilestone ? `<div class="milestone-tag">${t("timeline_milestone")}</div>` : ""}
-          <h3>${group.title}</h3>
+          <h3>${categoryDisplayLabel(group.title)}</h3>
           <div class="t-date-hours">${dateRange} · ${totalHours} hours</div>
           ${renderMiniPhotoViewer(allPhotos, `step${i}`)}
           <div class="chip-row">${group.entries.map((e, ei) => {
@@ -1205,15 +1205,20 @@
     return groups;
   }
 
+  const CATEGORY_LABEL_KEYS = {
+    "Assembly": "category_assembly", "Surface Prep": "category_surface_prep", "Paint": "category_paint",
+    "Basing": "category_basing", "Varnish": "category_varnish", "Repair": "category_repair",
+    "Completed": "category_completed", "Other": "category_other",
+  };
+  function categoryDisplayLabel(rawCategory){
+    if (!rawCategory) return rawCategory;
+    return CATEGORY_LABEL_KEYS[rawCategory] ? t(CATEGORY_LABEL_KEYS[rawCategory]) : rawCategory;
+  }
+
   async function renderGallery(miniatureId){
     const grid = document.getElementById("galleryGrid");
     const order = ["front", "left", "rear", "right"];
     const viewLabelKeys = { front: "view_front", left: "view_left", rear: "view_rear", right: "view_right" };
-    const categoryKeys = {
-      "Assembly": "category_assembly", "Surface Prep": "category_surface_prep", "Paint": "category_paint",
-      "Basing": "category_basing", "Varnish": "category_varnish", "Repair": "category_repair",
-      "Completed": "category_completed", "Other": "category_other",
-    };
 
     const identityItems = order
       .filter(view => PHOTOS_BY_VIEW[view])
@@ -1240,7 +1245,7 @@
 
         timelineItems = (photoRows || []).map(row => {
           const entry = entryById[row.timeline_entry_id];
-          const categoryLabel = entry?.category ? (categoryKeys[entry.category] ? t(categoryKeys[entry.category]) : entry.category) : t("gallery_timeline_fallback");
+          const categoryLabel = entry?.category ? categoryDisplayLabel(entry.category) : t("gallery_timeline_fallback");
           return { url: row.image_url, tag: `${categoryLabel} · ${formatDate(entry?.entry_date)}` };
         });
       }
