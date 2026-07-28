@@ -215,22 +215,25 @@
   .feature-grid{
     border-top: 1px solid var(--hairline);
     border-bottom: 1px solid var(--hairline);
-    padding: 44px 56px;
+    padding: 40px 56px;
     display:flex;
-    gap: 40px;
+    gap: 44px;
     flex-wrap: wrap;
   }
-  .feature-item{
-    display:flex; flex-direction:column; align-items:center; text-align:center;
-    flex:1; min-width:150px;
+  .feature-item{ display:flex; align-items:center; gap:18px; flex:1; min-width:190px; }
+  .feature-icon-badge{
+    width:58px; height:58px; flex-shrink:0; border-radius:50%;
+    background: radial-gradient(circle at 35% 30%, rgba(201,162,75,0.22), rgba(201,162,75,0.04) 70%);
+    border:1px solid rgba(201,162,75,0.35);
+    display:flex; align-items:center; justify-content:center;
   }
-  .feature-item img{ width:42px; height:42px; object-fit:contain; margin-bottom:14px; }
-  .feature-item svg{ margin-bottom:14px; }
+  .feature-icon-badge img{ width:32px; height:32px; object-fit:contain; }
+  .feature-icon-badge svg{ width:30px; height:30px; }
   .feature-label{
-    font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.12em; text-transform:uppercase;
-    color: var(--gold-bright);
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase;
+    color: var(--gold-bright); font-weight:600;
   }
-  .feature-desc{ margin-top:8px; font-size:0.82rem; color: var(--cream-dim); line-height:1.45; max-width:170px; }
+  .feature-desc{ margin-top:5px; font-size:0.85rem; color: var(--cream-dim); line-height:1.45; }
   .ticker span b{ color: var(--gold); font-weight: 500; }
 
   /* ---------- Section shell ---------- */
@@ -454,35 +457,35 @@
 
 <div class="feature-grid">
   <div class="feature-item">
-    <img src="images/icon-photograph.png" alt="">
+    <div class="feature-icon-badge"><img src="images/icon-photograph.png" alt=""></div>
     <div>
       <div class="feature-label" data-i18n="feature_photograph_label">Photograph</div>
       <div class="feature-desc" data-i18n="feature_photograph_desc">Showcase your finished work.</div>
     </div>
   </div>
   <div class="feature-item">
-    <img src="images/icon-document.png" alt="">
+    <div class="feature-icon-badge"><img src="images/icon-document.png" alt=""></div>
     <div>
       <div class="feature-label" data-i18n="feature_document_label">Document</div>
       <div class="feature-desc" data-i18n="feature_document_desc">Record recipes, techniques & notes.</div>
     </div>
   </div>
   <div class="feature-item">
-    <img src="images/icon-track.png" alt="">
+    <div class="feature-icon-badge"><img src="images/icon-track.png" alt=""></div>
     <div>
       <div class="feature-label" data-i18n="feature_track_label">Track</div>
       <div class="feature-desc" data-i18n="feature_track_desc">Log time and capture progress.</div>
     </div>
   </div>
   <div class="feature-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1.4" style="width:36px; height:36px; flex-shrink:0; margin-top:2px;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <div class="feature-icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1.4"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
     <div>
       <div class="feature-label" data-i18n="feature_organize_label">Organize</div>
       <div class="feature-desc" data-i18n="feature_organize_desc">Curate collections and displays.</div>
     </div>
   </div>
   <div class="feature-item">
-    <img src="images/icon-preserve.png" alt="">
+    <div class="feature-icon-badge"><img src="images/icon-preserve.png" alt=""></div>
     <div>
       <div class="feature-label" data-i18n="feature_preserve_label">Preserve</div>
       <div class="feature-desc" data-i18n="feature_preserve_desc">Your legacy. Always.</div>
