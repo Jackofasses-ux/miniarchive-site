@@ -315,6 +315,24 @@ const TRANSLATIONS = {
     em_description: "Description",
     em_description_placeholder: "A few lines about this piece…",
 
+    // ---- model.html: additional fixes ----
+    model_no_description: "No description added yet.",
+    model_history_campaigns: "Campaigns",
+    model_history_achievements: "Achievements",
+    model_history_ownership: "Ownership Record",
+    model_history_none_logged: "None logged",
+    model_history_not_recorded: "Not recorded",
+    gallery_no_photos: "No photos uploaded yet.",
+    gallery_timeline_fallback: "Timeline",
+    category_assembly: "Assembly",
+    category_surface_prep: "Surface Prep",
+    category_paint: "Paint",
+    category_basing: "Basing",
+    category_varnish: "Varnish",
+    category_repair: "Repair",
+    category_completed: "Completed",
+    category_other: "Other",
+
     // ---- confirm.html ----
     confirm_loading: "Confirming your account…",
     confirm_eyebrow: "Account Confirmed",
@@ -743,6 +761,24 @@ const TRANSLATIONS = {
     em_completed: "Terminé",
     em_description: "Description",
     em_description_placeholder: "Quelques lignes sur cette pièce…",
+
+    // ---- model.html: additional fixes ----
+    model_no_description: "Aucune description ajoutée pour l'instant.",
+    model_history_campaigns: "Campagnes",
+    model_history_achievements: "Exploits",
+    model_history_ownership: "Historique de propriété",
+    model_history_none_logged: "Aucun consigné",
+    model_history_not_recorded: "Non enregistré",
+    gallery_no_photos: "Aucune photo téléversée pour l'instant.",
+    gallery_timeline_fallback: "Chronologie",
+    category_assembly: "Assemblage",
+    category_surface_prep: "Préparation de surface",
+    category_paint: "Peinture",
+    category_basing: "Socle",
+    category_varnish: "Vernis",
+    category_repair: "Réparation",
+    category_completed: "Terminé",
+    category_other: "Autre",
 
     // ---- confirm.html ----
     confirm_loading: "Confirmation de votre compte…",
