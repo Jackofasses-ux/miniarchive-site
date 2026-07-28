@@ -248,19 +248,21 @@
     border:none; cursor:pointer; padding:0;
   }
   .gl-full-log{ margin-top:16px; border-top:1px solid var(--hairline); padding-top:16px; }
-  .gl-entry{ padding:12px 0; border-top:1px solid var(--hairline); }
+  .gl-entry{ padding:12px 0; border-top:1px solid var(--hairline); cursor:pointer; }
   .gl-entry:first-child{ border-top:none; padding-top:0; }
-  .gl-entry-head{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
+  .gl-entry-summary{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; }
   .gl-entry-title{ font-family:'Cormorant Garamond', serif; font-size:1.05rem; font-weight:600; }
   .gl-entry-date{ font-family:'IBM Plex Mono', monospace; font-size:0.66rem; color: var(--mono); white-space:nowrap; }
-  .gl-entry-meta{ font-size:0.78rem; color: var(--cream-dim); margin-top:4px; }
-  .gl-entry-tallies{ margin-top:8px; font-size:0.8rem; color: var(--cream-dim); }
-  .gl-entry-tallies .tag{ color: var(--gold); }
+  .gl-entry-meta{ margin-left:10px; font-size:0.78rem; color: var(--cream-dim); }
   .gl-entry-notes{ margin-top:6px; font-size:0.8rem; color: var(--cream-dim); font-style:italic; }
   .gl-feed{ margin-top:6px; }
-  .gl-kill{ margin-top:10px; }
+  .gl-entry-details{ display:none; margin-top:12px; }
+  .gl-entry.expanded .gl-entry-details{ display:block; }
+  .gl-kill-group{ margin-top:10px; }
+  .gl-kill-group:first-child{ margin-top:0; }
   .gl-kill-type{ font-size:0.85rem; color: var(--cream); }
-  .gl-kill-name{ margin-top:2px; font-family:'Cormorant Garamond', serif; font-size:1rem; font-weight:600; color: var(--cream-dim); }
+  .gl-kill-named{ margin-top:6px; margin-left:16px; }
+  .gl-kill-name{ font-family:'Cormorant Garamond', serif; font-size:1rem; font-weight:600; color: var(--cream-dim); }
   .gl-kill-name a{ color: var(--gold-bright); }
   .gl-kill-note{ margin-top:2px; font-size:0.78rem; color: var(--mono); font-style:italic; }
   .gl-achievement{
@@ -1397,22 +1399,44 @@
     const firstWinEntry = entries.find(e => e.result === "Win");
     const firstWinEntryId = firstWinEntry ? firstWinEntry.id : null;
 
-    const feedHtml = [...entries].reverse().map(entry => {
+    const feedHtml = [...entries].reverse().map((entry, idx) => {
       const entryTallies = talliesByEntry[entry.id] || [];
-      const killsHtml = entryTallies.map(row => {
+
+      // Group by tally type — a "Character Kill ×3" group with any named
+      // targets listed underneath, instead of three separate blocks all
+      // saying "Character Kill".
+      const grouped = {};
+      entryTallies.forEach(row => {
+        if (!grouped[row.tally_type]) grouped[row.tally_type] = { count: 0, named: [] };
+        grouped[row.tally_type].count += row.count;
         const linkedName = row.target_name?.title;
         const plainName = row.target_name_freetext;
-        const nameLine = linkedName
-          ? `<div class="gl-kill-name"><a href="model.html?id=${row.target_miniature_id}">${linkedName}</a></div>`
-          : (plainName ? `<div class="gl-kill-name">${plainName}</div>` : "");
+        if (linkedName || plainName || row.notes){
+          grouped[row.tally_type].named.push({
+            name: linkedName || plainName,
+            url: row.target_miniature_id ? `model.html?id=${row.target_miniature_id}` : null,
+            notes: row.notes,
+          });
+        }
+      });
+
+      const killGroupsHtml = Object.keys(grouped).map(type => {
+        const g = grouped[type];
+        const namedHtml = g.named.map(n => `
+          <div class="gl-kill-named">
+            <div class="gl-kill-name">${n.url ? `<a href="${n.url}">${n.name}</a>` : n.name}</div>
+            ${n.notes ? `<div class="gl-kill-note">${n.notes}</div>` : ""}
+          </div>
+        `).join("");
         return `
-          <div class="gl-kill">
-            <div class="gl-kill-type">☠ ${row.tally_type}${row.count > 1 ? ` ×${row.count}` : ""}</div>
-            ${nameLine}
-            ${row.notes ? `<div class="gl-kill-note">${row.notes}</div>` : ""}
+          <div class="gl-kill-group">
+            <div class="gl-kill-type">☠ ${type} ×${g.count}</div>
+            ${namedHtml}
           </div>
         `;
       }).join("");
+
+      const killSummaryLine = Object.keys(grouped).map(type => `${type} ×${grouped[type].count}`).join(", ");
 
       const achievementsThisEntry = [];
       if (entry.id === firstGameEntryId) achievementsThisEntry.push(t("achievement_first_game"));
@@ -1425,15 +1449,19 @@
       `).join("");
 
       return `
-        <div class="gl-entry">
-          <div class="gl-entry-head">
-            <span class="gl-entry-title">${entry.game_system || "Game"}</span>
+        <div class="gl-entry" onclick="this.classList.toggle('expanded')">
+          <div class="gl-entry-summary">
+            <div>
+              <span class="gl-entry-title">${entry.game_system || "Game"}</span>
+              <span class="gl-entry-meta">${entry.context || ""}${entry.campaign_name ? ` · ${entry.campaign_name}` : ""}${entry.result ? ` · ${entry.result}` : ""}${killSummaryLine ? ` · ${killSummaryLine}` : ""}</span>
+            </div>
             <span class="gl-entry-date">${formatDate(entry.entry_date)}</span>
           </div>
-          <div class="gl-entry-meta">${entry.context || ""}${entry.campaign_name ? ` · ${entry.campaign_name}` : ""}${entry.result ? ` · ${entry.result}` : ""}</div>
-          ${killsHtml}
-          ${achievementHtml}
-          ${entry.notes ? `<div class="gl-entry-notes">${entry.notes}</div>` : ""}
+          <div class="gl-entry-details">
+            ${killGroupsHtml}
+            ${achievementHtml}
+            ${entry.notes ? `<div class="gl-entry-notes">${entry.notes}</div>` : ""}
+          </div>
         </div>
       `;
     }).join("");
