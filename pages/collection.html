@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/translations.js"></script>
+<script src="js/i18n.js"></script>
 <style>
   :root{
     --bg: #0c0b09;
@@ -66,6 +68,27 @@
   .btn-gold:hover{ background: var(--gold-bright); }
   .login-link{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); transition: color .2s ease; }
   .login-link:hover{ color: var(--gold-bright); }
+  .lang-dropdown{ position:relative; }
+  .lang-dropdown-btn{
+    display:flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase;
+    color: var(--cream-dim); background:transparent; border:1px solid var(--hairline); padding:8px 12px; cursor:pointer;
+    transition: border-color .2s ease, color .2s ease;
+  }
+  .lang-dropdown-btn:hover{ border-color: var(--gold); color: var(--cream); }
+  .lang-dropdown-btn svg{ width:9px; height:9px; }
+  .lang-dropdown-menu{
+    position:absolute; top:calc(100% + 8px); right:0; min-width:150px;
+    background: var(--bg-raised); border:1px solid var(--hairline); display:none; flex-direction:column; z-index:70;
+  }
+  .lang-dropdown-menu.open{ display:flex; }
+  .lang-dropdown-menu button{
+    text-align:left; padding:10px 14px; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.05em;
+    color: var(--cream-dim); background:none; border:none; border-bottom:1px solid var(--hairline); cursor:pointer; display:flex; align-items:center; gap:8px; width:100%;
+  }
+  .lang-dropdown-menu button:last-child{ border-bottom:none; }
+  .lang-dropdown-menu button:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
+  .lang-dropdown-menu button.active{ color: var(--gold); }
   #authArea{ display:flex; align-items:center; gap:20px; position:relative; }
   .user-menu-btn{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); border:1px solid var(--gold); padding:11px 20px; cursor:pointer; display:flex; align-items:center; gap:8px; transition: background 0.25s ease; }
   .user-menu-btn:hover{ background: var(--gold-bright); color:#0c0b09; }
@@ -199,28 +222,38 @@
   </a>
   <nav>
     <ul>
-      <li><a class="active" href="collection.html">Collection</a></li>
-      <li><a href="index.html#how">How it works</a></li>
-      <li><a href="index.html#provenance">Provenance</a></li>
-      <li><a href="index.html#about">About</a></li>
+      <li><a class="active" href="collection.html" data-i18n="nav_collection">Collection</a></li>
+      <li><a href="index.html#how" data-i18n="nav_how_it_works">How it works</a></li>
+      <li><a href="index.html#provenance" data-i18n="nav_provenance">Provenance</a></li>
+      <li><a href="index.html#about" data-i18n="nav_about">About</a></li>
     </ul>
+    <div class="lang-dropdown">
+      <button type="button" class="lang-dropdown-btn" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('open')">
+        <span class="lang-dropdown-label">EN</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="lang-dropdown-menu">
+        <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">🇬🇧 English</button>
+        <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">🇫🇷 Français</button>
+      </div>
+    </div>
     <div id="authArea">
-      <a class="login-link" href="login.html">Log in</a>
-      <a class="btn-gold" href="start.html">Start an Archive</a>
+      <a class="login-link" href="login.html" data-i18n="nav_login">Log in</a>
+      <a class="btn-gold" href="start.html" data-i18n="nav_start_archive">Start an Archive</a>
     </div>
   </nav>
 </header>
 
 <div class="page-head">
-  <div class="eyebrow">The Collection</div>
+  <div class="eyebrow" data-i18n="collection_eyebrow">The Collection</div>
   <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
-  <h1>Every model, catalogued.</h1>
+  <h1 data-i18n="collection_title">Every model, catalogued.</h1>
 </div>
 
 <div class="controls">
   <div class="search-box">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
-    <input id="searchInput" type="text" placeholder="Search by name or painter…" autocomplete="off">
+    <input id="searchInput" type="text" placeholder="Search by name or painter…" autocomplete="off" data-i18n-placeholder="collection_search_placeholder">
   </div>
 </div>
 
@@ -229,8 +262,8 @@
 <div class="grid" id="grid"></div>
 
 <footer>
-  <div>© 2026 Mini Archive. Every miniature has a story.</div>
-  <div><a href="index.html">← Back home</a></div>
+  <div>© 2026 Mini Archive. <span data-i18n="footer_tagline">Every miniature has a story.</span></div>
+  <div><a href="index.html" data-i18n="collection_back_home">← Back home</a></div>
 </footer>
 
 <script>
@@ -268,8 +301,8 @@
 
     if (isMineView){
       query = query.eq("owner_profile_id", session.user.id);
-      document.querySelector(".page-head h1").textContent = "Your models, catalogued.";
-      document.querySelector(".eyebrow").textContent = "My Collection";
+      document.querySelector(".page-head h1").textContent = t("collection_my_title");
+      document.querySelector(".eyebrow").textContent = t("collection_my_eyebrow");
     } else {
       query = query.eq("visibility", "public").eq("status", "completed");
     }
@@ -278,14 +311,14 @@
 
     if (error){
       console.error("Failed to load miniatures:", error);
-      grid.innerHTML = `<div class="empty-state"><span class="eyebrow">Couldn't load the collection</span>Something went wrong fetching models. Check the console for details.</div>`;
+      grid.innerHTML = `<div class="empty-state"><span class="eyebrow">${t("collection_error_eyebrow")}</span>${t("collection_error_desc")}</div>`;
       return;
     }
 
     ALL_MINIS = (data || []).map(m => {
       const frontPhoto = (m.photos || []).find(p => p.photo_type === "front");
       const anyPhoto = frontPhoto || (m.photos || [])[0];
-      const painterLabel = m.painter_name || "Unattributed";
+      const painterLabel = m.painter_name || t("collection_unattributed");
       return {
         id: m.id,
         code: m.archive_id,
@@ -308,12 +341,12 @@
       return !query || m.name.toLowerCase().includes(query) || m.painter.toLowerCase().includes(query);
     });
 
-    resultCount.textContent = `${filtered.length} model${filtered.length === 1 ? "" : "s"}`;
+    resultCount.textContent = `${filtered.length}${filtered.length === 1 ? t("collection_result_count_singular") : t("collection_result_count_plural")}`;
 
     if (filtered.length === 0){
       grid.innerHTML = isMineView
-        ? `<div class="empty-state"><span class="eyebrow">No models yet</span>You haven't logged anything yet. <a href="edit-model.html" style="color:var(--gold-bright);">Add your first model →</a></div>`
-        : `<div class="empty-state"><span class="eyebrow">No matches</span>Nothing fits that search yet. Try a different name or painter.</div>`;
+        ? `<div class="empty-state"><span class="eyebrow">${t("collection_empty_mine_eyebrow")}</span>${t("collection_empty_mine_desc")}<a href="edit-model.html" style="color:var(--gold-bright);">${t("collection_empty_mine_link")}</a></div>`
+        : `<div class="empty-state"><span class="eyebrow">${t("collection_empty_search_eyebrow")}</span>${t("collection_empty_search_desc")}</div>`;
       return;
     }
 
@@ -321,10 +354,10 @@
       const isDraft = m.status === "in_progress";
       const linkTarget = isDraft ? `edit-model.html?id=${m.id}` : `model.html?id=${m.id}`;
       const tag = isDraft
-        ? `<span class="status-tag wip">Draft</span>`
+        ? `<span class="status-tag wip">${t("collection_status_draft")}</span>`
         : `<span class="id-tag">${m.code}</span>`;
       const editShortcut = (currentUserId && m.ownerProfileId === currentUserId && !isDraft)
-        ? `<a href="edit-model.html?id=${m.id}" onclick="event.stopPropagation()" class="card-edit-link" title="Edit this model">✎</a>`
+        ? `<a href="edit-model.html?id=${m.id}" onclick="event.stopPropagation()" class="card-edit-link" title="${t("edit_this_model_title")}">✎</a>`
         : "";
       return `
         <div class="mini-card" onclick="window.location.href='${linkTarget}'">
@@ -335,7 +368,7 @@
           </div>
           <div class="info">
             <div class="name">${m.name}</div>
-            <div class="meta">${isDraft ? "On your workbench — click to publish" : `${m.manufacturer} · ${m.painter}`}</div>
+            <div class="meta">${isDraft ? t("collection_workbench") : `${m.manufacturer} · ${m.painter}`}</div>
           </div>
         </div>
       `;
@@ -345,6 +378,14 @@
   searchInput.addEventListener("input", render);
 
   loadMinis();
+  initLanguage(supabaseClient);
+
+  function onLanguageChanged(){
+    loadMinis();
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+      if (session) renderLoggedInNav(session);
+    });
+  }
 
   // ---- Auth nav state ----
   (async () => {
@@ -367,10 +408,10 @@
     authArea.innerHTML = `
       <button class="user-menu-btn" id="userMenuBtn">${label} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
       <div class="dropdown" id="userDropdown">
-        <a href="collection.html?mine=true">My Collection</a>
-        <a href="edit-model.html">Add a Model</a>
-        <a href="account.html">Account Settings</a>
-        <button id="logoutBtn">Log out</button>
+        <a href="collection.html?mine=true">${t("nav_my_collection")}</a>
+        <a href="edit-model.html">${t("nav_add_model")}</a>
+        <a href="account.html">${t("nav_account_settings")}</a>
+        <button id="logoutBtn">${t("nav_logout")}</button>
       </div>
     `;
 
