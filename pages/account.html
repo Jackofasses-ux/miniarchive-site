@@ -844,7 +844,7 @@
 
   document.getElementById("savePreferencesBtn").addEventListener("click", async () => {
     const chosen = document.getElementById("prefLanguage").value;
-    await setLanguage(chosen, supabaseClient);
+    await savePreferredLanguage(chosen, supabaseClient);
     showTopSuccess(t("account_success_preferences_saved"));
   });
 </script>
