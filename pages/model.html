@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/translations.js"></script>
+<script src="js/i18n.js"></script>
 <style>
   :root{
     --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
@@ -18,6 +20,27 @@
   *{ margin:0; padding:0; box-sizing:border-box; }
   body{ background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif; font-weight:300; line-height:1.6; }
   a{ color:inherit; text-decoration:none; }
+  .lang-dropdown{ position:relative; }
+  .lang-dropdown-btn{
+    display:flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase;
+    color: var(--cream-dim); background:transparent; border:1px solid var(--hairline); padding:8px 12px; cursor:pointer;
+    transition: border-color .2s ease, color .2s ease;
+  }
+  .lang-dropdown-btn:hover{ border-color: var(--gold); color: var(--cream); }
+  .lang-dropdown-btn svg{ width:9px; height:9px; }
+  .lang-dropdown-menu{
+    position:absolute; top:calc(100% + 8px); right:0; min-width:150px;
+    background: var(--bg-raised); border:1px solid var(--hairline); display:none; flex-direction:column; z-index:70;
+  }
+  .lang-dropdown-menu.open{ display:flex; }
+  .lang-dropdown-menu button{
+    text-align:left; padding:10px 14px; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.05em;
+    color: var(--cream-dim); background:none; border:none; border-bottom:1px solid var(--hairline); cursor:pointer; display:flex; align-items:center; gap:8px; width:100%;
+  }
+  .lang-dropdown-menu button:last-child{ border-bottom:none; }
+  .lang-dropdown-menu button:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
+  .lang-dropdown-menu button.active{ color: var(--gold); }
   @media (prefers-reduced-motion: reduce){ *{ animation-duration:.01ms !important; transition-duration:.01ms !important; } }
 
   .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.22em; text-transform:uppercase; color: var(--gold); }
@@ -322,13 +345,23 @@
   </a>
   <nav>
     <ul>
-      <li><a href="collection.html">Collection</a></li>
-      <li><a href="index.html#how">How it works</a></li>
-      <li><a href="index.html#provenance">Provenance</a></li>
-      <li><a href="index.html#about">About</a></li>
+      <li><a href="collection.html" data-i18n="nav_collection">Collection</a></li>
+      <li><a href="index.html#how" data-i18n="nav_how_it_works">How it works</a></li>
+      <li><a href="index.html#provenance" data-i18n="nav_provenance">Provenance</a></li>
+      <li><a href="index.html#about" data-i18n="nav_about">About</a></li>
     </ul>
-    <a class="btn-gold" href="edit-model.html" id="editButton" style="display:none;">Edit This Model</a>
-    <a class="btn-gold" href="collection.html">← Back to Collection</a>
+    <div class="lang-dropdown">
+      <button type="button" class="lang-dropdown-btn" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('open')">
+        <span class="lang-dropdown-label">EN</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="lang-dropdown-menu">
+        <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">🇬🇧 English</button>
+        <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">🇫🇷 Français</button>
+      </div>
+    </div>
+    <a class="btn-gold" href="edit-model.html" id="editButton" style="display:none;" data-i18n="model_edit_this">Edit This Model</a>
+    <a class="btn-gold" href="collection.html" data-i18n="model_back_to_collection">← Back to Collection</a>
   </nav>
 </header>
 
@@ -348,65 +381,65 @@
     <div class="photo-viewer">
       <div class="photo-frame" id="photoFrame">
         <svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
-        <div class="drag-badge" id="dragBadge">↔ DRAG</div>
-        <div class="view-label" id="viewLabel">FRONT VIEW</div>
+        <div class="drag-badge" id="dragBadge" data-i18n="timeline_drag">↔ DRAG</div>
+        <div class="view-label" id="viewLabel" data-i18n="view_label_front">FRONT VIEW</div>
       </div>
       <div class="view-tabs" id="viewTabs">
-        <button class="active" data-view="front">Front</button>
-        <button data-view="left">Left</button>
-        <button data-view="rear">Rear</button>
-        <button data-view="right">Right</button>
+        <button class="active" data-view="front" data-i18n="view_front">Front</button>
+        <button data-view="left" data-i18n="view_left">Left</button>
+        <button data-view="rear" data-i18n="view_rear">Rear</button>
+        <button data-view="right" data-i18n="view_right">Right</button>
       </div>
     </div>
   </div>
 </main>
 
 <section class="block">
-  <div class="eyebrow">Section I</div>
+  <div class="eyebrow" data-i18n="model_section_1">Section I</div>
   <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
-  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;">Gallery</h2>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;" data-i18n="model_gallery_title">Gallery</h2>
   <div class="gallery-grid" id="galleryGrid"></div>
 </section>
 
 <section class="block">
-  <div class="eyebrow">Section II</div>
+  <div class="eyebrow" data-i18n="model_section_2">Section II</div>
   <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
-  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;">Creation Timeline</h2>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;" data-i18n="model_timeline_title">Creation Timeline</h2>
   <div id="timelineList"></div>
 </section>
 
 <section class="block">
-  <div class="eyebrow">Section III</div>
+  <div class="eyebrow" data-i18n="model_section_3">Section III</div>
   <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
-  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;">Paint Recipe</h2>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;" data-i18n="model_recipe_title">Paint Recipe</h2>
   <div class="recipe-grid" id="recipeGrid"></div>
 </section>
 
 <section class="block">
-  <div class="eyebrow">Section IV</div>
+  <div class="eyebrow" data-i18n="model_section_4">Section IV</div>
   <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
-  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;">Model History</h2>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;" data-i18n="model_history_title">Model History</h2>
   <div class="history-grid" id="historyGrid"></div>
 </section>
 
 <section class="block" id="editHistorySection" style="display:none;">
-  <div class="eyebrow">Section V</div>
+  <div class="eyebrow" data-i18n="model_section_5">Section V</div>
   <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
-  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;">Edit History</h2>
-  <p style="color:var(--cream-dim); font-size:0.9rem; margin-top:10px;">Changes made to this record since it was published.</p>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;" data-i18n="model_edit_history_title">Edit History</h2>
+  <p style="color:var(--cream-dim); font-size:0.9rem; margin-top:10px;" data-i18n="model_edit_history_desc">Changes made to this record since it was published.</p>
   <div id="editHistoryList" style="margin-top:24px;"></div>
 </section>
 
 <section class="block">
-  <div class="eyebrow">Section VI</div>
+  <div class="eyebrow" data-i18n="model_section_6">Section VI</div>
   <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
-  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;">Certificate of Authenticity</h2>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;" data-i18n="model_cert_title">Certificate of Authenticity</h2>
   <div class="cert-box" id="certBox"></div>
 </section>
 
 <footer>
-  <div>© 2026 Mini Archive. Every miniature has a story.</div>
-  <div><a href="collection.html">← Back to Collection</a></div>
+  <div>© 2026 Mini Archive. <span data-i18n="footer_tagline">Every miniature has a story.</span></div>
+  <div><a href="collection.html" data-i18n="model_footer_back">← Back to Collection</a></div>
 </footer>
 
 <div class="lightbox-overlay" id="lightboxOverlay">
@@ -526,7 +559,7 @@
   };
 
   function renderProfile(m){
-    document.getElementById("eyebrowId").textContent = `Miniature Profile · ${m.id}`;
+    document.getElementById("eyebrowId").textContent = `${t("model_eyebrow_prefix")}${m.id}`;
     document.title = `${m.name} — Mini Archive`;
 
     const parts = m.name.split(" ");
@@ -539,13 +572,13 @@
       : m.painter;
 
     document.getElementById("infoGrid").innerHTML = `
-      <div class="info-box"><div class="label">Manufacturer</div><div class="value">${m.manufacturer}</div></div>
-      <div class="info-box"><div class="label">Material</div><div class="value">${m.material}</div></div>
-      <div class="info-box"><div class="label">Scale</div><div class="value">${m.scale}</div></div>
-      <div class="info-box"><div class="label">Completed</div><div class="value">${m.completed}</div></div>
-      <div class="info-box"><div class="label">Painter</div><div class="value">${painterDisplay}</div></div>
-      <div class="info-box"><div class="label">Total Hours</div><div class="value">${m.hours.toFixed(1)} hrs</div></div>
-      <div class="info-box"><div class="label">Base Size</div><div class="value">${m.baseSize}</div></div>
+      <div class="info-box"><div class="label">${t("info_manufacturer")}</div><div class="value">${m.manufacturer}</div></div>
+      <div class="info-box"><div class="label">${t("info_material")}</div><div class="value">${m.material}</div></div>
+      <div class="info-box"><div class="label">${t("info_scale")}</div><div class="value">${m.scale}</div></div>
+      <div class="info-box"><div class="label">${t("info_completed")}</div><div class="value">${m.completed}</div></div>
+      <div class="info-box"><div class="label">${t("info_painter")}</div><div class="value">${painterDisplay}</div></div>
+      <div class="info-box"><div class="label">${t("info_total_hours")}</div><div class="value">${m.hours.toFixed(1)} hrs</div></div>
+      <div class="info-box"><div class="label">${t("info_base_size")}</div><div class="value">${m.baseSize}</div></div>
     `;
 
     const nfcBox = document.getElementById("nfcBox");
@@ -554,7 +587,7 @@
       nfcBox.innerHTML = `
         <div class="left">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>
-          <div><div class="label">NFC Verified</div><div class="value">Scan to view model history</div></div>
+          <div><div class="label">${t("info_nfc_verified")}</div><div class="value">${t("info_nfc_verified_desc")}</div></div>
         </div>
         <div class="arrow">→</div>
       `;
@@ -563,7 +596,7 @@
       nfcBox.innerHTML = `
         <div class="left">
           <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>
-          <div><div class="label">Not Verified</div><div class="value">No NFC tag registered</div></div>
+          <div><div class="label">${t("info_not_verified")}</div><div class="value">${t("info_no_nfc")}</div></div>
         </div>
       `;
     }
@@ -596,7 +629,7 @@
             <div class="t-marker"></div>
           </div>
           <div>
-            <div class="milestone-tag">◆ Milestone</div>
+            <div class="milestone-tag">${t("timeline_milestone")}</div>
             <h3>${group.title}</h3>
             <div class="t-date-hours">${group.date}</div>
           </div>
@@ -616,13 +649,13 @@
           <div class="t-marker"></div>
         </div>
         <div>
-          ${group.isMilestone ? `<div class="milestone-tag">◆ Milestone</div>` : ""}
+          ${group.isMilestone ? `<div class="milestone-tag">${t("timeline_milestone")}</div>` : ""}
           <h3>${group.title}</h3>
           <div class="t-date-hours">${dateRange} · ${totalHours} hours</div>
           ${renderMiniPhotoViewer(allPhotos, `step${i}`)}
           <div class="chip-row">${group.entries.map((e, ei) => {
             const paintChips = [];
-            if (e.primer) paintChips.push({ label: "Primer", ...e.primer });
+            if (e.primer) paintChips.push({ label: t("role_primer"), ...e.primer });
             (e.paints || []).forEach(p => paintChips.push({ label: p.role, ...p }));
             const paintChipsHtml = paintChips.length ? `
               <div class="st-paint-chips">
@@ -652,7 +685,7 @@
         </div>
       </div>
     `;
-    }).join("") : `<p style="color:var(--cream-dim); padding: 24px 0; border-top:1px solid var(--hairline);">No timeline logged for this model yet.</p>`;
+    }).join("") : `<p style="color:var(--cream-dim); padding: 24px 0; border-top:1px solid var(--hairline);">${t("timeline_empty")}</p>`;
 
     window.toggleEntryCard = function(card){
       const wasExpanded = card.classList.contains("expanded");
@@ -757,24 +790,24 @@
     // m.verified can be true (verified), false/undefined (pending — the
     // current default for everything, since no verification system exists
     // yet), or "rejected" (reserved for when one does).
-    let verifyIcon = "✕", verifyClass = "state-pending", verifyText = "Awaiting Verification";
+    let verifyIcon = "✕", verifyClass = "state-pending", verifyText = t("cert_state_awaiting");
     if (m.verified === true){
-      verifyIcon = "✓"; verifyClass = "state-verified"; verifyText = "Painter Verified";
+      verifyIcon = "✓"; verifyClass = "state-verified"; verifyText = t("cert_state_verified");
     } else if (m.verified === "rejected"){
-      verifyIcon = "✕"; verifyClass = "state-rejected"; verifyText = "Verification Rejected";
+      verifyIcon = "✕"; verifyClass = "state-rejected"; verifyText = t("cert_state_rejected");
     }
 
     document.getElementById("certBox").innerHTML = `
       <div class="shield"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
       <div class="eyebrow">MINI ARCHIVE</div>
-      <div class="cert-title">Certificate of Authenticity</div>
+      <div class="cert-title">${t("model_cert_title")}</div>
       <div class="cert-fields">
-        <div><div class="label">Model Name</div><div class="value">${m.name}</div></div>
-        <div><div class="label">Unique Model ID</div><div class="value">${m.id}</div></div>
-        <div><div class="label">Painter</div><div class="value">${m.painter}</div></div>
-        <div><div class="label">Completion Date</div><div class="value">${m.completed}</div></div>
-        <div><div class="label">Total Hours</div><div class="value">${m.hours.toFixed(1)} hours</div></div>
-        <div><div class="label">Scale</div><div class="value">${m.scale} — ${m.baseSize} base</div></div>
+        <div><div class="label">${t("cert_field_model_name")}</div><div class="value">${m.name}</div></div>
+        <div><div class="label">${t("cert_field_unique_id")}</div><div class="value">${m.id}</div></div>
+        <div><div class="label">${t("info_painter")}</div><div class="value">${m.painter}</div></div>
+        <div><div class="label">${t("cert_field_completion_date")}</div><div class="value">${m.completed}</div></div>
+        <div><div class="label">${t("info_total_hours")}</div><div class="value">${m.hours.toFixed(1)} hours</div></div>
+        <div><div class="label">${t("info_scale")}</div><div class="value">${m.scale} — ${m.baseSize} base</div></div>
       </div>
       <div class="cert-verified ${verifyClass}">${verifyIcon} ${verifyText}</div>
     `;
@@ -788,7 +821,7 @@
   function setPhotoView(view){
     const frame = document.querySelector(".photo-frame");
     const url = PHOTOS_BY_VIEW[view];
-    document.getElementById("viewLabel").textContent = `${view.toUpperCase()} VIEW`;
+    document.getElementById("viewLabel").textContent = t(`view_label_${view}`);
     if (url){
       frame.style.backgroundImage = `url('${url}')`;
       frame.style.backgroundSize = "cover";
@@ -976,7 +1009,7 @@
       if (!byId[paint.id]) byId[paint.id] = { ...paint, roles: new Set() };
       byId[paint.id].roles.add(role);
     }
-    (entries || []).forEach(e => addPaint(e.primer, "Primer"));
+    (entries || []).forEach(e => addPaint(e.primer, t("role_primer")));
     (linkedRows || []).forEach(row => addPaint(row.paints, row.role || "Paint"));
 
     const recipe = Object.values(byId);
@@ -989,10 +1022,10 @@
         </div>
         <h3>${p.name}</h3>
         <div class="paint-name">${p.brand} — ${p.range}</div>
-        <div class="recipe-comparables-hint">See comparable paints ▸</div>
+        <div class="recipe-comparables-hint">${t("recipe_see_comparables")}</div>
         <div class="recipe-comparables"></div>
       </div>
-    `).join("") : `<p style="color:var(--cream-dim); grid-column:1/-1;">No paints logged for this model yet.</p>`;
+    `).join("") : `<p style="color:var(--cream-dim); grid-column:1/-1;">${t("recipe_empty")}</p>`;
   }
 
   const comparablesCache = {};
@@ -1012,7 +1045,7 @@
       return;
     }
 
-    comparablesEl.innerHTML = `<p style="color:var(--cream-dim); padding:14px 0;">Searching…</p>`;
+    comparablesEl.innerHTML = `<p style="color:var(--cream-dim); padding:14px 0;">${t("comparable_searching")}</p>`;
     const matches = await fetchComparablePaints(paintId);
 
     const html = matches.length ? matches.map(m => `
@@ -1023,7 +1056,7 @@
           <div class="meta">${m.brand} — ${m.range}${m.matchType ? ` · ${m.matchType}` : ""}</div>
         </div>
       </div>
-    `).join("") : `<p style="color:var(--cream-dim); padding:14px 0;">No known equivalents in the database yet for this paint.</p>`;
+    `).join("") : `<p style="color:var(--cream-dim); padding:14px 0;">${t("comparable_none")}</p>`;
 
     comparablesCache[paintId] = html;
     comparablesEl.innerHTML = html;
@@ -1153,7 +1186,7 @@
     entries.forEach(e => {
       if (firstPaintEntry && e.id === firstPaintEntry.id){
         flushCurrent();
-        groups.push({ title: "First Brushstroke", isMilestone: true, isMarker: true, date: formatDate(e.entry_date) });
+        groups.push({ title: t("timeline_first_brushstroke"), isMilestone: true, isMarker: true, date: formatDate(e.entry_date) });
       }
 
       if (currentCategory !== e.category){
@@ -1164,7 +1197,7 @@
 
       if (completionEntry && e.id === completionEntry.id){
         flushCurrent();
-        groups.push({ title: "Model Completed", isMilestone: true, isMarker: true, date: formatDate(e.entry_date) });
+        groups.push({ title: t("timeline_model_completed"), isMilestone: true, isMarker: true, date: formatDate(e.entry_date) });
       }
     });
     flushCurrent();
@@ -1221,23 +1254,28 @@
     `).join("");
   }
 
-  const EDIT_FIELD_LABELS = {
-    title: "Model Name",
-    painter_name: "Painter",
-    manufacturer: "Manufacturer",
-    material: "Material",
-    scale: "Scale",
-    base_size: "Base Size",
-    hours_worked: "Hours Worked",
-    started_at: "Started",
-    completed_at: "Completed",
-    description: "Description",
-    owner_visible: "Show Ownership Publicly",
-    photo_front: "Front Photo",
-    photo_left: "Left Photo",
-    photo_rear: "Rear Photo",
-    photo_right: "Right Photo",
-  };
+  function editFieldLabel(fieldName){
+    const map = {
+      title: "edit_field_title",
+      painter_name: "edit_field_painter_name",
+      manufacturer: "edit_field_manufacturer",
+      material: "info_material",
+      scale: "edit_field_scale",
+      base_size: "edit_field_base_size",
+      hours_worked: "edit_field_hours_worked",
+      started_at: "edit_field_started_at",
+      completed_at: "edit_field_completed_at",
+      description: "edit_field_description",
+      owner_visible: "edit_field_owner_visible",
+      photo_front: "edit_field_photo_front",
+      photo_left: "edit_field_photo_left",
+      photo_rear: "edit_field_photo_rear",
+      photo_right: "edit_field_photo_right",
+      "Timeline Entry": "edit_field_timeline_entry",
+      "Timeline Photo": "edit_field_timeline_photo",
+    };
+    return map[fieldName] ? t(map[fieldName]) : fieldName;
+  }
 
   function isPhotoField(fieldName){
     return fieldName.startsWith("photo_") || fieldName === "Timeline Photo";
@@ -1256,23 +1294,29 @@
     document.getElementById("editHistorySection").style.display = "block";
 
     if (error){
-      document.getElementById("editHistoryList").innerHTML = `<p style="color:var(--error); padding:16px 0; border-top:1px solid var(--hairline);">Couldn't load edit history.</p>`;
+      document.getElementById("editHistoryList").innerHTML = `<p style="color:var(--error); padding:16px 0; border-top:1px solid var(--hairline);">${t("edit_history_load_error")}</p>`;
       return;
     }
 
     if (!data || !data.length){
-      document.getElementById("editHistoryList").innerHTML = `<p style="color:var(--cream-dim); padding:16px 0; border-top:1px solid var(--hairline);">None — this record hasn't been edited since it was published.</p>`;
+      document.getElementById("editHistoryList").innerHTML = `<p style="color:var(--cream-dim); padding:16px 0; border-top:1px solid var(--hairline);">${t("edit_history_empty")}</p>`;
       return;
     }
 
     // Group by the kind of thing that changed, not by day — "Creation
     // Timeline (5)" is more useful at a glance than "Edits (3) — Jul 26".
+    // Internal grouping keys stay in English regardless of display language.
     function categoryForField(fieldName){
       if (fieldName.startsWith("photo_")) return "Identity Photos";
       if (fieldName === "Timeline Entry" || fieldName === "Timeline Photo") return "Creation Timeline";
       return "Model Info";
     }
     const categoryOrder = ["Model Info", "Identity Photos", "Creation Timeline"];
+    const categoryLabelKey = {
+      "Model Info": "edit_category_model_info",
+      "Identity Photos": "edit_category_identity_photos",
+      "Creation Timeline": "edit_category_timeline",
+    };
 
     const groups = {};
     data.forEach(e => {
@@ -1282,20 +1326,21 @@
     });
 
     const orderedCategories = Object.keys(groups).sort((a, b) => categoryOrder.indexOf(a) - categoryOrder.indexOf(b));
+    const dateLocale = CURRENT_LANG === "fr" ? "fr-CA" : "en-US";
 
     document.getElementById("editHistoryList").innerHTML = orderedCategories.map(category => {
       const rows = groups[category];
 
       const rowsHtml = rows.map(e => {
-        const fieldLabel = EDIT_FIELD_LABELS[e.field_name] || e.field_name;
-        const editorLabel = e.profiles?.username || e.profiles?.display_name || "Unknown";
-        const dateLabel = new Date(e.created_at).toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
+        const fieldLabel = editFieldLabel(e.field_name);
+        const editorLabel = e.profiles?.username || e.profiles?.display_name || t("edit_history_unknown_editor");
+        const dateLabel = new Date(e.created_at).toLocaleDateString(dateLocale, { day: "numeric", month: "short", year: "numeric" });
         function photoSide(value, label){
           if (!value || !value.startsWith("http")) return value || "—";
           return `<span class="photo-link" onclick="openLightbox('${value}')">${label}<img class="hover-preview" src="${value}" alt=""></span>`;
         }
         const valueLine = isPhotoField(e.field_name)
-          ? `${photoSide(e.old_value, "View original")} → ${photoSide(e.new_value, "View replacement")}`
+          ? `${photoSide(e.old_value, t("edit_view_original"))} → ${photoSide(e.new_value, t("edit_view_replacement"))}`
           : `${e.old_value || "—"} → ${e.new_value || "—"}`;
         return `
           <div class="edit-history-row">
@@ -1311,7 +1356,7 @@
       return `
         <div class="edit-history-group">
           <div class="edit-history-header" onclick="this.parentElement.classList.toggle('expanded')">
-            <span class="edit-history-count">${category} (${rows.length}) <span class="collapse-arrow">▸</span></span>
+            <span class="edit-history-count">${t(categoryLabelKey[category])} (${rows.length}) <span class="collapse-arrow">▸</span></span>
           </div>
           <div class="edit-history-details">${rowsHtml}</div>
         </div>
@@ -1320,12 +1365,24 @@
   }
 
   const urlId = new URLSearchParams(window.location.search).get("id");
-  if (urlId){
-    loadRealModel(urlId);
-  } else {
-    renderProfile(MODEL);
-    setPhotoView("front");
-    renderGallery();
+
+  function renderCurrentModel(){
+    if (urlId){
+      loadRealModel(urlId);
+    } else {
+      renderProfile(MODEL);
+      setPhotoView("front");
+      renderGallery();
+    }
+  }
+
+  (async () => {
+    await initLanguage(supabaseClient);
+    renderCurrentModel();
+  })();
+
+  function onLanguageChanged(){
+    renderCurrentModel();
   }
 </script>
 
