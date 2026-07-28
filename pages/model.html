@@ -1,902 +1,1397 @@
-// Mini Archive — translation dictionary.
-// Add new keys here as each page gets wired up. Category values used as
-// logic keys (e.g. miniatures.category = 'Paint') are NEVER translated —
-// only their displayed labels are. Paint/brand names are proper nouns and
-// stay as-is in both languages.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Captain Cassian — Mini Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/translations.js"></script>
+<script src="js/i18n.js"></script>
+<style>
+  :root{
+    --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
+    --gold:#c9a24b; --gold-bright:#e8c877;
+    --cream:#ece6d8; --cream-dim:#a89f8c; --mono:#8a8072;
+    --green:#8fae7a;
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  body{ background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif; font-weight:300; line-height:1.6; }
+  a{ color:inherit; text-decoration:none; }
+  .lang-dropdown{ position:relative; }
+  .lang-dropdown-btn{
+    display:flex; align-items:center; gap:6px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.08em; text-transform:uppercase;
+    color: var(--cream-dim); background:transparent; border:1px solid var(--hairline); padding:8px 12px; cursor:pointer;
+    transition: border-color .2s ease, color .2s ease;
+  }
+  .lang-dropdown-btn:hover{ border-color: var(--gold); color: var(--cream); }
+  .lang-dropdown-btn svg{ width:9px; height:9px; }
+  .lang-dropdown-menu{
+    position:absolute; top:calc(100% + 8px); right:0; min-width:150px;
+    background: var(--bg-raised); border:1px solid var(--hairline); display:none; flex-direction:column; z-index:70;
+  }
+  .lang-dropdown-menu.open{ display:flex; }
+  .lang-dropdown-menu button{
+    text-align:left; padding:10px 14px; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.05em;
+    color: var(--cream-dim); background:none; border:none; border-bottom:1px solid var(--hairline); cursor:pointer; display:flex; align-items:center; gap:8px; width:100%;
+  }
+  .lang-dropdown-menu button:last-child{ border-bottom:none; }
+  .lang-dropdown-menu button:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
+  .lang-dropdown-menu button.active{ color: var(--gold); }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:.01ms !important; transition-duration:.01ms !important; } }
 
-const TRANSLATIONS = {
-  en: {
-    // ---- Shared: header/nav ----
-    nav_collection: "Collection",
-    nav_how_it_works: "How it works",
-    nav_provenance: "Provenance",
-    nav_about: "About",
-    nav_login: "Log in",
-    nav_start_archive: "Start an Archive",
-    nav_my_collection: "My Collection",
-    nav_add_model: "Add a Model",
-    nav_account_settings: "Account Settings",
-    nav_logout: "Log out",
+  .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.22em; text-transform:uppercase; color: var(--gold); }
+  .rule-row{ display:flex; align-items:center; gap:14px; margin:18px 0 28px; }
+  .rule-row .line{ height:1px; background: var(--hairline); flex:1; }
+  .rule-row .diamond{ width:6px; height:6px; background: var(--gold); transform:rotate(45deg); flex-shrink:0; }
 
-    // ---- Shared: footer ----
-    footer_tagline: "Every miniature has a story.",
-    footer_browse: "Browse Collection",
-    footer_back_home: "← Back home",
+  header{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:22px 56px; background: rgba(12,11,9,0.88); backdrop-filter: blur(8px);
+    border-bottom:1px solid var(--hairline);
+  }
+  .brand{ display:flex; align-items:center; gap:12px; }
+  .brand-mark{ width:30px; height:30px; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; }
+  .brand-mark svg{ width:16px; height:16px; fill: var(--gold); }
+  .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
+  nav{ display:flex; align-items:center; gap:40px; }
+  nav ul{ display:flex; gap:34px; list-style:none; }
+  nav ul li a{ font-size:0.85rem; color: var(--cream-dim); position:relative; padding-bottom:4px; }
+  nav ul li a::after{ content:''; position:absolute; left:0; bottom:0; width:0; height:1px; background: var(--gold-bright); transition:width .35s ease; }
+  nav ul li a:hover{ color: var(--cream); }
+  nav ul li a:hover::after{ width:100%; }
+  .btn-gold{
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color:#0c0b09; background: var(--gold); padding:11px 22px; border:1px solid var(--gold); transition: background .25s ease;
+  }
+  .btn-gold:hover{ background: var(--gold-bright); }
 
-    // ---- Shared: language toggle ----
-    lang_toggle_label: "Language",
+  main{ max-width:1280px; margin:0 auto; padding: 60px 56px 40px; }
 
-    // ---- index.html ----
-    hero_eyebrow: "A Living Record of Painted Miniatures",
-    hero_title_line1: "Every miniature",
-    hero_title_accent: "has a story.",
-    hero_lede: "Mini Archive keeps the record straight — who painted it, how long it took, every colour that went into it, and where it's been since. Not just photos. Provenance.",
-    hero_cta_view_collection: "View the Collection",
-    hero_cta_how_it_works: "How it works",
-    featured_empty_prefix: "No public models yet — ",
-    featured_empty_link: "be the first to log one →",
-    featured_loading: "Loading recent models…",
+  .profile-grid{ display:grid; grid-template-columns: 1fr 460px; gap: 60px; align-items:start; }
 
-    // ---- index.html: ticker ----
-    ticker_1: "Model created",
-    ticker_2: "Every step logged",
-    ticker_3: "Photographed, front to back",
-    ticker_4: "Archived for good",
+  .title-block h1{
+    font-family:'Cormorant Garamond', serif; font-weight:500;
+    font-size: clamp(2.6rem, 5vw, 3.6rem); line-height:1.05;
+  }
+  .title-block h1 .accent{ color: var(--gold); font-style: italic; font-weight:400; }
+  .title-block .desc{ margin-top: 20px; max-width: 520px; color: var(--cream-dim); font-size: 0.98rem; }
 
-    // ---- index.html: collection section ----
-    section_1_label: "Section I",
-    section_from_collection: "From the Collection",
-    view_full_collection: "View Full Collection →",
+  .info-grid{ display:grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 36px; max-width: 480px; }
+  .info-box{ border:1px solid var(--hairline); background: var(--bg-raised); padding: 16px 18px; }
+  .info-box .label{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--mono); }
+  .info-box .value{ font-family:'Cormorant Garamond', serif; font-size:1.2rem; font-weight:600; color: var(--gold-bright); margin-top:4px; }
 
-    // ---- index.html: how it works section ----
-    section_2_label: "Section II",
-    how_it_works_title: "How it Works",
-    how_1_title: "Log the model",
-    how_1_desc: "Name, painter, owner, and photos front to back. That's the whole minimum — everything else is optional detail.",
-    how_2_title: "Add as much as you want",
-    how_2_desc: "Paint recipes, build timeline, campaign history, awards. As thin or as detailed as the piece deserves.",
-    how_3_title: "Keep it forever",
-    how_3_desc: "Every record lives in the archive permanently — a history of the hobby, not just a folder of photos.",
+  .nfc-box{
+    margin-top: 16px; max-width: 480px;
+    border:1px solid var(--hairline); background: var(--bg-raised);
+    padding: 18px 20px; display:flex; align-items:center; justify-content:space-between; gap:14px;
+  }
+  .nfc-box .left{ display:flex; align-items:center; gap:14px; }
+  .nfc-box svg{ width:20px; height:20px; stroke: var(--gold); }
+  .nfc-box .label{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); }
+  .nfc-box .value{ font-size:0.92rem; color: var(--cream); margin-top:2px; }
+  .nfc-box .arrow{ color: var(--gold); }
+  .nfc-box.unverified .value{ color: var(--cream-dim); }
+  .nfc-box.unverified svg{ stroke: var(--mono); }
 
-    // ---- index.html: provenance section ----
-    section_3_label: "Section III",
-    provenance_title: "Provenance, When it Matters",
-    provenance_p1: "For commissions and competitions, a photo isn't proof. Verified records pair a certificate with an NFC-tagged base, so ownership and authorship are never in question — even after the piece changes hands.",
-    provenance_p2: "Free to log a collection. Verification is for the pieces where it counts.",
-    cert_title: "Certificate of Authenticity",
-    cert_sub: "SCAN · VERIFY · MINI ARCHIVE",
+  /* Photo viewer */
+  .photo-viewer{ border:1px solid var(--hairline); background: var(--bg-raised); }
+  .photo-frame{
+    height: 480px; position:relative;
+    background: linear-gradient(150deg, #23201a, #131110);
+    display:flex; align-items:center; justify-content:center;
+    cursor: grab; user-select: none; touch-action: pan-y;
+  }
+  .photo-frame.dragging{ cursor: grabbing; }
+  .photo-frame svg{ width:60px; height:60px; opacity:0.25; pointer-events:none; }
+  .photo-frame .drag-badge{
+    position:absolute; top:16px; right:16px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.1em;
+    color: var(--mono); border:1px solid var(--hairline); padding:5px 10px;
+    background: rgba(12,11,9,0.6); pointer-events:none; transition: opacity 0.3s ease;
+  }
+  .photo-frame .view-label{
+    position:absolute; bottom:16px; left:50%; transform:translateX(-50%);
+    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.14em;
+    text-transform:uppercase; color: var(--mono); pointer-events:none;
+  }
+  .view-tabs{ display:flex; border-top:1px solid var(--hairline); }
+  .view-tabs button{
+    flex:1; padding:14px; background:transparent; border:none; border-right:1px solid var(--hairline);
+    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase;
+    color: var(--cream-dim); cursor:pointer; transition: all .2s ease;
+  }
+  .view-tabs button:last-child{ border-right:none; }
+  .view-tabs button.active{ background: var(--gold); color:#0c0b09; }
+  .view-tabs button:hover:not(.active){ color: var(--cream); }
 
-    // ---- index.html: CTA band ----
-    cta_eyebrow: "START YOUR ARCHIVE",
-    cta_title: "Give the hours you put in somewhere to live.",
-    cta_desc: "Free to start. No credit card, no catch — just a proper record of the work.",
+  section.block{ padding: 80px 56px; max-width:1280px; margin:0 auto; }
+  section.block:first-of-type{ padding-top: 40px; }
 
-    // ---- profile.html ----
-    profile_loading: "Loading profile…",
-    profile_not_found: "Profile not found.",
-    profile_back_to_collection: "← Back to Collection",
-    profile_tier_paid: "Paid Member",
-    stat_models_published: "Models Published",
-    stat_painting_hours: "Painting Hours",
-    stat_member_since: "Member Since",
-    stat_latest_model: "Latest Model",
-    profile_owned_eyebrow: "Owned Collection",
-    profile_published_models: "Published Models",
-    profile_credited_eyebrow: "Credited Work",
-    profile_models_painted: "Models Painted",
-    profile_no_published: "No published models yet.",
-    footer_browse_collection: "Browse Collection",
-    edit_this_model_title: "Edit this model",
+  /* Timeline */
+  .timeline-item{ display:grid; grid-template-columns: 50px 1fr; gap: 30px; padding: 30px 0; border-top:1px solid var(--hairline); position:relative; }
+  .timeline-item.marker-only{ padding: 18px 0; }
+  .timeline-item.marker-only h3{ font-size:1.15rem; }
+  .timeline-item:last-child{ border-bottom:1px solid var(--hairline); }
+  .timeline-item .t-meta{ font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); letter-spacing:0.05em; text-align:center; }
+  .timeline-item .t-marker{
+    width:8px; height:8px; border-radius:50%; background: var(--hairline); border:1px solid var(--mono);
+    margin: 4px auto 10px;
+  }
+  .timeline-item.milestone .t-marker{
+    width:10px; height:10px; border-radius:0; background: var(--gold); border:1px solid var(--gold);
+    transform: rotate(45deg);
+  }
+  .timeline-item .milestone-tag{
+    font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase;
+    color: var(--gold); margin-bottom:6px;
+  }
+  .timeline-item h3{ font-family:'Cormorant Garamond', serif; font-size:1.5rem; font-weight:600; }
+  .timeline-item .t-date-hours{
+    margin-top:6px; font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.05em; color: var(--mono);
+  }
+  .timeline-item .t-desc{ color: var(--cream-dim); font-size:0.92rem; max-width: 620px; margin-top:14px; }
 
-    // ---- collection.html ----
-    collection_eyebrow: "The Collection",
-    collection_title: "Every model, catalogued.",
-    collection_my_eyebrow: "My Collection",
-    collection_my_title: "Your models, catalogued.",
-    collection_search_placeholder: "Search by name or painter…",
-    collection_back_home: "← Back home",
-    collection_result_count_singular: " model",
-    collection_result_count_plural: " models",
-    collection_error_eyebrow: "Couldn't load the collection",
-    collection_error_desc: "Something went wrong fetching models. Check the console for details.",
-    collection_empty_mine_eyebrow: "No models yet",
-    collection_empty_mine_desc: "You haven't logged anything yet. ",
-    collection_empty_mine_link: "Add your first model →",
-    collection_empty_search_eyebrow: "No matches",
-    collection_empty_search_desc: "Nothing fits that search yet. Try a different name or painter.",
-    collection_status_draft: "Draft",
-    collection_workbench: "On your workbench — click to publish",
-    collection_unattributed: "Unattributed",
+  /* Step-level mini photo viewer — cycles through subtask photos, mirrors the main front/left/rear/right viewer */
+  .step-photo-viewer{ margin-top:20px; max-width: 280px; border:1px solid var(--hairline); background: var(--bg-raised); }
+  .step-photo-frame{ height:150px; background-size:cover; background-position:center; cursor:grab; touch-action: pan-y; position:relative; }
+  .step-photo-frame:active{ cursor:grabbing; }
+  .step-drag-badge{
+    position:absolute; bottom:8px; right:10px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.6rem; letter-spacing:0.08em;
+    color: var(--gold-bright); background: rgba(12,11,9,0.6); padding:3px 7px;
+    opacity:1; transition: opacity .3s ease; pointer-events:none;
+  }
+  .step-dots{ display:flex; justify-content:center; gap:6px; padding:10px 0; border-top:1px solid var(--hairline); }
+  .step-dot{ width:6px; height:6px; border-radius:50%; background: var(--hairline); transition: background .2s ease; }
+  .step-dot.active{ background: var(--gold); }
 
-    // ---- account.html ----
-    account_gate_eyebrow: "My Archive",
-    account_gate_title: "Log in to continue.",
-    account_gate_desc: "You need to be signed in to view your dashboard.",
-    account_gate_login: "Log In",
-    account_eyebrow: "My Archive",
-    account_greeting_default: "Welcome back.",
-    account_greeting_named: "Welcome back, ",
-    account_lede: "Everything you've logged, at a glance.",
-    stat_total_models: "Total Models",
-    stat_published: "Published",
-    stat_drafts: "Drafts",
-    tab_profile: "Profile",
-    tab_security: "Account & Security",
-    account_change_photo: "Change Photo",
-    account_photo_hint: "JPEG, PNG, or WebP. Uploads immediately.",
-    account_archive_name: "Archive Name",
-    account_archive_name_hint: "Shown on your public profile URL and collection page.",
-    account_display_name: "Display Name",
-    account_bio: "Bio",
-    account_bio_placeholder: "A few lines about you or your studio…",
-    account_country: "Country",
-    account_country_placeholder: "e.g. Canada",
-    account_links_label: "Links",
-    account_links_hint: "Website, Instagram, YouTube, TikTok, Twitch, Discord — add as many as you want, in whatever order matters to you.",
-    account_add_link: "+ Add a Link",
-    account_save_profile: "Save Profile",
-    account_preview_profile: "Preview Public Profile",
-    account_current_tier: "Current Tier",
-    account_tier_free: "Free",
-    account_tier_paid: "Paid",
-    account_change_password: "Change Password",
-    account_new_password: "New Password",
-    account_new_password_placeholder: "At least 8 characters",
-    account_new_password_error: "Must be at least 8 characters.",
-    account_confirm_password: "Confirm New Password",
-    account_confirm_password_placeholder: "Type it again",
-    account_confirm_password_error: "Passwords don't match.",
-    account_update_password: "Update Password",
-    account_danger_zone_title: "Deactivate & Delete Account",
-    account_deactivate_title: "Deactivate Account",
-    account_deactivate_desc: "Hides your identity from public view and blocks login until you sign back in. Your published models stay exactly as they are. Fully reversible — just log back in any time.",
-    account_deactivate_btn: "Deactivate",
-    account_delete_title: "Delete Account",
-    account_delete_desc_prefix: "Starts a 21-day grace period. Logging back in during that window cancels the deletion automatically. After 21 days: your login is permanently removed, drafts are deleted, and your profile is anonymized. ",
-    account_delete_desc_bold: "Published models stay public and permanent",
-    account_delete_desc_suffix: " — that record can't be undone, even by deleting your account.",
-    account_delete_btn: "Delete Account",
-    account_deactivate_confirm_text: "Deactivate your account? You can undo this any time just by logging back in.",
-    account_deactivate_confirm_yes: "Yes, Deactivate",
-    account_cancel: "Cancel",
-    account_delete_confirm_default: "Request account deletion? This starts a 21-day grace period — log back in any time before then to cancel.",
-    account_delete_confirm_yes: "Yes, Request Deletion",
-    account_preview_title: "Public Profile Preview",
-    account_preview_links_disabled: "— links disabled",
-    account_preview_open_full: "Open in new tab ↗",
-    account_status_deactivated: "Your account is currently deactivated. Log out and back in to reactivate it.",
-    account_status_pending_deletion_prefix: "Deletion requested. Your account will be permanently deleted on ",
-    account_status_pending_deletion_suffix: " unless you log out and back in before then to cancel it.",
-    account_error_no_username: "Set an archive name first, then you can preview your profile.",
-    account_error_archive_name_empty: "Archive name can't be empty.",
-    account_success_profile_saved: "Profile saved.",
-    account_success_password_updated: "Password updated.",
-    account_delete_models_note: " You have {count} published model{plural} — those will remain public and permanent, but your name will no longer be shown as the owner.",
-    account_success_photo_updated: "Photo updated.",
-    account_error_deactivate_generic: "Couldn't deactivate your account.",
-    account_error_delete_generic: "Couldn't request account deletion.",
+  .chip-row{ display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:16px; margin-top:20px; align-items:start; }
+  .subtask-card{
+    border:1px solid var(--hairline); background: var(--bg-raised); overflow:hidden; cursor:pointer;
+    transition: border-color .2s ease;
+  }
+  .subtask-card:hover{ border-color: var(--gold); }
+  .subtask-card .step-photo-viewer{ display:none; margin-top:12px; max-width: 100%; }
+  .subtask-card.expanded .step-photo-viewer{ display:block; }
+  .subtask-card .st-body{ padding: 12px 14px; }
+  .subtask-card .st-title{
+    font-family:'IBM Plex Mono', monospace; font-size:0.66rem; letter-spacing:0.05em; text-transform:uppercase; color: var(--gold-bright);
+    display:flex; align-items:center; justify-content:space-between; gap:6px;
+  }
+  .subtask-card .st-title .st-title-text{ display:flex; align-items:center; gap:6px; }
+  .subtask-card .st-title-text::before{ content:''; width:6px; height:6px; background: var(--gold); flex-shrink:0; }
+  .subtask-card .st-photo-hint{ font-size:0.9rem; color: var(--gold); flex-shrink:0; }
+  .subtask-card .st-note{
+    margin-top:6px; font-size:0.8rem; color: var(--cream-dim); line-height:1.4;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .subtask-card.expanded .st-note{ -webkit-line-clamp:unset; overflow:visible; }
+  .st-paint-chips{ margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; }
+  .st-paint-chip{
+    display:inline-flex; align-items:center; gap:5px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.66rem; color: var(--cream-dim);
+    border:1px solid var(--hairline); padding:3px 8px;
+  }
+  .st-paint-swatch{ width:9px; height:9px; border:1px solid rgba(255,255,255,0.15); flex-shrink:0; }
 
-    // ---- model.html: header/nav ----
-    model_edit_this: "Edit This Model",
-    model_back_to_collection: "← Back to Collection",
-    model_eyebrow_prefix: "Miniature Profile · ",
+  /* Paint recipe */
+  .recipe-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 40px; }
+  .recipe-card{ border:1px solid var(--hairline); background: var(--bg-raised); padding: 22px; }
+  .recipe-card .step-meta{ display:flex; justify-content:space-between; align-items:flex-start; }
+  .recipe-card .step-label{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--mono); }
+  .recipe-card .swatch{ width:22px; height:22px; border:1px solid var(--hairline); flex-shrink:0; }
+  .recipe-card h3{ font-family:'Cormorant Garamond', serif; font-size:1.25rem; font-weight:600; margin-top:8px; }
+  .recipe-card .paint-name{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color: var(--gold); margin-top:10px; }
+  .recipe-card .note{ margin-top:10px; color: var(--cream-dim); font-size:0.85rem; }
 
-    // ---- model.html: photo viewer ----
-    view_front: "Front",
-    view_left: "Left",
-    view_rear: "Rear",
-    view_right: "Right",
-    view_label_front: "FRONT VIEW",
-    view_label_left: "LEFT VIEW",
-    view_label_rear: "REAR VIEW",
-    view_label_right: "RIGHT VIEW",
+  /* History */
+  .history-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 40px; }
+  .history-card{ border:1px solid var(--hairline); background: var(--bg-raised); padding: 24px; }
+  .history-card h3{ font-family:'Cormorant Garamond', serif; font-size:1.2rem; font-weight:600; margin-bottom: 16px; }
+  .history-row{ display:flex; justify-content:space-between; align-items:center; padding: 10px 0; border-bottom:1px solid var(--hairline); font-size: 0.88rem; }
+  .history-row:last-child{ border-bottom:none; }
+  .tag{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.05em; padding:3px 8px; border:1px solid var(--hairline); text-transform:uppercase; }
+  .tag.win{ color: var(--green); border-color: rgba(143,174,122,0.4); }
+  .tag.ongoing{ color: var(--gold-bright); border-color: rgba(201,162,75,0.4); }
 
-    // ---- model.html: sections ----
-    model_section_1: "Section I",
-    model_section_2: "Section II",
-    model_section_3: "Section III",
-    model_section_4: "Section IV",
-    model_section_5: "Section V",
-    model_section_6: "Section VI",
-    model_gallery_title: "Gallery",
-    model_timeline_title: "Creation Timeline",
-    model_recipe_title: "Paint Recipe",
-    model_history_title: "Model History",
-    model_edit_history_title: "Edit History",
-    model_edit_history_desc: "Changes made to this record since it was published.",
-    model_cert_title: "Certificate of Authenticity",
+  /* Certificate */
+  .cert-box{
+    max-width: 640px; margin: 40px auto 0;
+    border:1px solid var(--hairline);
+    background: radial-gradient(circle at 30% 20%, #1b170f, #0c0b09 70%);
+    padding: 50px; text-align:center; position:relative;
+  }
+  .cert-box::before, .cert-box::after{ content:''; position:absolute; width:22px; height:22px; border-top:1px solid var(--gold); border-left:1px solid var(--gold); }
+  .cert-box::before{ top:14px; left:14px; }
+  .cert-box::after{ bottom:14px; right:14px; border-top:none; border-left:none; border-bottom:1px solid var(--gold); border-right:1px solid var(--gold); }
+  .cert-box .shield{ width:46px; height:46px; margin:0 auto 16px; border:1px solid var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; }
+  .cert-box .shield svg{ width:20px; height:20px; fill: var(--gold); }
+  .cert-box .cert-title{ font-family:'Cormorant Garamond', serif; font-size:1.5rem; font-weight:600; }
+  .cert-fields{ display:grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 30px; text-align:left; }
+  .cert-fields .label{ font-family:'IBM Plex Mono', monospace; font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); }
+  .cert-fields .value{ margin-top:3px; font-family:'Cormorant Garamond', serif; font-size:1.1rem; font-weight:600; }
+  .cert-verified{ margin-top: 28px; font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.08em; }
+  .cert-verified.state-verified{ color: var(--green); }
+  .cert-verified.state-pending{ color: var(--mono); }
+  .cert-verified.state-rejected{ color: var(--error); }
 
-    // ---- model.html: info grid labels ----
-    info_manufacturer: "Manufacturer",
-    info_material: "Material",
-    info_scale: "Scale",
-    info_base_size: "Base Size",
-    info_game_system: "Game System",
-    info_faction: "Faction",
-    info_painter: "Painter",
-    info_owner: "Owner",
-    info_started: "Started",
-    info_completed: "Completed",
-    info_hours_worked: "Hours Worked",
-    info_total_hours: "Total Hours",
-    info_nfc_verified: "NFC Verified",
-    info_nfc_verified_desc: "Scan to view model history",
-    info_not_verified: "Not Verified",
-    info_no_nfc: "No NFC tag registered",
-    info_status: "Status",
-    status_in_progress: "In Progress",
-    status_completed: "Completed",
+  .edit-history-group{ border-top:1px solid var(--hairline); }
+  .edit-history-header{
+    padding:16px 0; display:flex; justify-content:space-between; align-items:center;
+    cursor:pointer; font-family:'IBM Plex Mono', monospace; font-size:0.78rem;
+  }
+  .edit-history-count{ color: var(--gold-bright); display:flex; align-items:center; gap:8px; }
+  .edit-history-date{ color: var(--mono); font-size:0.7rem; }
+  .collapse-arrow{ display:inline-block; transition: transform .2s ease; color: var(--gold); }
+  .edit-history-group.expanded .collapse-arrow{ transform: rotate(90deg); }
+  .edit-history-details{ display:none; padding-bottom:16px; }
+  .edit-history-group.expanded .edit-history-details{ display:block; }
+  .edit-history-row{ display:flex; justify-content:space-between; gap:20px; flex-wrap:wrap; padding-top:12px; }
+  .edit-history-field{ font-family:'IBM Plex Mono', monospace; font-size:0.65rem; letter-spacing:0.06em; text-transform:uppercase; color: var(--gold); }
+  .edit-history-value{ margin-top:4px; color: var(--cream-dim); font-size:0.9rem; }
+  .edit-history-editor{ font-family:'IBM Plex Mono', monospace; font-size:0.68rem; color: var(--mono); white-space:nowrap; }
 
-    // ---- model.html: timeline ----
-    timeline_first_brushstroke: "First Brushstroke",
-    timeline_model_completed: "Model Completed",
-    timeline_milestone: "◆ Milestone",
-    timeline_empty: "No timeline logged for this model yet.",
-    timeline_drag: "↔ DRAG",
-    role_primer: "Primer",
+  /* Edit history photo links + lightbox */
+  .photo-link{ position:relative; color: var(--gold-bright); cursor:pointer; text-decoration:underline; }
+  .photo-link .hover-preview{
+    display:none; position:absolute; bottom: calc(100% + 8px); left:0; z-index:80;
+    width:160px; height:160px; object-fit:cover; border:1px solid var(--gold); background: var(--bg-raised);
+  }
+  .photo-link:hover .hover-preview{ display:block; }
 
-    // ---- model.html: paint recipe ----
-    recipe_empty: "No paints logged for this model yet.",
-    recipe_see_comparables: "See comparable paints ▸",
-    comparable_none: "No known equivalents in the database yet for this paint.",
-    comparable_searching: "Searching…",
+  .lightbox-overlay{
+    display:none; position:fixed; inset:0; z-index:200;
+    background: rgba(12,11,9,0.94); align-items:center; justify-content:center; padding: 50px;
+    cursor: zoom-out;
+  }
+  .lightbox-overlay.open{ display:flex; }
+  .lightbox-overlay img{ max-width:90vw; max-height:88vh; object-fit:contain; border:1px solid var(--gold); cursor:default; }
+  .lightbox-close{
+    position:absolute; top:24px; right:32px; width:42px; height:42px;
+    background: var(--bg-raised); border:1px solid var(--hairline); color: var(--cream);
+    font-size:1.4rem; line-height:1; cursor:pointer; transition: border-color .2s ease, color .2s ease;
+  }
+  .lightbox-close:hover{ border-color: var(--gold); color: var(--gold-bright); }
+  .lightbox-nav{
+    position:absolute; top:50%; transform:translateY(-50%); z-index:5;
+    width:48px; height:48px; background: var(--bg-raised); border:1px solid var(--hairline); color: var(--cream);
+    font-size:1.8rem; line-height:1; cursor:pointer; display:none; align-items:center; justify-content:center;
+    transition: border-color .2s ease, color .2s ease;
+  }
+  .lightbox-nav:hover{ border-color: var(--gold); color: var(--gold-bright); }
+  .lightbox-prev{ left:24px; }
+  .lightbox-next{ right:24px; }
+  .lightbox-dots{
+    position:absolute; bottom:24px; left:50%; transform:translateX(-50%);
+    display:flex; gap:8px;
+  }
+  .lightbox-dots .step-dot{ width:8px; height:8px; }
 
-    // ---- model.html: edit history ----
-    edit_history_none: "None",
-    edit_history_load_error: "Couldn't load edit history.",
-    edit_history_empty: "None — this record hasn't been edited since it was published.",
-    edit_history_unknown_editor: "Unknown",
-    edit_field_title: "Model Name",
-    edit_field_painter_name: "Painter",
-    edit_field_manufacturer: "Manufacturer",
-    edit_field_scale: "Scale",
-    edit_field_base_size: "Base Size",
-    edit_field_hours_worked: "Hours Worked",
-    edit_field_started_at: "Started",
-    edit_field_completed_at: "Completed",
-    edit_field_description: "Description",
-    edit_field_owner_visible: "Owner Visibility",
-    edit_field_photo_front: "Front Photo",
-    edit_field_photo_left: "Left Photo",
-    edit_field_photo_rear: "Rear Photo",
-    edit_field_photo_right: "Right Photo",
-    edit_field_timeline_entry: "Timeline Entry",
-    edit_field_timeline_photo: "Timeline Photo",
-    edit_category_model_info: "Model Info",
-    edit_category_identity_photos: "Identity Photos",
-    edit_category_timeline: "Creation Timeline",
-    edit_view_original: "View original",
-    edit_view_replacement: "View replacement",
-    edit_view_new: "(none)",
-    edit_view_removed: "(removed)",
+  .recipe-card{ cursor:pointer; }
+  .recipe-card:hover{ border-color: var(--gold); }
+  .recipe-comparables-hint{
+    margin-top:12px; font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.06em;
+    color: var(--gold); transition: opacity .2s ease;
+  }
+  .recipe-card.expanded .recipe-comparables-hint{ display:none; }
+  .recipe-comparables{ display:none; margin-top:16px; border-top:1px solid var(--hairline); padding-top:12px; }
+  .recipe-card.expanded .recipe-comparables{ display:block; }
+  .comparable-row{ display:flex; align-items:center; gap:14px; padding: 10px 0; border-top:1px solid var(--hairline); }
+  .comparable-row:first-child{ border-top:none; padding-top:0; }
+  .comparable-row .swatch{ width:22px; height:22px; border:1px solid var(--hairline); flex-shrink:0; }
+  .comparable-row .name{ font-family:'Cormorant Garamond', serif; font-size:1rem; font-weight:600; }
+  .comparable-row .meta{ margin-top:2px; font-family:'IBM Plex Mono', monospace; font-size:0.64rem; color: var(--mono); }
 
-    // ---- model.html: certificate ----
-    cert_state_verified: "Painter Verified",
-    cert_state_awaiting: "Awaiting Verification",
-    cert_state_rejected: "Verification Rejected",
-    cert_field_model_name: "Model Name",
-    cert_field_unique_id: "Unique Model ID",
-    cert_field_completion_date: "Completion Date",
+  .gallery-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 30px; }
+  .gallery-item{ border:1px solid var(--hairline); background: var(--bg-raised); overflow:hidden; cursor: zoom-in; position:relative; }
+  .gallery-item img{ width:100%; height:220px; object-fit:cover; display:block; transition: transform .3s ease; }
+  .gallery-item:hover img{ transform: scale(1.04); }
+  .gallery-item:hover{ border-color: var(--gold); }
+  .gallery-item .view-tag{
+    position:absolute; top:10px; left:10px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase;
+    color: var(--gold); border:1px solid rgba(201,162,75,0.4); padding:3px 8px; background: rgba(12,11,9,0.6);
+  }
+  .gallery-empty{ margin-top:30px; color: var(--cream-dim); font-size:0.9rem; }
 
-    // ---- model.html: footer ----
-    model_footer_back: "← Back to Collection",
+  footer{ border-top:1px solid var(--hairline); padding:32px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); }
 
-    // ---- edit-model.html: page head ----
-    em_add_eyebrow: "Add a Model",
-    em_add_title: "Log a new miniature.",
-    em_add_lede: "Add whatever you know now. Save it as a draft, or publish it straight to the archive if it's ready.",
-    em_error_title: "Couldn't find that model.",
-    em_error_desc: "It may not exist, or it isn't yours to edit.",
-    em_error_back: "Back to My Collection",
-    em_status_draft: "Draft",
+  @media (max-width: 1000px){
+    header{ padding:18px 24px; }
+    nav ul{ display:none; }
+    main{ padding: 40px 24px 20px; }
+    .profile-grid{ grid-template-columns: 1fr; }
+    section.block{ padding: 50px 24px; }
+    .recipe-grid, .history-grid{ grid-template-columns: 1fr; }
+    .timeline-item{ grid-template-columns: 1fr; gap:8px; }
+    .cert-fields{ grid-template-columns: 1fr; }
+    footer{ flex-direction:column; gap:14px; text-align:center; }
+  }
+  :focus-visible{ outline:1px solid var(--gold-bright); outline-offset:3px; }
+</style>
+</head>
+<body>
 
-    // ---- edit-model.html: basics fieldset ----
-    em_legend_basics: "Basics",
-    em_model_name: "Model Name",
-    em_model_name_placeholder: "e.g. Captain Cassian",
-    em_model_name_error: "Give the model a name.",
-    em_painter: "Painter",
-    em_painter_placeholder: "e.g. E. Stegosaurus",
-    em_painter_hint: "Leave blank if that's you.",
-    em_manufacturer: "Manufacturer",
-    em_manufacturer_placeholder: "e.g. Games Workshop",
-    em_material: "Material",
-    em_material_placeholder: "e.g. Resin",
-    em_scale: "Scale",
-    em_scale_placeholder: "e.g. 1:56",
-    em_base_size: "Base Size (mm)",
-    em_base_size_placeholder: "e.g. 32",
-    em_hours_worked: "Hours Worked",
-    em_hours_worked_placeholder: "e.g. 12.5",
-    em_started: "Started",
-    em_date_placeholder: "YYYY-MM-DD",
-    em_date_error: "Must be a complete date (YYYY-MM-DD) or left blank.",
-    em_completed: "Completed",
-    em_description: "Description",
-    em_description_placeholder: "A few lines about this piece…",
+<header>
+  <a class="brand" href="index.html">
+    <div class="brand-mark"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
+    <div class="brand-name">MINI ARCHIVE</div>
+  </a>
+  <nav>
+    <ul>
+      <li><a href="collection.html" data-i18n="nav_collection">Collection</a></li>
+      <li><a href="index.html#how" data-i18n="nav_how_it_works">How it works</a></li>
+      <li><a href="index.html#provenance" data-i18n="nav_provenance">Provenance</a></li>
+      <li><a href="index.html#about" data-i18n="nav_about">About</a></li>
+    </ul>
+    <div class="lang-dropdown">
+      <button type="button" class="lang-dropdown-btn" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('open')">
+        <span class="lang-dropdown-label">EN</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="lang-dropdown-menu">
+        <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">🇬🇧 English</button>
+        <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">🇫🇷 Français</button>
+      </div>
+    </div>
+    <a class="btn-gold" href="edit-model.html" id="editButton" style="display:none;" data-i18n="model_edit_this">Edit This Model</a>
+    <a class="btn-gold" href="collection.html" data-i18n="model_back_to_collection">← Back to Collection</a>
+  </nav>
+</header>
 
-    // ---- model.html: additional fixes ----
-    model_no_description: "No description added yet.",
-    model_history_campaigns: "Campaigns",
-    model_history_achievements: "Achievements",
-    model_history_ownership: "Ownership Record",
-    model_history_none_logged: "None logged",
-    model_history_not_recorded: "Not recorded",
-    gallery_no_photos: "No photos uploaded yet.",
-    gallery_timeline_fallback: "Timeline",
-    category_assembly: "Assembly",
-    category_surface_prep: "Surface Prep",
-    category_paint: "Paint",
-    category_basing: "Basing",
-    category_varnish: "Varnish",
-    category_repair: "Repair",
-    category_completed: "Completed",
-    category_other: "Other",
+<main>
+  <div class="eyebrow" id="eyebrowId">Miniature Profile · —</div>
+  <div class="profile-grid">
+    <div>
+      <div class="title-block">
+        <h1 id="modelTitle"></h1>
+        <p class="desc" id="modelDesc"></p>
+      </div>
 
-    // ---- confirm.html ----
-    confirm_loading: "Confirming your account…",
-    confirm_eyebrow: "Account Confirmed",
-    confirm_title: "Your archive is ready.",
-    confirm_sub: "Welcome to Mini Archive — every miniature has a story, and yours starts now.",
-    confirm_field_archive_name: "Archive Name",
-    confirm_field_account: "Account",
-    confirm_cta_log_first: "Log Your First Model",
-    confirm_cta_browse: "Browse the Collection",
-    confirm_error_title: "Couldn't confirm this link",
-    confirm_error_default: "This confirmation link may have expired or already been used.",
-    confirm_error_expired: "This confirmation link may have expired or already been used. Try logging in — if your account was already confirmed, it'll just work.",
-    confirm_error_profile_failed: "Your email was confirmed, but we couldn't finish setting up your archive. Please try logging in — if the problem continues, contact support.",
-    confirm_cta_login: "Go to Log In",
-    confirm_cta_start: "Start an Archive",
-    footer_home: "Home",
+      <div class="info-grid" id="infoGrid"></div>
+      <div class="nfc-box" id="nfcBox"></div>
+    </div>
 
-    // ---- reset-password.html ----
-    reset_back_home: "← Back home",
-    reset_verifying: "Verifying your reset link…",
-    reset_invalid_eyebrow: "Link Invalid",
-    reset_invalid_title: "This reset link didn't work.",
-    reset_invalid_desc: "It may have expired, or already been used. Reset links are only valid for a short time.",
-    reset_back_login: "Back to Log In",
-    reset_eyebrow: "Reset Password",
-    reset_title: "Set a new password.",
-    reset_sub: "Make it something you haven't used here before.",
-    reset_new_password: "New Password",
-    reset_new_password_placeholder: "At least 8 characters",
-    reset_new_password_error: "Must be at least 8 characters.",
-    reset_confirm_password: "Confirm New Password",
-    reset_confirm_password_placeholder: "Type it again",
-    reset_confirm_password_error: "Passwords don't match.",
-    reset_submit: "Set New Password",
-    reset_submit_saving: "Saving…",
-    reset_error_generic: "Couldn't update your password.",
-    reset_success: "Password updated. Redirecting you to log in…",
-    footer_login: "Log In",
+    <div class="photo-viewer">
+      <div class="photo-frame" id="photoFrame">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
+        <div class="drag-badge" id="dragBadge" data-i18n="timeline_drag">↔ DRAG</div>
+        <div class="view-label" id="viewLabel" data-i18n="view_label_front">FRONT VIEW</div>
+      </div>
+      <div class="view-tabs" id="viewTabs">
+        <button class="active" data-view="front" data-i18n="view_front">Front</button>
+        <button data-view="left" data-i18n="view_left">Left</button>
+        <button data-view="rear" data-i18n="view_rear">Rear</button>
+        <button data-view="right" data-i18n="view_right">Right</button>
+      </div>
+    </div>
+  </div>
+</main>
 
-    // ---- login.html ----
-    login_back_home: "← Back home",
-    login_eyebrow: "Welcome Back",
-    login_title: "Log in to your archive",
-    login_sub: "Pick up right where you left off.",
-    login_resend_notice: "Your account exists but hasn't been confirmed yet.",
-    login_resend_btn: "Resend Confirmation Email",
-    login_resend_sending: "Sending…",
-    login_forgot_notice: "Enter your email below, then click here to get a password reset link.",
-    login_send_reset_btn: "Send Reset Link",
-    login_email_label: "Email",
-    login_email_placeholder: "you@example.com",
-    login_email_error: "Enter a valid email address.",
-    login_password_label: "Password",
-    login_password_placeholder: "Your password",
-    login_password_error: "Enter your password.",
-    login_forgot_link: "Forgot password?",
-    login_submit: "Log In",
-    login_submit_loading: "Logging in…",
-    login_no_archive: "Don't have an archive yet? ",
-    login_start_free: "Start one for free",
-    login_no_email: "Didn't get a confirmation email? ",
-    login_resend_it: "Resend it",
-    login_error_resend_generic: "Couldn't resend the confirmation email.",
-    login_success_confirmation_sent: "Confirmation email sent. Check your inbox.",
-    login_success_cancelled_deletion: "Welcome back — your account deletion request was cancelled.",
-    login_success_reactivated: "Welcome back — your account has been reactivated.",
-    login_error_enter_email_resend: "Enter your email below first, then click Resend.",
-    login_error_enter_email_reset: "Enter your email below first, then click Send Reset Link.",
-    login_error_reset_generic: "Couldn't send the reset link.",
-    login_reset_sent: "If that email has an account, a password reset link has been sent.",
+<section class="block">
+  <div class="eyebrow" data-i18n="model_section_1">Section I</div>
+  <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;" data-i18n="model_gallery_title">Gallery</h2>
+  <div class="gallery-grid" id="galleryGrid"></div>
+</section>
 
-    // ---- start.html ----
-    start_back_home: "← Back home",
-    start_eyebrow: "Start an Archive",
-    start_pitch_title_1: "Give the hours you",
-    start_pitch_title_2: "put in ",
-    start_pitch_title_accent: "somewhere to live.",
-    start_pitch_lede: "Free to start, no card required. Log your first model in a few minutes — you can always add the fine detail later.",
-    start_perk1_title: "Up to 25 models, free forever",
-    start_perk1_desc: "No trial, no expiry — the free tier stays free.",
-    start_perk2_title: "Full profile per model",
-    start_perk2_desc: "Photos, paint recipes, timeline, history — as much or as little as you want to log.",
-    start_perk3_title: "Verification when you need it",
-    start_perk3_desc: "NFC-tagged provenance is available any time as a paid add-on — never required.",
-    start_tier_label: "Free Tier",
-    start_tier_value_prefix: "Up to ",
-    start_tier_value_bold: "25 models",
-    start_tier_value_suffix: " · full profiles · no verification/NFC. Upgrade any time from your archive settings.",
-    start_form_title: "Create your archive",
-    start_form_sub: "A couple of minutes, that's it.",
-    start_archive_name_label: "Archive name",
-    start_archive_name_placeholder: "e.g. Paint or Die Studios",
-    start_archive_name_hint: "This is the name shown on your public collection page.",
-    start_archive_name_error: "Give your archive a name.",
-    start_first_name_label: "First name",
-    start_first_name_placeholder: "Jane",
-    start_last_name_label: "Last name",
-    start_last_name_placeholder: "Doe",
-    start_required_error: "Required.",
-    start_email_label: "Email",
-    start_email_placeholder: "you@example.com",
-    start_email_error: "Enter a valid email address.",
-    start_password_label: "Password",
-    start_password_placeholder: "At least 8 characters",
-    start_password_error: "Password must be at least 8 characters.",
-    start_submit: "Create My Archive",
-    start_submit_loading: "Creating…",
-    start_already_have: "Already have an archive? ",
-    start_login_link: "Log in",
-    start_success_title: "Archive created",
-    start_success_desc: "A confirmation email has been sent to ",
-    start_success_desc_suffix: ". Click the link inside to activate your account, then log in to start logging models.",
-    start_success_no_email: "Didn't get it? ",
-    start_success_resend: "Resend the confirmation email",
-    start_error_generic: "Signup failed. Check the console for details.",
-    start_error_existing_account: "An account already exists with this email. Try logging in instead, or use \"Resend confirmation email\" from the login page if you never confirmed it.",
-    start_resend_error: "Couldn't resend the email.",
-    start_resend_success: "Sent — check your inbox.",
-  },
-  fr: {
-    // ---- Shared: header/nav ----
-    nav_collection: "Collection",
-    nav_how_it_works: "Comment ça marche",
-    nav_provenance: "Provenance",
-    nav_about: "À propos",
-    nav_login: "Connexion",
-    nav_start_archive: "Créer une archive",
-    nav_my_collection: "Ma collection",
-    nav_add_model: "Ajouter un modèle",
-    nav_account_settings: "Paramètres du compte",
-    nav_logout: "Déconnexion",
+<section class="block">
+  <div class="eyebrow" data-i18n="model_section_2">Section II</div>
+  <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;" data-i18n="model_timeline_title">Creation Timeline</h2>
+  <div id="timelineList"></div>
+</section>
 
-    // ---- Shared: footer ----
-    footer_tagline: "Chaque figurine a une histoire.",
-    footer_browse: "Parcourir la collection",
-    footer_back_home: "← Retour à l'accueil",
+<section class="block">
+  <div class="eyebrow" data-i18n="model_section_3">Section III</div>
+  <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;" data-i18n="model_recipe_title">Paint Recipe</h2>
+  <div class="recipe-grid" id="recipeGrid"></div>
+</section>
 
-    // ---- Shared: language toggle ----
-    lang_toggle_label: "Langue",
+<section class="block">
+  <div class="eyebrow" data-i18n="model_section_4">Section IV</div>
+  <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;" data-i18n="model_history_title">Model History</h2>
+  <div class="history-grid" id="historyGrid"></div>
+</section>
 
-    // ---- index.html ----
-    hero_eyebrow: "Une archive vivante des figurines peintes",
-    hero_title_line1: "Chaque figurine",
-    hero_title_accent: "a une histoire.",
-    hero_lede: "Mini Archive garde les faits clairs — qui l'a peinte, combien de temps ça a pris, chaque couleur utilisée, et où elle est passée depuis. Pas juste des photos. De la provenance.",
-    hero_cta_view_collection: "Voir la collection",
-    hero_cta_how_it_works: "Comment ça marche",
-    featured_empty_prefix: "Aucun modèle public pour l'instant — ",
-    featured_empty_link: "soyez le premier à en archiver un →",
-    featured_loading: "Chargement des modèles récents…",
+<section class="block" id="editHistorySection" style="display:none;">
+  <div class="eyebrow" data-i18n="model_section_5">Section V</div>
+  <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;" data-i18n="model_edit_history_title">Edit History</h2>
+  <p style="color:var(--cream-dim); font-size:0.9rem; margin-top:10px;" data-i18n="model_edit_history_desc">Changes made to this record since it was published.</p>
+  <div id="editHistoryList" style="margin-top:24px;"></div>
+</section>
 
-    // ---- index.html: ticker ----
-    ticker_1: "Modèle créé",
-    ticker_2: "Chaque étape consignée",
-    ticker_3: "Photographié, de tous les angles",
-    ticker_4: "Archivé pour de bon",
+<section class="block">
+  <div class="eyebrow" data-i18n="model_section_6">Section VI</div>
+  <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+  <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;" data-i18n="model_cert_title">Certificate of Authenticity</h2>
+  <div class="cert-box" id="certBox"></div>
+</section>
 
-    // ---- index.html: collection section ----
-    section_1_label: "Section I",
-    section_from_collection: "Aperçu de la collection",
-    view_full_collection: "Voir toute la collection →",
+<footer>
+  <div>© 2026 Mini Archive. <span data-i18n="footer_tagline">Every miniature has a story.</span></div>
+  <div><a href="collection.html" data-i18n="model_footer_back">← Back to Collection</a></div>
+</footer>
 
-    // ---- index.html: how it works section ----
-    section_2_label: "Section II",
-    how_it_works_title: "Comment ça marche",
-    how_1_title: "Archivez le modèle",
-    how_1_desc: "Nom, peintre, propriétaire et photos de tous les angles. C'est le strict minimum — tout le reste est optionnel.",
-    how_2_title: "Ajoutez autant que vous voulez",
-    how_2_desc: "Recettes de peinture, chronologie de fabrication, historique de campagne, récompenses. Aussi simple ou détaillé que la pièce le mérite.",
-    how_3_title: "Conservez-le pour toujours",
-    how_3_desc: "Chaque fiche demeure dans l'archive en permanence — une histoire du loisir, pas seulement un dossier de photos.",
+<div class="lightbox-overlay" id="lightboxOverlay">
+  <button class="lightbox-close" id="lightboxClose" aria-label="Close">×</button>
+  <button class="lightbox-nav lightbox-prev" id="lightboxPrev" aria-label="Previous">‹</button>
+  <img id="lightboxImage" src="" alt="Full size photo">
+  <button class="lightbox-nav lightbox-next" id="lightboxNext" aria-label="Next">›</button>
+  <div class="lightbox-dots" id="lightboxDots"></div>
+</div>
 
-    // ---- index.html: provenance section ----
-    section_3_label: "Section III",
-    provenance_title: "La provenance, quand elle compte",
-    provenance_p1: "Pour les commandes et les compétitions, une photo n'est pas une preuve. Les fiches vérifiées associent un certificat à une base munie d'une puce NFC, pour que la propriété et la paternité ne soient jamais mises en doute — même après que la pièce change de mains.",
-    provenance_p2: "Gratuit pour archiver une collection. La vérification est réservée aux pièces où elle compte vraiment.",
-    cert_title: "Certificat d'authenticité",
-    cert_sub: "NUMÉRISER · VÉRIFIER · MINI ARCHIVE",
+<script>
+  // ---------------------------------------------------------------
+  // Lightbox — used across the page for full-size photo viewing.
+  // Accepts either a single URL, or an array of URLs + a starting index,
+  // in which case it shows prev/next navigation and dot indicators so
+  // an entire photo set can be browsed without closing and reopening.
+  // ---------------------------------------------------------------
+  let lightboxPhotos = [];
+  let lightboxIndex = 0;
 
-    // ---- index.html: CTA band ----
-    cta_eyebrow: "CRÉEZ VOTRE ARCHIVE",
-    cta_title: "Donnez aux heures que vous y consacrez un endroit où vivre.",
-    cta_desc: "Gratuit pour commencer. Aucune carte de crédit, aucun piège — juste une véritable trace du travail accompli.",
+  function setLightboxIndex(idx){
+    lightboxIndex = ((idx % lightboxPhotos.length) + lightboxPhotos.length) % lightboxPhotos.length;
+    document.getElementById("lightboxImage").src = lightboxPhotos[lightboxIndex];
+    document.getElementById("lightboxDots").querySelectorAll(".step-dot").forEach((dot, di) => dot.classList.toggle("active", di === lightboxIndex));
+  }
 
-    // ---- profile.html ----
-    profile_loading: "Chargement du profil…",
-    profile_not_found: "Profil introuvable.",
-    profile_back_to_collection: "← Retour à la collection",
-    profile_tier_paid: "Membre payant",
-    stat_models_published: "Modèles publiés",
-    stat_painting_hours: "Heures de peinture",
-    stat_member_since: "Membre depuis",
-    stat_latest_model: "Dernier modèle",
-    profile_owned_eyebrow: "Collection possédée",
-    profile_published_models: "Modèles publiés",
-    profile_credited_eyebrow: "Travail crédité",
-    profile_models_painted: "Modèles peints",
-    profile_no_published: "Aucun modèle publié pour l'instant.",
-    footer_browse_collection: "Parcourir la collection",
-    edit_this_model_title: "Modifier ce modèle",
+  function openLightbox(urlOrArray, startIndex){
+    lightboxPhotos = Array.isArray(urlOrArray) ? urlOrArray : [urlOrArray];
+    lightboxIndex = startIndex || 0;
 
-    // ---- collection.html ----
-    collection_eyebrow: "La collection",
-    collection_title: "Chaque modèle, catalogué.",
-    collection_my_eyebrow: "Ma collection",
-    collection_my_title: "Vos modèles, catalogués.",
-    collection_search_placeholder: "Rechercher par nom ou peintre…",
-    collection_back_home: "← Retour à l'accueil",
-    collection_result_count_singular: " modèle",
-    collection_result_count_plural: " modèles",
-    collection_error_eyebrow: "Impossible de charger la collection",
-    collection_error_desc: "Une erreur est survenue lors du chargement des modèles. Consultez la console pour plus de détails.",
-    collection_empty_mine_eyebrow: "Aucun modèle pour l'instant",
-    collection_empty_mine_desc: "Vous n'avez encore rien archivé. ",
-    collection_empty_mine_link: "Archivez votre premier modèle →",
-    collection_empty_search_eyebrow: "Aucun résultat",
-    collection_empty_search_desc: "Rien ne correspond à cette recherche. Essayez un autre nom ou peintre.",
-    collection_status_draft: "Brouillon",
-    collection_workbench: "Sur votre établi — cliquez pour publier",
-    collection_unattributed: "Non attribué",
+    const multi = lightboxPhotos.length > 1;
+    document.getElementById("lightboxPrev").style.display = multi ? "flex" : "none";
+    document.getElementById("lightboxNext").style.display = multi ? "flex" : "none";
+    document.getElementById("lightboxDots").innerHTML = multi
+      ? lightboxPhotos.map((_, di) => `<span class="step-dot${di === lightboxIndex ? " active" : ""}"></span>`).join("")
+      : "";
 
-    // ---- account.html ----
-    account_gate_eyebrow: "Mon archive",
-    account_gate_title: "Connectez-vous pour continuer.",
-    account_gate_desc: "Vous devez être connecté pour voir votre tableau de bord.",
-    account_gate_login: "Connexion",
-    account_eyebrow: "Mon archive",
-    account_greeting_default: "Bon retour.",
-    account_greeting_named: "Bon retour, ",
-    account_lede: "Tout ce que vous avez consigné, en un coup d'œil.",
-    stat_total_models: "Modèles au total",
-    stat_published: "Publiés",
-    stat_drafts: "Brouillons",
-    tab_profile: "Profil",
-    tab_security: "Compte et sécurité",
-    account_change_photo: "Changer la photo",
-    account_photo_hint: "JPEG, PNG ou WebP. Téléversement immédiat.",
-    account_archive_name: "Nom d'archive",
-    account_archive_name_hint: "Affiché sur l'URL de votre profil public et sur la page de collection.",
-    account_display_name: "Nom d'affichage",
-    account_bio: "Bio",
-    account_bio_placeholder: "Quelques lignes sur vous ou votre studio…",
-    account_country: "Pays",
-    account_country_placeholder: "ex. Canada",
-    account_links_label: "Liens",
-    account_links_hint: "Site web, Instagram, YouTube, TikTok, Twitch, Discord — ajoutez-en autant que vous voulez, dans l'ordre qui vous convient.",
-    account_add_link: "+ Ajouter un lien",
-    account_save_profile: "Enregistrer le profil",
-    account_preview_profile: "Aperçu du profil public",
-    account_current_tier: "Forfait actuel",
-    account_tier_free: "Gratuit",
-    account_tier_paid: "Payant",
-    account_change_password: "Changer le mot de passe",
-    account_new_password: "Nouveau mot de passe",
-    account_new_password_placeholder: "Au moins 8 caractères",
-    account_new_password_error: "Doit contenir au moins 8 caractères.",
-    account_confirm_password: "Confirmer le nouveau mot de passe",
-    account_confirm_password_placeholder: "Retapez-le",
-    account_confirm_password_error: "Les mots de passe ne correspondent pas.",
-    account_update_password: "Mettre à jour le mot de passe",
-    account_danger_zone_title: "Désactiver et supprimer le compte",
-    account_deactivate_title: "Désactiver le compte",
-    account_deactivate_desc: "Masque votre identité du public et bloque la connexion jusqu'à ce que vous vous reconnectiez. Vos modèles publiés restent exactement tels quels. Entièrement réversible — reconnectez-vous simplement en tout temps.",
-    account_deactivate_btn: "Désactiver",
-    account_delete_title: "Supprimer le compte",
-    account_delete_desc_prefix: "Démarre une période de grâce de 21 jours. Se reconnecter pendant cette période annule automatiquement la suppression. Après 21 jours : votre connexion est définitivement supprimée, les brouillons sont effacés, et votre profil est anonymisé. ",
-    account_delete_desc_bold: "Les modèles publiés restent publics et permanents",
-    account_delete_desc_suffix: " — cette fiche ne peut pas être annulée, même en supprimant votre compte.",
-    account_delete_btn: "Supprimer le compte",
-    account_deactivate_confirm_text: "Désactiver votre compte? Vous pouvez annuler à tout moment simplement en vous reconnectant.",
-    account_deactivate_confirm_yes: "Oui, désactiver",
-    account_cancel: "Annuler",
-    account_delete_confirm_default: "Demander la suppression du compte? Cela démarre une période de grâce de 21 jours — reconnectez-vous en tout temps avant la fin pour annuler.",
-    account_delete_confirm_yes: "Oui, demander la suppression",
-    account_preview_title: "Aperçu du profil public",
-    account_preview_links_disabled: "— liens désactivés",
-    account_preview_open_full: "Ouvrir dans un nouvel onglet ↗",
-    account_status_deactivated: "Votre compte est actuellement désactivé. Déconnectez-vous puis reconnectez-vous pour le réactiver.",
-    account_status_pending_deletion_prefix: "Suppression demandée. Votre compte sera définitivement supprimé le ",
-    account_status_pending_deletion_suffix: " à moins que vous ne vous déconnectiez et reconnectiez avant pour annuler.",
-    account_error_no_username: "Définissez d'abord un nom d'archive pour prévisualiser votre profil.",
-    account_error_archive_name_empty: "Le nom d'archive ne peut pas être vide.",
-    account_success_profile_saved: "Profil enregistré.",
-    account_success_password_updated: "Mot de passe mis à jour.",
-    account_delete_models_note: " Vous avez {count} modèle{plural} publié{plural} — ceux-ci resteront publics et permanents, mais votre nom n'apparaîtra plus comme propriétaire.",
-    account_success_photo_updated: "Photo mise à jour.",
-    account_error_deactivate_generic: "Impossible de désactiver votre compte.",
-    account_error_delete_generic: "Impossible de demander la suppression du compte.",
+    document.getElementById("lightboxImage").src = lightboxPhotos[lightboxIndex];
+    document.getElementById("lightboxOverlay").classList.add("open");
+  }
+  function closeLightbox(){
+    document.getElementById("lightboxOverlay").classList.remove("open");
+    document.getElementById("lightboxImage").src = "";
+  }
+  document.getElementById("lightboxPrev").addEventListener("click", (e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex - 1); });
+  document.getElementById("lightboxNext").addEventListener("click", (e) => { e.stopPropagation(); setLightboxIndex(lightboxIndex + 1); });
+  document.getElementById("lightboxClose").addEventListener("click", closeLightbox);
+  document.getElementById("lightboxOverlay").addEventListener("click", (e) => {
+    if (e.target.id === "lightboxOverlay") closeLightbox();
+  });
 
-    // ---- model.html: header/nav ----
-    model_edit_this: "Modifier ce modèle",
-    model_back_to_collection: "← Retour à la collection",
-    model_eyebrow_prefix: "Profil de la figurine · ",
+  document.addEventListener("keydown", (e) => {
+    if (!document.getElementById("lightboxOverlay").classList.contains("open")) return;
+    if (e.key === "Escape") closeLightbox();
+    if (e.key === "ArrowLeft") setLightboxIndex(lightboxIndex - 1);
+    if (e.key === "ArrowRight") setLightboxIndex(lightboxIndex + 1);
+  });
 
-    // ---- model.html: photo viewer ----
-    view_front: "Avant",
-    view_left: "Gauche",
-    view_rear: "Arrière",
-    view_right: "Droite",
-    view_label_front: "VUE DE FACE",
-    view_label_left: "VUE DE GAUCHE",
-    view_label_rear: "VUE ARRIÈRE",
-    view_label_right: "VUE DE DROITE",
+  // ---------------------------------------------------------------
+  // DUMMY DATA — replace this object with a fetch() to your real
+  // data source later (Sheet API, then a real DB). Everything below
+  // renders purely off this object, so swapping the source later
+  // shouldn't require touching the render functions.
+  // ---------------------------------------------------------------
+  const MODEL = {
+    id: "MA-0001",
+    name: "Captain Cassian",
+    manufacturer: "Games Workshop",
+    material: "Injection-Molded Plastic (Styrene)",
+    scale: "1:56",
+    completed: "28 Mar 2024",
+    painter: "E. Stegosaurus",
+    owner: "A. Harwick",
+    hours: 35.0,
+    baseSize: "32mm",
+    description: "A commission piece rendered in 35 painstaking hours — chapter captain of the Iron Vigil, bearing the honours of two crusades and the Painter's Choice Award, NovaCon 2024.",
+    verified: true,
+    timeline: [
+      { title: "Assembly", isMilestone: false, entries: [
+        { date: "12 Mar 2024", hours: 2.5, description: "Removed mold lines, pinned the cloak to the torso with a 0.8mm brass rod.", photos: [] },
+        { date: "13 Mar 2024", hours: 1.5, description: "Gap-filled the left shoulder pauldron joint with green stuff, sculpted to match the surrounding plate texture.", photos: [] },
+      ] },
+      { title: "Surface Prep", isMilestone: false, entries: [
+        { date: "14 Mar 2024", hours: 1, description: "Zenithal prime applied in three passes — black from below, grey from 45°, white from directly above.", photos: [] },
+      ] },
+      { title: "First Brushstroke", isMilestone: true, isMarker: true, date: "16 Mar 2024" },
+      { title: "Paint", isMilestone: false, entries: [
+        { date: "16 Mar 2024", hours: 4, description: "The armour receives its first colour — Kantor Blue, thinned to near-glaze consistency. Two patient coats.", photos: [] },
+        { date: "17 Mar 2024", hours: 3, description: "Skin — Ratskin Flesh, 3 thin coats over white zenithal. Leather — Rhinox Hide on straps and boot soles.", photos: [] },
+        { date: "19 Mar 2024", hours: 3, description: "Targeted Nuln Oil Gloss into all recesses — undiluted at joints, diluted 1:3 on flat plates.", photos: [] },
+        { date: "22 Mar 2024", hours: 2, description: "Edge highlights in Fenrisian Grey, sharpest on final edges. NMM gold begins on the chapter eagle.", photos: [] },
+      ] },
+      { title: "Model Completed", isMilestone: true, isMarker: true, date: "28 Mar 2024" },
+    ],
+    recipe: [
+      { step: "Step 1 · Primer", title: "The Foundation", paint: "Black Surface Primer — Vallejo", swatch: "#1a1a1a", note: "Establish a light source before the brush ever touches colour." },
+      { step: "Step 2 · Basecoat", title: "Armour Blue", paint: "Kantor Blue — Citadel", swatch: "#2c4d78", note: "Deep saturated foundation that reads as authority under cold lighting." },
+      { step: "Step 3 · Shade", title: "Shadow Pass", paint: "Nuln Oil Gloss — Citadel", swatch: "#141a24", note: "Snap the recesses dark and give the armour a worn, metallic skin." },
+      { step: "Step 4 · Layer", title: "Mid-tone Rebuild", paint: "Caledor Sky — Citadel", swatch: "#3f6ea5", note: "Recover the zenithal gradient lost to the shade wash." },
+      { step: "Step 5 · Highlight", title: "Edge & Specular", paint: "Sky Blue + White (1:1) — Vallejo", swatch: "#9ec4de", note: "Sell the illusion of cold metal catching overhead light." },
+      { step: "Step 6 · Technical", title: "NMM Gold", paint: "Retributor Armour + custom mixes — Citadel", swatch: "#c9a24b", note: "Elevate the chapter eagle from decoration to focal point." },
+    ],
+    campaigns: [
+      { name: "The Siege of Vanthar Prime", meta: "2024 · 8 battles", tag: "Victory", tagClass: "win" },
+      { name: "Crusade of the Crimson Dawn", meta: "2024 · 3 battles", tag: "Ongoing", tagClass: "ongoing" },
+    ],
+    achievements: [
+      "Best in Show — NovaCon Miniatures Open 2024",
+      "Veteran of 10 Battles — Campaign milestone",
+      "Painter's Choice Award — Mini Archive internal award",
+    ],
+    ownership: {
+      client: "Commission Client — A. Harwick",
+      since: "Mar 2024 → Present",
+      status: "Single-owner — verified",
+    },
+  };
 
-    // ---- model.html: sections ----
-    model_section_1: "Section I",
-    model_section_2: "Section II",
-    model_section_3: "Section III",
-    model_section_4: "Section IV",
-    model_section_5: "Section V",
-    model_section_6: "Section VI",
-    model_gallery_title: "Galerie",
-    model_timeline_title: "Chronologie de création",
-    model_recipe_title: "Recette de peinture",
-    model_history_title: "Historique du modèle",
-    model_edit_history_title: "Historique des modifications",
-    model_edit_history_desc: "Modifications apportées à cette fiche depuis sa publication.",
-    model_cert_title: "Certificat d'authenticité",
+  function renderProfile(m){
+    document.getElementById("eyebrowId").textContent = `${t("model_eyebrow_prefix")}${m.id}`;
+    document.title = `${m.name} — Mini Archive`;
 
-    // ---- model.html: info grid labels ----
-    info_manufacturer: "Fabricant",
-    info_material: "Matériau",
-    info_scale: "Échelle",
-    info_base_size: "Taille du socle",
-    info_game_system: "Système de jeu",
-    info_faction: "Faction",
-    info_painter: "Peintre",
-    info_owner: "Propriétaire",
-    info_started: "Commencé",
-    info_completed: "Terminé",
-    info_hours_worked: "Heures de travail",
-    info_total_hours: "Heures totales",
-    info_nfc_verified: "Vérifié par NFC",
-    info_nfc_verified_desc: "Numériser pour voir l'historique du modèle",
-    info_not_verified: "Non vérifié",
-    info_no_nfc: "Aucune puce NFC enregistrée",
-    info_status: "Statut",
-    status_in_progress: "En cours",
-    status_completed: "Terminé",
+    const parts = m.name.split(" ");
+    const last = parts.pop();
+    document.getElementById("modelTitle").innerHTML = `${parts.join(" ")} <span class="accent">${last}</span>`;
+    document.getElementById("modelDesc").textContent = m.description;
 
-    // ---- model.html: timeline ----
-    timeline_first_brushstroke: "Premier coup de pinceau",
-    timeline_model_completed: "Modèle terminé",
-    timeline_milestone: "◆ Étape marquante",
-    timeline_empty: "Aucune chronologie consignée pour ce modèle pour l'instant.",
-    timeline_drag: "↔ GLISSER",
-    role_primer: "Apprêt",
+    const painterDisplay = m.painterUsername
+      ? `<a href="profile.html?username=${encodeURIComponent(m.painterUsername)}" style="color:var(--gold-bright); text-decoration:underline;">${m.painter}</a>`
+      : m.painter;
 
-    // ---- model.html: paint recipe ----
-    recipe_empty: "Aucune peinture consignée pour ce modèle pour l'instant.",
-    recipe_see_comparables: "Voir les peintures comparables ▸",
-    comparable_none: "Aucun équivalent connu dans la base de données pour cette peinture.",
-    comparable_searching: "Recherche…",
+    document.getElementById("infoGrid").innerHTML = `
+      <div class="info-box"><div class="label">${t("info_manufacturer")}</div><div class="value">${m.manufacturer}</div></div>
+      <div class="info-box"><div class="label">${t("info_material")}</div><div class="value">${m.material}</div></div>
+      <div class="info-box"><div class="label">${t("info_scale")}</div><div class="value">${m.scale}</div></div>
+      <div class="info-box"><div class="label">${t("info_completed")}</div><div class="value">${m.completed}</div></div>
+      <div class="info-box"><div class="label">${t("info_painter")}</div><div class="value">${painterDisplay}</div></div>
+      <div class="info-box"><div class="label">${t("info_total_hours")}</div><div class="value">${m.hours.toFixed(1)} hrs</div></div>
+      <div class="info-box"><div class="label">${t("info_base_size")}</div><div class="value">${m.baseSize}</div></div>
+    `;
 
-    // ---- model.html: edit history ----
-    edit_history_none: "Aucune",
-    edit_history_load_error: "Impossible de charger l'historique des modifications.",
-    edit_history_empty: "Aucun — cette fiche n'a pas été modifiée depuis sa publication.",
-    edit_history_unknown_editor: "Inconnu",
-    edit_field_title: "Nom du modèle",
-    edit_field_painter_name: "Peintre",
-    edit_field_manufacturer: "Fabricant",
-    edit_field_scale: "Échelle",
-    edit_field_base_size: "Taille du socle",
-    edit_field_hours_worked: "Heures de travail",
-    edit_field_started_at: "Commencé",
-    edit_field_completed_at: "Terminé",
-    edit_field_description: "Description",
-    edit_field_owner_visible: "Visibilité du propriétaire",
-    edit_field_photo_front: "Photo de face",
-    edit_field_photo_left: "Photo de gauche",
-    edit_field_photo_rear: "Photo arrière",
-    edit_field_photo_right: "Photo de droite",
-    edit_field_timeline_entry: "Entrée de chronologie",
-    edit_field_timeline_photo: "Photo de chronologie",
-    edit_category_model_info: "Infos du modèle",
-    edit_category_identity_photos: "Photos d'identité",
-    edit_category_timeline: "Chronologie de création",
-    edit_view_original: "Voir l'originale",
-    edit_view_replacement: "Voir le remplacement",
-    edit_view_new: "(aucune)",
-    edit_view_removed: "(supprimée)",
+    const nfcBox = document.getElementById("nfcBox");
+    if (m.verified){
+      nfcBox.classList.remove("unverified");
+      nfcBox.innerHTML = `
+        <div class="left">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>
+          <div><div class="label">${t("info_nfc_verified")}</div><div class="value">${t("info_nfc_verified_desc")}</div></div>
+        </div>
+        <div class="arrow">→</div>
+      `;
+    } else {
+      nfcBox.classList.add("unverified");
+      nfcBox.innerHTML = `
+        <div class="left">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>
+          <div><div class="label">${t("info_not_verified")}</div><div class="value">${t("info_no_nfc")}</div></div>
+        </div>
+      `;
+    }
 
-    // ---- model.html: certificate ----
-    cert_state_verified: "Peintre vérifié",
-    cert_state_awaiting: "En attente de vérification",
-    cert_state_rejected: "Vérification rejetée",
-    cert_field_model_name: "Nom du modèle",
-    cert_field_unique_id: "ID unique du modèle",
-    cert_field_completion_date: "Date d'achèvement",
+    const viewersToWire = []; // { photos: [urls], idPrefix }
 
-    // ---- model.html: footer ----
-    model_footer_back: "← Retour à la collection",
+    function renderMiniPhotoViewer(photos, idPrefix){
+      if (!photos.length) return "";
+      viewersToWire.push({ photos, idPrefix });
+      return `
+        <div class="step-photo-viewer">
+          <div class="step-photo-frame" id="${idPrefix}Frame" style="background-image:url('${photos[0]}')" data-src="${photos[0]}" data-idx="0">
+            ${photos.length > 1 ? `<div class="step-drag-badge" id="${idPrefix}Badge">↔ DRAG</div>` : ""}
+          </div>
+          ${photos.length > 1 ? `
+            <div class="step-dots" id="${idPrefix}Dots">
+              ${photos.map((_, di) => `<span class="step-dot${di === 0 ? " active" : ""}"></span>`).join("")}
+            </div>
+          ` : ""}
+        </div>
+      `;
+    }
 
-    // ---- edit-model.html: page head ----
-    em_add_eyebrow: "Ajouter un modèle",
-    em_add_title: "Archivez une nouvelle figurine.",
-    em_add_lede: "Ajoutez ce que vous savez déjà. Enregistrez comme brouillon, ou publiez directement dans l'archive si c'est prêt.",
-    em_error_title: "Modèle introuvable.",
-    em_error_desc: "Il n'existe peut-être pas, ou il ne vous appartient pas de le modifier.",
-    em_error_back: "Retour à ma collection",
-    em_status_draft: "Brouillon",
+    document.getElementById("timelineList").innerHTML = (m.timeline && m.timeline.length) ? m.timeline.map((group, i) => {
+      if (group.isMarker){
+        return `
+        <div class="timeline-item milestone marker-only">
+          <div class="t-meta">
+            ${String(i + 1).padStart(2, "0")}
+            <div class="t-marker"></div>
+          </div>
+          <div>
+            <div class="milestone-tag">${t("timeline_milestone")}</div>
+            <h3>${group.title}</h3>
+            <div class="t-date-hours">${group.date}</div>
+          </div>
+        </div>
+      `;
+      }
 
-    // ---- edit-model.html: basics fieldset ----
-    em_legend_basics: "Informations de base",
-    em_model_name: "Nom du modèle",
-    em_model_name_placeholder: "ex. Capitaine Cassian",
-    em_model_name_error: "Donnez un nom au modèle.",
-    em_painter: "Peintre",
-    em_painter_placeholder: "ex. E. Stégosaure",
-    em_painter_hint: "Laissez vide si c'est vous.",
-    em_manufacturer: "Fabricant",
-    em_manufacturer_placeholder: "ex. Games Workshop",
-    em_material: "Matériau",
-    em_material_placeholder: "ex. Résine",
-    em_scale: "Échelle",
-    em_scale_placeholder: "ex. 1:56",
-    em_base_size: "Taille du socle (mm)",
-    em_base_size_placeholder: "ex. 32",
-    em_hours_worked: "Heures de travail",
-    em_hours_worked_placeholder: "ex. 12,5",
-    em_started: "Commencé",
-    em_date_placeholder: "AAAA-MM-JJ",
-    em_date_error: "Doit être une date complète (AAAA-MM-JJ) ou laissée vide.",
-    em_completed: "Terminé",
-    em_description: "Description",
-    em_description_placeholder: "Quelques lignes sur cette pièce…",
+      const allPhotos = group.entries.flatMap(e => e.photos || []);
+      const dateRange = group.entries.length > 1
+        ? `${group.entries[0].date} – ${group.entries[group.entries.length - 1].date}`
+        : group.entries[0].date;
+      const totalHours = group.entries.reduce((sum, e) => sum + (e.hours || 0), 0);
+      return `
+      <div class="timeline-item${group.isMilestone ? " milestone" : ""}">
+        <div class="t-meta">
+          ${String(i + 1).padStart(2, "0")}
+          <div class="t-marker"></div>
+        </div>
+        <div>
+          ${group.isMilestone ? `<div class="milestone-tag">${t("timeline_milestone")}</div>` : ""}
+          <h3>${group.title}</h3>
+          <div class="t-date-hours">${dateRange} · ${totalHours} hours</div>
+          ${renderMiniPhotoViewer(allPhotos, `step${i}`)}
+          <div class="chip-row">${group.entries.map((e, ei) => {
+            const paintChips = [];
+            if (e.primer) paintChips.push({ label: t("role_primer"), ...e.primer });
+            (e.paints || []).forEach(p => paintChips.push({ label: p.role, ...p }));
+            const paintChipsHtml = paintChips.length ? `
+              <div class="st-paint-chips">
+                ${paintChips.map(p => `
+                  <span class="st-paint-chip">
+                    <span class="st-paint-swatch" style="background:${p.hex || "#333"};"></span>
+                    ${p.label ? `${p.label}: ` : ""}${p.name}
+                  </span>
+                `).join("")}
+              </div>
+            ` : "";
+            const entryPhotos = e.photos || [];
+            return `
+            <div class="subtask-card" onclick="toggleEntryCard(this)">
+              <div class="st-body">
+                <div class="st-title">
+                  <span class="st-title-text">${e.date}${e.hours ? ` · ${e.hours}h` : ""}</span>
+                  ${entryPhotos.length ? `<span class="st-photo-hint">◎${entryPhotos.length > 1 ? ` ${entryPhotos.length}` : ""}</span>` : ""}
+                </div>
+                ${e.description ? `<div class="st-note">${e.description}</div>` : ""}
+                ${paintChipsHtml}
+                <div onclick="event.stopPropagation()">${renderMiniPhotoViewer(entryPhotos, `entry${i}_${ei}`)}</div>
+              </div>
+            </div>
+          `;
+          }).join("")}</div>
+        </div>
+      </div>
+    `;
+    }).join("") : `<p style="color:var(--cream-dim); padding: 24px 0; border-top:1px solid var(--hairline);">${t("timeline_empty")}</p>`;
 
-    // ---- model.html: additional fixes ----
-    model_no_description: "Aucune description ajoutée pour l'instant.",
-    model_history_campaigns: "Campagnes",
-    model_history_achievements: "Exploits",
-    model_history_ownership: "Historique de propriété",
-    model_history_none_logged: "Aucun consigné",
-    model_history_not_recorded: "Non enregistré",
-    gallery_no_photos: "Aucune photo téléversée pour l'instant.",
-    gallery_timeline_fallback: "Chronologie",
-    category_assembly: "Assemblage",
-    category_surface_prep: "Préparation de surface",
-    category_paint: "Peinture",
-    category_basing: "Socle",
-    category_varnish: "Vernis",
-    category_repair: "Réparation",
-    category_completed: "Terminé",
-    category_other: "Autre",
+    window.toggleEntryCard = function(card){
+      const wasExpanded = card.classList.contains("expanded");
+      const container = card.closest(".chip-row");
+      container.querySelectorAll(".subtask-card.expanded").forEach(c => c.classList.remove("expanded"));
+      if (!wasExpanded) card.classList.add("expanded");
+    };
 
-    // ---- confirm.html ----
-    confirm_loading: "Confirmation de votre compte…",
-    confirm_eyebrow: "Compte confirmé",
-    confirm_title: "Votre archive est prête.",
-    confirm_sub: "Bienvenue sur Mini Archive — chaque figurine a une histoire, et la vôtre commence maintenant.",
-    confirm_field_archive_name: "Nom d'archive",
-    confirm_field_account: "Compte",
-    confirm_cta_log_first: "Archiver mon premier modèle",
-    confirm_cta_browse: "Parcourir la collection",
-    confirm_error_title: "Impossible de confirmer ce lien",
-    confirm_error_default: "Ce lien de confirmation a peut-être expiré ou a déjà été utilisé.",
-    confirm_error_expired: "Ce lien de confirmation a peut-être expiré ou a déjà été utilisé. Essayez de vous connecter — si votre compte était déjà confirmé, ça fonctionnera simplement.",
-    confirm_error_profile_failed: "Votre courriel a été confirmé, mais nous n'avons pas pu terminer la configuration de votre archive. Essayez de vous connecter — si le problème persiste, contactez le support.",
-    confirm_cta_login: "Se connecter",
-    confirm_cta_start: "Créer une archive",
-    footer_home: "Accueil",
+    // ---- Mini photo viewers: click and drag to cycle, mirrors the main
+    // front/left/rear/right viewer's interaction — used identically for
+    // both the group-level viewer and each entry's own viewer. ----
+    viewersToWire.forEach(({ photos, idPrefix }) => {
+      if (!photos.length) return;
 
-    // ---- reset-password.html ----
-    reset_back_home: "← Retour à l'accueil",
-    reset_verifying: "Vérification de votre lien de réinitialisation…",
-    reset_invalid_eyebrow: "Lien invalide",
-    reset_invalid_title: "Ce lien de réinitialisation n'a pas fonctionné.",
-    reset_invalid_desc: "Il a peut-être expiré ou a déjà été utilisé. Les liens de réinitialisation ne sont valides que pour une courte période.",
-    reset_back_login: "Retour à la connexion",
-    reset_eyebrow: "Réinitialiser le mot de passe",
-    reset_title: "Choisissez un nouveau mot de passe.",
-    reset_sub: "Utilisez quelque chose que vous n'avez pas déjà utilisé ici.",
-    reset_new_password: "Nouveau mot de passe",
-    reset_new_password_placeholder: "Au moins 8 caractères",
-    reset_new_password_error: "Doit contenir au moins 8 caractères.",
-    reset_confirm_password: "Confirmer le nouveau mot de passe",
-    reset_confirm_password_placeholder: "Retapez-le",
-    reset_confirm_password_error: "Les mots de passe ne correspondent pas.",
-    reset_submit: "Définir le nouveau mot de passe",
-    reset_submit_saving: "Enregistrement…",
-    reset_error_generic: "Impossible de mettre à jour votre mot de passe.",
-    reset_success: "Mot de passe mis à jour. Redirection vers la connexion…",
-    footer_login: "Connexion",
+      const frame = document.getElementById(`${idPrefix}Frame`);
+      const dragBadge = document.getElementById(`${idPrefix}Badge`);
+      const dotsContainer = document.getElementById(`${idPrefix}Dots`);
+      if (!frame) return;
 
-    // ---- login.html ----
-    login_back_home: "← Retour à l'accueil",
-    login_eyebrow: "Bon retour",
-    login_title: "Connectez-vous à votre archive",
-    login_sub: "Reprenez exactement où vous en étiez.",
-    login_resend_notice: "Votre compte existe mais n'a pas encore été confirmé.",
-    login_resend_btn: "Renvoyer l'e-mail de confirmation",
-    login_resend_sending: "Envoi…",
-    login_forgot_notice: "Entrez votre courriel ci-dessous, puis cliquez ici pour recevoir un lien de réinitialisation.",
-    login_send_reset_btn: "Envoyer le lien",
-    login_email_label: "Courriel",
-    login_email_placeholder: "vous@exemple.com",
-    login_email_error: "Entrez une adresse courriel valide.",
-    login_password_label: "Mot de passe",
-    login_password_placeholder: "Votre mot de passe",
-    login_password_error: "Entrez votre mot de passe.",
-    login_forgot_link: "Mot de passe oublié?",
-    login_submit: "Connexion",
-    login_submit_loading: "Connexion en cours…",
-    login_no_archive: "Pas encore d'archive? ",
-    login_start_free: "Créez-en une gratuitement",
-    login_no_email: "Vous n'avez pas reçu de courriel de confirmation? ",
-    login_resend_it: "Renvoyer",
-    login_error_resend_generic: "Impossible de renvoyer l'e-mail de confirmation.",
-    login_success_confirmation_sent: "E-mail de confirmation envoyé. Vérifiez votre boîte de réception.",
-    login_success_cancelled_deletion: "Bon retour — votre demande de suppression de compte a été annulée.",
-    login_success_reactivated: "Bon retour — votre compte a été réactivé.",
-    login_error_enter_email_resend: "Entrez d'abord votre courriel ci-dessous, puis cliquez sur Renvoyer.",
-    login_error_enter_email_reset: "Entrez d'abord votre courriel ci-dessous, puis cliquez sur Envoyer le lien.",
-    login_error_reset_generic: "Impossible d'envoyer le lien de réinitialisation.",
-    login_reset_sent: "Si ce courriel est associé à un compte, un lien de réinitialisation a été envoyé.",
+      function setIndex(idx){
+        idx = ((idx % photos.length) + photos.length) % photos.length;
+        frame.style.backgroundImage = `url('${photos[idx]}')`;
+        frame.dataset.src = photos[idx];
+        frame.dataset.idx = idx;
+        if (dotsContainer){
+          dotsContainer.querySelectorAll(".step-dot").forEach((dot, di) => dot.classList.toggle("active", di === idx));
+        }
+      }
 
-    // ---- start.html ----
-    start_back_home: "← Retour à l'accueil",
-    start_eyebrow: "Créer une archive",
-    start_pitch_title_1: "Donnez aux heures que vous",
-    start_pitch_title_2: "y consacrez ",
-    start_pitch_title_accent: "un endroit où vivre.",
-    start_pitch_lede: "Gratuit pour commencer, aucune carte requise. Archivez votre premier modèle en quelques minutes — vous pourrez toujours ajouter les détails plus tard.",
-    start_perk1_title: "Jusqu'à 25 modèles, gratuit pour toujours",
-    start_perk1_desc: "Pas d'essai, pas d'expiration — le forfait gratuit reste gratuit.",
-    start_perk2_title: "Profil complet par modèle",
-    start_perk2_desc: "Photos, recettes de peinture, chronologie, historique — autant ou aussi peu que vous voulez consigner.",
-    start_perk3_title: "Vérification quand vous en avez besoin",
-    start_perk3_desc: "La provenance avec puce NFC est disponible en tout temps comme option payante — jamais obligatoire.",
-    start_tier_label: "Forfait gratuit",
-    start_tier_value_prefix: "Jusqu'à ",
-    start_tier_value_bold: "25 modèles",
-    start_tier_value_suffix: " · profils complets · aucune vérification/NFC. Mettez à niveau en tout temps depuis les paramètres de votre archive.",
-    start_form_title: "Créez votre archive",
-    start_form_sub: "Quelques minutes, c'est tout.",
-    start_archive_name_label: "Nom d'archive",
-    start_archive_name_placeholder: "ex. Paint or Die Studios",
-    start_archive_name_hint: "C'est le nom affiché sur votre page de collection publique.",
-    start_archive_name_error: "Donnez un nom à votre archive.",
-    start_first_name_label: "Prénom",
-    start_first_name_placeholder: "Jeanne",
-    start_last_name_label: "Nom de famille",
-    start_last_name_placeholder: "Tremblay",
-    start_required_error: "Requis.",
-    start_email_label: "Courriel",
-    start_email_placeholder: "vous@exemple.com",
-    start_email_error: "Entrez une adresse courriel valide.",
-    start_password_label: "Mot de passe",
-    start_password_placeholder: "Au moins 8 caractères",
-    start_password_error: "Le mot de passe doit contenir au moins 8 caractères.",
-    start_submit: "Créer mon archive",
-    start_submit_loading: "Création…",
-    start_already_have: "Vous avez déjà une archive? ",
-    start_login_link: "Connexion",
-    start_success_title: "Archive créée",
-    start_success_desc: "Un courriel de confirmation a été envoyé à ",
-    start_success_desc_suffix: ". Cliquez sur le lien pour activer votre compte, puis connectez-vous pour commencer à archiver vos modèles.",
-    start_success_no_email: "Vous ne l'avez pas reçu? ",
-    start_success_resend: "Renvoyer le courriel de confirmation",
-    start_error_generic: "L'inscription a échoué. Consultez la console pour plus de détails.",
-    start_error_existing_account: "Un compte existe déjà avec ce courriel. Essayez de vous connecter, ou utilisez « Renvoyer le courriel de confirmation » depuis la page de connexion si vous ne l'avez jamais confirmé.",
-    start_resend_error: "Impossible de renvoyer le courriel.",
-    start_resend_success: "Envoyé — vérifiez votre boîte de réception.",
-  },
-};
+      let dragging = false;
+      let startX = 0;
+      let hasMoved = false;
+      const DRAG_STEP_PX = 50;
+
+      frame.addEventListener("pointerdown", (e) => {
+        dragging = true;
+        hasMoved = false;
+        startX = e.clientX;
+        frame.setPointerCapture(e.pointerId);
+      });
+      frame.addEventListener("pointermove", (e) => {
+        if (!dragging) return;
+        const deltaX = e.clientX - startX;
+        if (Math.abs(deltaX) >= DRAG_STEP_PX){
+          hasMoved = true;
+          if (dragBadge) dragBadge.style.opacity = "0";
+          setIndex(parseInt(frame.dataset.idx) + (deltaX > 0 ? -1 : 1));
+          startX = e.clientX;
+        }
+      });
+      function endDrag(e){
+        dragging = false;
+        if (dragBadge) dragBadge.style.opacity = "1";
+        try { frame.releasePointerCapture(e.pointerId); } catch (err) {}
+      }
+      frame.addEventListener("pointerup", endDrag);
+      frame.addEventListener("pointercancel", endDrag);
+      frame.addEventListener("click", () => {
+        if (hasMoved) return; // just finished a drag — don't also open the lightbox
+        openLightbox(photos, parseInt(frame.dataset.idx));
+      });
+    });
+
+    document.getElementById("recipeGrid").innerHTML = (m.recipe && m.recipe.length) ? m.recipe.map(r => `
+      <div class="recipe-card">
+        <div class="step-meta"><div class="step-label">${r.step}</div><div class="swatch" style="background:${r.swatch}"></div></div>
+        <h3>${r.title}</h3>
+        <div class="paint-name">${r.paint}</div>
+        <p class="note">${r.note}</p>
+      </div>
+    `).join("") : `<p style="color:var(--cream-dim); grid-column:1/-1;">${t("recipe_empty")}</p>`;
+
+    const campaignsHtml = (m.campaigns && m.campaigns.length)
+      ? m.campaigns.map(c => `<div class="history-row"><span>${c.name}<br><span style="color:var(--mono);font-size:0.75rem;">${c.meta}</span></span><span class="tag ${c.tagClass}">${c.tag}</span></div>`).join("")
+      : `<div class="history-row" style="color:var(--mono);">${t("model_history_none_logged")}</div>`;
+    const achievementsHtml = (m.achievements && m.achievements.length)
+      ? m.achievements.map(a => `<div class="history-row">${a}</div>`).join("")
+      : `<div class="history-row" style="color:var(--mono);">${t("model_history_none_logged")}</div>`;
+    const ownerDisplay = m.ownerUsername
+      ? `<a href="profile.html?username=${encodeURIComponent(m.ownerUsername)}" style="color:var(--gold-bright); text-decoration:underline;">${m.owner}</a>`
+      : (m.owner || t("model_history_not_recorded"));
+
+    const ownershipHtml = m.ownership
+      ? `<div class="history-row">${m.ownership.client}</div><div class="history-row" style="color:var(--mono); font-size:0.8rem;">${m.ownership.since}</div><div class="history-row"><span class="tag win">${m.ownership.status}</span></div>`
+      : `<div class="history-row" style="color:var(--mono);">${ownerDisplay}</div>`;
+
+    document.getElementById("historyGrid").innerHTML = `
+      <div class="history-card">
+        <h3>${t("model_history_campaigns")}</h3>
+        ${campaignsHtml}
+      </div>
+      <div class="history-card">
+        <h3>${t("model_history_achievements")}</h3>
+        ${achievementsHtml}
+      </div>
+      <div class="history-card">
+        <h3>${t("model_history_ownership")}</h3>
+        ${ownershipHtml}
+      </div>
+    `;
+
+    // m.verified can be true (verified), false/undefined (pending — the
+    // current default for everything, since no verification system exists
+    // yet), or "rejected" (reserved for when one does).
+    let verifyIcon = "✕", verifyClass = "state-pending", verifyText = t("cert_state_awaiting");
+    if (m.verified === true){
+      verifyIcon = "✓"; verifyClass = "state-verified"; verifyText = t("cert_state_verified");
+    } else if (m.verified === "rejected"){
+      verifyIcon = "✕"; verifyClass = "state-rejected"; verifyText = t("cert_state_rejected");
+    }
+
+    document.getElementById("certBox").innerHTML = `
+      <div class="shield"><svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg></div>
+      <div class="eyebrow">MINI ARCHIVE</div>
+      <div class="cert-title">${t("model_cert_title")}</div>
+      <div class="cert-fields">
+        <div><div class="label">${t("cert_field_model_name")}</div><div class="value">${m.name}</div></div>
+        <div><div class="label">${t("cert_field_unique_id")}</div><div class="value">${m.id}</div></div>
+        <div><div class="label">${t("info_painter")}</div><div class="value">${m.painter}</div></div>
+        <div><div class="label">${t("cert_field_completion_date")}</div><div class="value">${m.completed}</div></div>
+        <div><div class="label">${t("info_total_hours")}</div><div class="value">${m.hours.toFixed(1)} hours</div></div>
+        <div><div class="label">${t("info_scale")}</div><div class="value">${m.scale} — ${m.baseSize} base</div></div>
+      </div>
+      <div class="cert-verified ${verifyClass}">${verifyIcon} ${verifyText}</div>
+    `;
+  }
+
+  // ---- Photo view tab switching + drag-to-rotate ----
+  let PHOTOS_BY_VIEW = {}; // populated after fetch, e.g. { front: "https://...", left: "https://..." }
+  const VIEW_ORDER = ["front", "right", "rear", "left"]; // rotation order when dragging
+  let currentViewIndex = 0;
+
+  function setPhotoView(view){
+    const frame = document.querySelector(".photo-frame");
+    const url = PHOTOS_BY_VIEW[view];
+    document.getElementById("viewLabel").textContent = t(`view_label_${view}`);
+    if (url){
+      frame.style.backgroundImage = `url('${url}')`;
+      frame.style.backgroundSize = "cover";
+      frame.style.backgroundPosition = "center";
+      frame.querySelector("svg").style.display = "none";
+    } else {
+      frame.style.backgroundImage = "";
+      frame.querySelector("svg").style.display = "block";
+    }
+    document.querySelectorAll("#viewTabs button").forEach(b => {
+      b.classList.toggle("active", b.dataset.view === view);
+    });
+    currentViewIndex = VIEW_ORDER.indexOf(view);
+    if (currentViewIndex === -1) currentViewIndex = 0;
+  }
+
+  document.getElementById("viewTabs").addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    setPhotoView(btn.dataset.view);
+  });
+
+  // ---- Drag-to-rotate on the photo frame itself ----
+  (() => {
+    const frame = document.getElementById("photoFrame");
+    const dragBadge = document.getElementById("dragBadge");
+    const DRAG_STEP_PX = 70; // horizontal distance needed to advance one view
+    let dragging = false;
+    let startX = 0;
+    let hasMoved = false;
+
+    function onPointerDown(e){
+      dragging = true;
+      hasMoved = false;
+      startX = e.clientX;
+      frame.classList.add("dragging");
+      frame.setPointerCapture(e.pointerId);
+    }
+
+    function onPointerMove(e){
+      if (!dragging) return;
+      const deltaX = e.clientX - startX;
+      if (Math.abs(deltaX) >= DRAG_STEP_PX){
+        hasMoved = true;
+        const direction = deltaX > 0 ? -1 : 1; // drag right = previous view, drag left = next view
+        const nextIndex = (currentViewIndex + direction + VIEW_ORDER.length) % VIEW_ORDER.length;
+        setPhotoView(VIEW_ORDER[nextIndex]);
+        startX = e.clientX; // reset so continued dragging keeps cycling
+        if (dragBadge) dragBadge.style.opacity = "0";
+      }
+    }
+
+    function onPointerUp(e){
+      dragging = false;
+      frame.classList.remove("dragging");
+      try { frame.releasePointerCapture(e.pointerId); } catch (err) {}
+      if (dragBadge) dragBadge.style.opacity = "1";
+    }
+
+    frame.addEventListener("pointerdown", onPointerDown);
+    frame.addEventListener("pointermove", onPointerMove);
+    frame.addEventListener("pointerup", onPointerUp);
+    frame.addEventListener("pointercancel", onPointerUp);
+
+    // Click (not drag) opens the current set of identity photos in the
+    // lightbox, letting you browse all of them in a larger format.
+    frame.addEventListener("click", () => {
+      if (hasMoved) return;
+      const orderedPhotos = VIEW_ORDER.filter(v => PHOTOS_BY_VIEW[v]).map(v => PHOTOS_BY_VIEW[v]);
+      if (!orderedPhotos.length) return;
+      const startIdx = orderedPhotos.indexOf(PHOTOS_BY_VIEW[VIEW_ORDER[currentViewIndex]]);
+      openLightbox(orderedPhotos, startIdx === -1 ? 0 : startIdx);
+    });
+  })();
+
+  // ---- Load real data if ?id= is present, else fall back to the dummy MODEL above ----
+  const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function formatDate(dateStr){
+    if (!dateStr) return "—";
+    return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
+  }
+
+  async function loadRealModel(id){
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    const { data, error } = await supabaseClient
+      .from("miniatures")
+      .select(`
+        id, archive_id, title, manufacturer, material, scale, base_size, description, status, hours_worked,
+        started_at, completed_at, owner_profile_id, painter_name, painter_profile_id, owner_visible,
+        photos ( image_url, photo_type ),
+        owner:profiles!owner_profile_id ( username, display_name ),
+        painter_profile:profiles!painter_profile_id ( username )
+      `)
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error || !data){
+      console.error("Failed to load model:", error);
+      document.querySelector("main").innerHTML = `<div style="padding:80px 24px; text-align:center; color:var(--cream-dim);">
+        <div class="eyebrow">Not Found</div>
+        <h1 style="font-family:'Cormorant Garamond', serif; font-size:1.8rem; margin-top:12px;">This model doesn't exist, or isn't public.</h1>
+        <p style="margin-top:14px;"><a href="collection.html" style="color:var(--gold-bright);">← Back to Collection</a></p>
+      </div>`;
+      return;
+    }
+
+    PHOTOS_BY_VIEW = {};
+    (data.photos || []).forEach(p => { PHOTOS_BY_VIEW[p.photo_type] = p.image_url; });
+
+    const isOwnerViewing = session && session.user.id === data.owner_profile_id;
+
+    if (isOwnerViewing){
+      const editBtn = document.getElementById("editButton");
+      editBtn.href = `edit-model.html?id=${data.id}`;
+      editBtn.style.display = "inline-block";
+    }
+
+    const realOwnerName = data.owner?.username || data.owner?.display_name || "Unknown";
+    const ownerVisibleToViewer = data.owner_visible || isOwnerViewing;
+    const ownerLabel = ownerVisibleToViewer
+      ? realOwnerName + (isOwnerViewing && !data.owner_visible ? " (hidden from others)" : "")
+      : "Private";
+    const ownerUsername = (ownerVisibleToViewer && data.owner?.username) ? data.owner.username : null;
+
+    const painterLabel = data.painter_name || t("collection_unattributed");
+    const painterUsername = data.painter_profile?.username || null;
+
+    const timelineData = await loadTimeline(data.id);
+
+    renderProfile({
+      id: data.archive_id,
+      name: data.title,
+      manufacturer: data.manufacturer || "—",
+      material: data.material || "—",
+      scale: data.scale || "—",
+      completed: formatDate(data.completed_at),
+      painter: painterLabel,
+      painterUsername: painterUsername,
+      owner: ownerLabel,
+      ownerUsername: ownerUsername,
+      hours: data.hours_worked || 0,
+      baseSize: data.base_size ? `${data.base_size}mm` : "—",
+      description: data.description || t("model_no_description"),
+      verified: false,
+      timeline: timelineData,
+      recipe: [],
+      campaigns: [],
+      achievements: [],
+      ownership: null,
+    });
+
+    setPhotoView("front");
+    renderGallery(data.id);
+    loadEditHistory(data.id);
+    loadPaintRecipe(data.id);
+  }
+
+  async function loadPaintRecipe(miniatureId){
+    const grid = document.getElementById("recipeGrid");
+
+    const { data: entries } = await supabaseClient
+      .from("timeline_entries")
+      .select(`
+        id, primer_paint_id,
+        primer:primer_paint_id ( id, brand, range, name, hex_color )
+      `)
+      .eq("miniature_id", miniatureId);
+
+    const entryIds = (entries || []).map(e => e.id);
+    const { data: linkedRows } = entryIds.length
+      ? await supabaseClient
+          .from("timeline_entry_paints")
+          .select("role, paints ( id, brand, range, name, hex_color )")
+          .in("timeline_entry_id", entryIds)
+      : { data: [] };
+
+    // Dedupe by paint id, collecting every role each paint was used in
+    const byId = {};
+    function addPaint(paint, role){
+      if (!paint) return;
+      if (!byId[paint.id]) byId[paint.id] = { ...paint, roles: new Set() };
+      byId[paint.id].roles.add(role);
+    }
+    (entries || []).forEach(e => addPaint(e.primer, t("role_primer")));
+    (linkedRows || []).forEach(row => addPaint(row.paints, row.role || "Paint"));
+
+    const recipe = Object.values(byId);
+
+    grid.innerHTML = recipe.length ? recipe.map(p => `
+      <div class="recipe-card" onclick="toggleRecipeCard(this, '${p.id}')">
+        <div class="step-meta">
+          <div class="step-label">${Array.from(p.roles).join(" / ")}</div>
+          <div class="swatch" style="background:${p.hex_color || "#333"};"></div>
+        </div>
+        <h3>${p.name}</h3>
+        <div class="paint-name">${p.brand} — ${p.range}</div>
+        <div class="recipe-comparables-hint">${t("recipe_see_comparables")}</div>
+        <div class="recipe-comparables"></div>
+      </div>
+    `).join("") : `<p style="color:var(--cream-dim); grid-column:1/-1;">${t("recipe_empty")}</p>`;
+  }
+
+  const comparablesCache = {};
+
+  window.toggleRecipeCard = async function(card, paintId){
+    const container = card.closest(".recipe-grid");
+    const wasExpanded = card.classList.contains("expanded");
+
+    container.querySelectorAll(".recipe-card.expanded").forEach(c => c.classList.remove("expanded"));
+    if (wasExpanded) return; // it was open — just closed it, nothing more to do
+
+    card.classList.add("expanded");
+    const comparablesEl = card.querySelector(".recipe-comparables");
+
+    if (comparablesCache[paintId]){
+      comparablesEl.innerHTML = comparablesCache[paintId];
+      return;
+    }
+
+    comparablesEl.innerHTML = `<p style="color:var(--cream-dim); padding:14px 0;">${t("comparable_searching")}</p>`;
+    const matches = await fetchComparablePaints(paintId);
+
+    const html = matches.length ? matches.map(m => `
+      <div class="comparable-row">
+        <div class="swatch" style="background:${m.hex_color || "#333"};"></div>
+        <div>
+          <div class="name">${m.name}</div>
+          <div class="meta">${m.brand} — ${m.range}${m.matchType ? ` · ${m.matchType}` : ""}</div>
+        </div>
+      </div>
+    `).join("") : `<p style="color:var(--cream-dim); padding:14px 0;">${t("comparable_none")}</p>`;
+
+    comparablesCache[paintId] = html;
+    comparablesEl.innerHTML = html;
+  };
+
+  async function fetchComparablePaints(paintId){
+    // Direct outgoing matches (this paint IS the source of a conversion)
+    const { data: directOut } = await supabaseClient
+      .from("paint_conversions")
+      .select("confidence, match_type, target:target_paint_id ( id, brand, range, name, hex_color )")
+      .eq("source_paint_id", paintId);
+
+    // Direct incoming matches (this paint is the TARGET — find its source)
+    const { data: directIn } = await supabaseClient
+      .from("paint_conversions")
+      .select("confidence, match_type, source:source_paint_id ( id, brand, range, name, hex_color )")
+      .eq("target_paint_id", paintId);
+
+    const results = new Map();
+    (directOut || []).forEach(row => {
+      if (row.target) results.set(row.target.id, { ...row.target, confidence: row.confidence, matchType: row.match_type });
+    });
+
+    const hubIds = (directIn || []).filter(row => row.source).map(row => {
+      results.set(row.source.id, { ...row.source, confidence: row.confidence, matchType: row.match_type });
+      return row.source.id;
+    });
+
+    // One more hop: siblings that share the same source (e.g. clicking a
+    // Vallejo paint should also surface the Army Painter equivalent, via
+    // their shared Citadel source), even though there's no direct row
+    // between the two non-Citadel paints themselves.
+    if (hubIds.length){
+      const { data: siblings } = await supabaseClient
+        .from("paint_conversions")
+        .select("confidence, match_type, target:target_paint_id ( id, brand, range, name, hex_color )")
+        .in("source_paint_id", hubIds);
+      (siblings || []).forEach(row => {
+        if (row.target && row.target.id !== paintId) {
+          results.set(row.target.id, { ...row.target, confidence: row.confidence, matchType: row.match_type });
+        }
+      });
+    }
+
+    return Array.from(results.values());
+  }
+
+  async function loadTimeline(miniatureId){
+    const { data: entries, error } = await supabaseClient
+      .from("timeline_entries")
+      .select(`
+        id, entry_date, category, description, hours, is_completion,
+        primer:primer_paint_id ( name, hex_color )
+      `)
+      .eq("miniature_id", miniatureId)
+      .order("entry_date", { ascending: true })
+      .order("created_at", { ascending: true });
+
+    if (error || !entries || !entries.length) return [];
+
+    const entryIds = entries.map(e => e.id);
+
+    // Fetch all linked paints (Paint category) for these entries in one go
+    const { data: linkedRows } = await supabaseClient
+      .from("timeline_entry_paints")
+      .select("timeline_entry_id, role, sort_order, paints ( name, hex_color )")
+      .in("timeline_entry_id", entryIds)
+      .order("sort_order", { ascending: true });
+
+    const linkedByEntry = {};
+    (linkedRows || []).forEach(row => {
+      if (!row.paints) return;
+      if (!linkedByEntry[row.timeline_entry_id]) linkedByEntry[row.timeline_entry_id] = [];
+      linkedByEntry[row.timeline_entry_id].push({ name: row.paints.name, hex: row.paints.hex_color, role: row.role });
+    });
+
+    // Fetch all photos for these entries in one go — an entry can have any number
+    const { data: photoRows } = await supabaseClient
+      .from("timeline_entry_photos")
+      .select("timeline_entry_id, image_url, sort_order")
+      .in("timeline_entry_id", entryIds)
+      .order("sort_order", { ascending: true });
+
+    const photosByEntry = {};
+    (photoRows || []).forEach(row => {
+      if (!photosByEntry[row.timeline_entry_id]) photosByEntry[row.timeline_entry_id] = [];
+      photosByEntry[row.timeline_entry_id].push(row.image_url);
+    });
+
+    // ---- Compute milestones (derived from the data, never logged directly) ----
+    // "First Brushstroke" = earliest entry in the Paint category
+    const firstPaintEntry = entries.find(e => e.category === "Paint") || null;
+    // "Model Completed" = the completion-flagged entry with the latest date
+    const completionCandidates = entries.filter(e => e.is_completion);
+    const completionEntry = completionCandidates.length
+      ? completionCandidates[completionCandidates.length - 1] // entries already sorted ascending by date
+      : null;
+
+    function toEntryShape(e){
+      return {
+        date: formatDate(e.entry_date),
+        hours: e.hours || 0,
+        description: e.description || "",
+        photos: photosByEntry[e.id] || [],
+        primer: e.primer ? { name: e.primer.name, hex: e.primer.hex_color } : null,
+        paints: linkedByEntry[e.id] || [],
+      };
+    }
+
+    // ---- Walk entries in date order, bundling consecutive same-category runs.
+    // Milestones are standalone marker lines with no entries of their own —
+    // inserted right before the entry that triggers "First Brushstroke", and
+    // right after the entry that triggers "Model Completed". The triggering
+    // entry itself still shows normally in its real category group.
+    const groups = [];
+    let currentCategory = null;
+    let currentEntries = [];
+
+    function flushCurrent(){
+      if (currentEntries.length){
+        groups.push({ title: currentCategory, isMilestone: false, entries: currentEntries });
+      }
+      currentEntries = [];
+      currentCategory = null;
+    }
+
+    entries.forEach(e => {
+      if (firstPaintEntry && e.id === firstPaintEntry.id){
+        flushCurrent();
+        groups.push({ title: t("timeline_first_brushstroke"), isMilestone: true, isMarker: true, date: formatDate(e.entry_date) });
+      }
+
+      if (currentCategory !== e.category){
+        flushCurrent();
+        currentCategory = e.category;
+      }
+      currentEntries.push(toEntryShape(e));
+
+      if (completionEntry && e.id === completionEntry.id){
+        flushCurrent();
+        groups.push({ title: t("timeline_model_completed"), isMilestone: true, isMarker: true, date: formatDate(e.entry_date) });
+      }
+    });
+    flushCurrent();
+
+    return groups;
+  }
+
+  async function renderGallery(miniatureId){
+    const grid = document.getElementById("galleryGrid");
+    const order = ["front", "left", "rear", "right"];
+    const viewLabelKeys = { front: "view_front", left: "view_left", rear: "view_rear", right: "view_right" };
+    const categoryKeys = {
+      "Assembly": "category_assembly", "Surface Prep": "category_surface_prep", "Paint": "category_paint",
+      "Basing": "category_basing", "Varnish": "category_varnish", "Repair": "category_repair",
+      "Completed": "category_completed", "Other": "category_other",
+    };
+
+    const identityItems = order
+      .filter(view => PHOTOS_BY_VIEW[view])
+      .map(view => ({ url: PHOTOS_BY_VIEW[view], tag: t(viewLabelKeys[view]) }));
+
+    let timelineItems = [];
+    if (miniatureId){
+      const { data: entries } = await supabaseClient
+        .from("timeline_entries")
+        .select("id, entry_date, category")
+        .eq("miniature_id", miniatureId)
+        .order("entry_date", { ascending: true });
+
+      const entryIds = (entries || []).map(e => e.id);
+      if (entryIds.length){
+        const { data: photoRows } = await supabaseClient
+          .from("timeline_entry_photos")
+          .select("timeline_entry_id, image_url, sort_order")
+          .in("timeline_entry_id", entryIds)
+          .order("sort_order", { ascending: true });
+
+        const entryById = {};
+        (entries || []).forEach(e => { entryById[e.id] = e; });
+
+        timelineItems = (photoRows || []).map(row => {
+          const entry = entryById[row.timeline_entry_id];
+          const categoryLabel = entry?.category ? (categoryKeys[entry.category] ? t(categoryKeys[entry.category]) : entry.category) : t("gallery_timeline_fallback");
+          return { url: row.image_url, tag: `${categoryLabel} · ${formatDate(entry?.entry_date)}` };
+        });
+      }
+    }
+
+    const allItems = [...identityItems, ...timelineItems];
+
+    if (!allItems.length){
+      grid.innerHTML = `<p class="gallery-empty">${t("gallery_no_photos")}</p>`;
+      return;
+    }
+
+    grid.innerHTML = allItems.map((item, idx) => `
+      <div class="gallery-item" onclick='openLightbox(${JSON.stringify(allItems.map(i => i.url))}, ${idx})'>
+        <span class="view-tag">${item.tag}</span>
+        <img src="${item.url}" alt="${item.tag}" loading="lazy">
+      </div>
+    `).join("");
+  }
+
+  function editFieldLabel(fieldName){
+    const map = {
+      title: "edit_field_title",
+      painter_name: "edit_field_painter_name",
+      manufacturer: "edit_field_manufacturer",
+      material: "info_material",
+      scale: "edit_field_scale",
+      base_size: "edit_field_base_size",
+      hours_worked: "edit_field_hours_worked",
+      started_at: "edit_field_started_at",
+      completed_at: "edit_field_completed_at",
+      description: "edit_field_description",
+      owner_visible: "edit_field_owner_visible",
+      photo_front: "edit_field_photo_front",
+      photo_left: "edit_field_photo_left",
+      photo_rear: "edit_field_photo_rear",
+      photo_right: "edit_field_photo_right",
+      "Timeline Entry": "edit_field_timeline_entry",
+      "Timeline Photo": "edit_field_timeline_photo",
+    };
+    return map[fieldName] ? t(map[fieldName]) : fieldName;
+  }
+
+  function isPhotoField(fieldName){
+    return fieldName.startsWith("photo_") || fieldName === "Timeline Photo";
+  }
+
+  async function loadEditHistory(miniatureId){
+    const { data, error } = await supabaseClient
+      .from("miniature_edits")
+      .select(`
+        field_name, old_value, new_value, created_at,
+        profiles:editor_profile_id ( username, display_name )
+      `)
+      .eq("miniature_id", miniatureId)
+      .order("created_at", { ascending: false });
+
+    document.getElementById("editHistorySection").style.display = "block";
+
+    if (error){
+      document.getElementById("editHistoryList").innerHTML = `<p style="color:var(--error); padding:16px 0; border-top:1px solid var(--hairline);">${t("edit_history_load_error")}</p>`;
+      return;
+    }
+
+    if (!data || !data.length){
+      document.getElementById("editHistoryList").innerHTML = `<p style="color:var(--cream-dim); padding:16px 0; border-top:1px solid var(--hairline);">${t("edit_history_empty")}</p>`;
+      return;
+    }
+
+    // Group by the kind of thing that changed, not by day — "Creation
+    // Timeline (5)" is more useful at a glance than "Edits (3) — Jul 26".
+    // Internal grouping keys stay in English regardless of display language.
+    function categoryForField(fieldName){
+      if (fieldName.startsWith("photo_")) return "Identity Photos";
+      if (fieldName === "Timeline Entry" || fieldName === "Timeline Photo") return "Creation Timeline";
+      return "Model Info";
+    }
+    const categoryOrder = ["Model Info", "Identity Photos", "Creation Timeline"];
+    const categoryLabelKey = {
+      "Model Info": "edit_category_model_info",
+      "Identity Photos": "edit_category_identity_photos",
+      "Creation Timeline": "edit_category_timeline",
+    };
+
+    const groups = {};
+    data.forEach(e => {
+      const cat = categoryForField(e.field_name);
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(e);
+    });
+
+    const orderedCategories = Object.keys(groups).sort((a, b) => categoryOrder.indexOf(a) - categoryOrder.indexOf(b));
+    const dateLocale = CURRENT_LANG === "fr" ? "fr-CA" : "en-US";
+
+    document.getElementById("editHistoryList").innerHTML = orderedCategories.map(category => {
+      const rows = groups[category];
+
+      const rowsHtml = rows.map(e => {
+        const fieldLabel = editFieldLabel(e.field_name);
+        const editorLabel = e.profiles?.username || e.profiles?.display_name || t("edit_history_unknown_editor");
+        const dateLabel = new Date(e.created_at).toLocaleDateString(dateLocale, { day: "numeric", month: "short", year: "numeric" });
+        function photoSide(value, label){
+          if (!value || !value.startsWith("http")) return value || "—";
+          return `<span class="photo-link" onclick="openLightbox('${value}')">${label}<img class="hover-preview" src="${value}" alt=""></span>`;
+        }
+        const valueLine = isPhotoField(e.field_name)
+          ? `${photoSide(e.old_value, t("edit_view_original"))} → ${photoSide(e.new_value, t("edit_view_replacement"))}`
+          : `${e.old_value || "—"} → ${e.new_value || "—"}`;
+        return `
+          <div class="edit-history-row">
+            <div>
+              <div class="edit-history-field">${fieldLabel}</div>
+              <div class="edit-history-value">${valueLine}</div>
+            </div>
+            <div class="edit-history-editor">${editorLabel}<br>${dateLabel}</div>
+          </div>
+        `;
+      }).join("");
+
+      return `
+        <div class="edit-history-group">
+          <div class="edit-history-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <span class="edit-history-count">${t(categoryLabelKey[category])} (${rows.length}) <span class="collapse-arrow">▸</span></span>
+          </div>
+          <div class="edit-history-details">${rowsHtml}</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  const urlId = new URLSearchParams(window.location.search).get("id");
+
+  function renderCurrentModel(){
+    if (urlId){
+      loadRealModel(urlId);
+    } else {
+      renderProfile(MODEL);
+      setPhotoView("front");
+      renderGallery();
+    }
+  }
+
+  (async () => {
+    await initLanguage(supabaseClient);
+    renderCurrentModel();
+  })();
+
+  function onLanguageChanged(){
+    renderCurrentModel();
+  }
+</script>
+
+</body>
+</html>
