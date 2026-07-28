@@ -14,6 +14,14 @@
 
 let CURRENT_LANG = "en";
 
+// Add new languages here — flag + short label. Every page's dropdown menu
+// still needs its own <button data-lang="xx"> option added, but nothing
+// else about the wiring changes.
+const LANGUAGES = {
+  en: { label: "EN", flag: "🇬🇧" },
+  fr: { label: "FR", flag: "🇫🇷" },
+};
+
 function t(key){
   return (TRANSLATIONS[CURRENT_LANG] && TRANSLATIONS[CURRENT_LANG][key])
     || (TRANSLATIONS.en && TRANSLATIONS.en[key])
@@ -60,6 +68,7 @@ async function setLanguage(lang, supabaseClient){
   localStorage.setItem("miniarchive_lang", lang);
   applyTranslations();
   updateLangToggleUI();
+  document.querySelectorAll(".lang-dropdown-menu.open").forEach(m => m.classList.remove("open"));
 
   if (supabaseClient){
     try {
@@ -79,7 +88,16 @@ async function setLanguage(lang, supabaseClient){
 }
 
 function updateLangToggleUI(){
-  document.querySelectorAll(".lang-toggle button").forEach(btn => {
+  const current = LANGUAGES[CURRENT_LANG] || LANGUAGES.en;
+  document.querySelectorAll(".lang-dropdown-label").forEach(el => {
+    el.textContent = `${current.flag} ${current.label}`;
+  });
+  document.querySelectorAll(".lang-dropdown-menu button").forEach(btn => {
     btn.classList.toggle("active", btn.dataset.lang === CURRENT_LANG);
   });
 }
+
+// Close any open language dropdown when clicking anywhere else on the page.
+document.addEventListener("click", () => {
+  document.querySelectorAll(".lang-dropdown-menu.open").forEach(m => m.classList.remove("open"));
+});
