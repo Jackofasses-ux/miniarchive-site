@@ -212,14 +212,35 @@
 
   /* History */
   .history-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 40px; }
-  .history-card{ border:1px solid var(--hairline); background: var(--bg-raised); padding: 24px; }
-  .gl-stats-row{ display:flex; gap:20px; margin: 14px 0; }
+  .history-card{
+    border:1px solid var(--hairline); background: var(--bg-raised); padding: 28px;
+    display:flex; flex-direction:column; min-height: 230px;
+  }
+  .history-card h3{
+    font-family:'Cormorant Garamond', serif; font-size:1.15rem; font-weight:600;
+    margin-bottom: 18px; padding-bottom:16px; border-bottom:1px solid var(--hairline);
+  }
+  .history-empty{
+    flex:1; display:flex; align-items:center; justify-content:center; text-align:center;
+    color: var(--mono); font-size:0.85rem; padding: 10px 20px;
+  }
+  .history-field{ margin-bottom:18px; }
+  .history-field:last-child{ margin-bottom:0; }
+  .history-field .label{
+    font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono);
+  }
+  .history-field .value{
+    margin-top:6px; font-family:'Cormorant Garamond', serif; font-size:1.15rem; font-weight:600; color: var(--cream);
+  }
+  .history-field .value a{ color: var(--gold-bright); text-decoration:underline; }
+  .gl-stats-row{ display:flex; gap:20px; margin-bottom: 16px; }
   .gl-stat .num{ font-family:'Cormorant Garamond', serif; font-size:1.6rem; font-weight:600; color: var(--gold-bright); }
   .gl-stat .label{ font-family:'IBM Plex Mono', monospace; font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); margin-top:2px; }
   .gl-badges{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
   .gl-badge{
     font-family:'IBM Plex Mono', monospace; font-size:0.66rem; letter-spacing:0.04em;
-    color: var(--gold-bright); border:1px solid rgba(201,162,75,0.4); padding:5px 10px;
+    color: var(--gold-bright); border:1px solid rgba(201,162,75,0.4); background: rgba(201,162,75,0.07);
+    padding:6px 12px;
   }
   .gl-kill-summary{ font-size:0.85rem; color: var(--cream-dim); margin-bottom:14px; line-height:1.5; }
   .gl-expand-toggle{
@@ -236,9 +257,18 @@
   .gl-entry-tallies{ margin-top:8px; font-size:0.8rem; color: var(--cream-dim); }
   .gl-entry-tallies .tag{ color: var(--gold); }
   .gl-entry-notes{ margin-top:6px; font-size:0.8rem; color: var(--cream-dim); font-style:italic; }
-  .history-card h3{ font-family:'Cormorant Garamond', serif; font-size:1.2rem; font-weight:600; margin-bottom: 16px; }
-  .history-row{ display:flex; justify-content:space-between; align-items:center; padding: 10px 0; border-bottom:1px solid var(--hairline); font-size: 0.88rem; }
-  .history-row:last-child{ border-bottom:none; }
+  .gl-feed{ margin-top:6px; }
+  .gl-kill{ margin-top:10px; }
+  .gl-kill-type{ font-size:0.85rem; color: var(--cream); }
+  .gl-kill-name{ margin-top:2px; font-family:'Cormorant Garamond', serif; font-size:1rem; font-weight:600; color: var(--cream-dim); }
+  .gl-kill-name a{ color: var(--gold-bright); }
+  .gl-kill-note{ margin-top:2px; font-size:0.78rem; color: var(--mono); font-style:italic; }
+  .gl-achievement{
+    margin-top:12px; border:1px solid rgba(201,162,75,0.4); background: rgba(201,162,75,0.07);
+    padding:10px 14px;
+  }
+  .gl-achievement-eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--gold); }
+  .gl-achievement-name{ margin-top:3px; font-family:'Cormorant Garamond', serif; font-size:1.05rem; font-weight:600; color: var(--gold-bright); }
   .tag{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.05em; padding:3px 8px; border:1px solid var(--hairline); text-transform:uppercase; }
   .tag.win{ color: var(--green); border-color: rgba(143,174,122,0.4); }
   .tag.ongoing{ color: var(--gold-bright); border-color: rgba(201,162,75,0.4); }
@@ -788,16 +818,19 @@
     document.getElementById("historyGrid").innerHTML = `
       <div class="history-card" id="campaignsCard">
         <h3>${t("model_history_campaigns")}</h3>
-        <div class="history-row" style="color:var(--mono);">${t("model_history_none_logged")}</div>
+        <div class="history-empty">${t("model_history_none_logged")}</div>
       </div>
       <div class="history-card" id="achievementsCard">
         <h3>${t("model_history_achievements")}</h3>
-        <div class="history-row" style="color:var(--mono);">${t("model_history_none_logged")}</div>
+        <div class="history-empty">${t("model_history_none_logged")}</div>
       </div>
       <div class="history-card" id="ownershipCard">
         <h3>${t("model_history_ownership")}</h3>
-        <div class="history-row"><div class="label" style="font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--mono);">${t("ownership_current_owner")}</div><div style="margin-top:4px;">${ownerDisplay}</div></div>
-        ${m.createdDate ? `<div class="history-row" style="margin-top:10px;"><div class="label" style="font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--mono);">${t("ownership_since")}</div><div style="margin-top:4px;">${m.createdDate}</div></div>` : ""}
+        <div class="history-field">
+          <div class="label">${t("ownership_current_owner")}</div>
+          <div class="value">${ownerDisplay}</div>
+        </div>
+        ${m.createdDate ? `<div class="history-field"><div class="label">${t("ownership_since")}</div><div class="value">${m.createdDate}</div></div>` : ""}
       </div>
     `;
 
@@ -1335,7 +1368,9 @@
       killTotals[row.tally_type] = (killTotals[row.tally_type] || 0) + row.count;
     });
 
-    // ---- Stats ----
+    // ---- Lifetime stats — the only thing that's a permanent, always-
+    // visible summary. Just current-state numbers, no badges here; those
+    // belong to the moment they were earned, not the header. ----
     const totalGames = entries.length;
     const wins = entries.filter(e => e.result === "Win").length;
     const losses = entries.filter(e => e.result === "Loss").length;
@@ -1344,38 +1379,60 @@
     const tournamentEntries = entries.filter(e => e.context === "Tournament");
     const tournamentWins = tournamentEntries.filter(e => e.result === "Win");
 
-    // ---- Milestones — derived from data, never logged directly, same
-    // philosophy as the Creation Timeline's milestones. Kept conservative:
-    // only things structurally guaranteed regardless of game system. ----
-    const badges = ["First Game"]; // entries is non-empty at this point, so always true
-    if (entries.some(e => e.result === "Win")) badges.push("First Win");
-
     const statsHtml = `
       <div class="gl-stats-row">
         <div class="gl-stat"><div class="num">${totalGames}</div><div class="label">Games</div></div>
         <div class="gl-stat"><div class="num">${wins}-${losses}-${draws}</div><div class="label">W-L-D</div></div>
-        ${campaignEntries.length ? `<div class="gl-stat"><div class="num">${campaignEntries.length}</div><div class="label">Campaign Games</div></div>` : ""}
-        ${tournamentEntries.length ? `<div class="gl-stat"><div class="num">${tournamentEntries.length}</div><div class="label">Tournament Games</div></div>` : ""}
+        ${campaignEntries.length ? `<div class="gl-stat"><div class="num">${campaignEntries.length}</div><div class="label">Campaigns</div></div>` : ""}
+        ${tournamentEntries.length ? `<div class="gl-stat"><div class="num">${tournamentEntries.length}</div><div class="label">Tournaments</div></div>` : ""}
       </div>
+      ${Object.keys(killTotals).length ? `<div class="gl-kill-summary">${Object.keys(killTotals).map(type => `${type} ×${killTotals[type]}`).join(" · ")}</div>` : ""}
     `;
-    const badgesHtml = `<div class="gl-badges">${badges.map(b => `<span class="gl-badge">${b}</span>`).join("")}</div>`;
-    const killSummary = Object.keys(killTotals).map(type => `${type} ×${killTotals[type]}`).join(", ");
-    const killSummaryHtml = killSummary ? `<div class="gl-kill-summary">${killSummary}</div>` : "";
 
-    const fullLogHtml = [...entries].reverse().map(entry => {
+    // ---- Which entry earned which milestone, so it can be shown inline
+    // in the feed at the moment it actually happened — not as a permanent
+    // badge shelf. Kept conservative, same as before: only things
+    // structurally guaranteed regardless of game system. ----
+    const firstGameEntryId = entries[0].id;
+    const firstWinEntry = entries.find(e => e.result === "Win");
+    const firstWinEntryId = firstWinEntry ? firstWinEntry.id : null;
+
+    const feedHtml = [...entries].reverse().map(entry => {
       const entryTallies = talliesByEntry[entry.id] || [];
-      const tallyLine = entryTallies.map(row => {
-        const targetLabel = row.target_name?.title || row.target_name_freetext;
-        return `<span class="tag">${row.tally_type} ×${row.count}${targetLabel ? ` (${targetLabel})` : ""}</span>`;
-      }).join(" · ");
+      const killsHtml = entryTallies.map(row => {
+        const linkedName = row.target_name?.title;
+        const plainName = row.target_name_freetext;
+        const nameLine = linkedName
+          ? `<div class="gl-kill-name"><a href="model.html?id=${row.target_miniature_id}">${linkedName}</a></div>`
+          : (plainName ? `<div class="gl-kill-name">${plainName}</div>` : "");
+        return `
+          <div class="gl-kill">
+            <div class="gl-kill-type">☠ ${row.tally_type}${row.count > 1 ? ` ×${row.count}` : ""}</div>
+            ${nameLine}
+            ${row.notes ? `<div class="gl-kill-note">${row.notes}</div>` : ""}
+          </div>
+        `;
+      }).join("");
+
+      const achievementsThisEntry = [];
+      if (entry.id === firstGameEntryId) achievementsThisEntry.push(t("achievement_first_game"));
+      if (entry.id === firstWinEntryId) achievementsThisEntry.push(t("achievement_first_win"));
+      const achievementHtml = achievementsThisEntry.map(a => `
+        <div class="gl-achievement">
+          <div class="gl-achievement-eyebrow">🏅 ${t("achievement_unlocked")}</div>
+          <div class="gl-achievement-name">${a}</div>
+        </div>
+      `).join("");
+
       return `
         <div class="gl-entry">
           <div class="gl-entry-head">
-            <span class="gl-entry-title">${entry.game_system || "Game"}${entry.result ? ` · ${entry.result}` : ""}</span>
+            <span class="gl-entry-title">${entry.game_system || "Game"}</span>
             <span class="gl-entry-date">${formatDate(entry.entry_date)}</span>
           </div>
-          <div class="gl-entry-meta">${entry.context || ""}${entry.campaign_name ? ` · ${entry.campaign_name}` : ""}</div>
-          ${tallyLine ? `<div class="gl-entry-tallies">${tallyLine}</div>` : ""}
+          <div class="gl-entry-meta">${entry.context || ""}${entry.campaign_name ? ` · ${entry.campaign_name}` : ""}${entry.result ? ` · ${entry.result}` : ""}</div>
+          ${killsHtml}
+          ${achievementHtml}
           ${entry.notes ? `<div class="gl-entry-notes">${entry.notes}</div>` : ""}
         </div>
       `;
@@ -1384,24 +1441,14 @@
     campaignsCard.innerHTML = `
       <h3>${t("model_history_campaigns")}</h3>
       ${statsHtml}
-      ${badgesHtml}
-      ${killSummaryHtml}
-      <button type="button" class="gl-expand-toggle" id="glExpandToggle">View full log ▸</button>
-      <div class="gl-full-log" id="glFullLog" style="display:none;">${fullLogHtml}</div>
+      <div class="gl-feed">${feedHtml}</div>
     `;
 
-    document.getElementById("glExpandToggle").addEventListener("click", function(){
-      const log = document.getElementById("glFullLog");
-      const isOpen = log.style.display === "block";
-      log.style.display = isOpen ? "none" : "block";
-      this.textContent = isOpen ? "View full log ▸" : "Hide full log ▾";
-    });
-
-    // ---- Achievements — reserved for things that genuinely add value
-    // (tournament wins, painting competition wins). Painting competitions
-    // aren't tracked anywhere yet, so for now this only ever shows
-    // Tournament-context wins — a deliberately loose interim signal, not
-    // the full picture this card is meant to eventually hold.
+    // ---- Achievements card — reserved for things that genuinely add
+    // value (tournament wins, painting competition wins). Painting
+    // competitions aren't tracked anywhere yet, so for now this only ever
+    // shows Tournament-context wins — a deliberately loose interim signal,
+    // not the full picture this card is meant to eventually hold.
     if (tournamentWins.length){
       achievementsCard.innerHTML = `
         <h3>${t("model_history_achievements")}</h3>
