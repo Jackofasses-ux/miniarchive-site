@@ -47,18 +47,23 @@ async function initLanguage(supabaseClient){
     try {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session){
-        const { data: profile } = await supabaseClient
+        const { data: profile, error } = await supabaseClient
           .from("profiles")
           .select("language")
           .eq("id", session.user.id)
           .maybeSingle();
+        if (error) console.error("Couldn't load language preference from profile:", error);
+        // Profile is the account-level source of truth once logged in — it
+        // should win over whatever's cached locally, since the whole point
+        // of storing it there is so it follows you across devices.
         if (profile?.language) CURRENT_LANG = profile.language;
       }
     } catch (err){
-      console.warn("Couldn't load language preference from profile:", err);
+      console.error("Couldn't load language preference from profile:", err);
     }
   }
 
+  localStorage.setItem("miniarchive_lang", CURRENT_LANG);
   applyTranslations();
   updateLangToggleUI();
 }
@@ -74,10 +79,11 @@ async function setLanguage(lang, supabaseClient){
     try {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session){
-        await supabaseClient.from("profiles").update({ language: lang }).eq("id", session.user.id);
+        const { error } = await supabaseClient.from("profiles").update({ language: lang }).eq("id", session.user.id);
+        if (error) console.error("Couldn't save language preference to profile — it will keep reverting on other pages until this is fixed:", error);
       }
     } catch (err){
-      console.warn("Couldn't save language preference to profile:", err);
+      console.error("Couldn't save language preference to profile — it will keep reverting on other pages until this is fixed:", err);
     }
   }
 
