@@ -220,15 +220,12 @@
     gap: 44px;
     flex-wrap: wrap;
   }
-  .feature-item{ display:flex; align-items:center; gap:18px; flex:1; min-width:190px; }
-  .feature-icon-badge{
-    width:58px; height:58px; flex-shrink:0; border-radius:50%;
-    background: radial-gradient(circle at 35% 30%, rgba(201,162,75,0.22), rgba(201,162,75,0.04) 70%);
-    border:1px solid rgba(201,162,75,0.35);
-    display:flex; align-items:center; justify-content:center;
+  .feature-item{ display:flex; align-items:center; gap:14px; flex:1; min-width:190px; }
+  .feature-icon-badge img{
+    width:34px; height:34px; object-fit:contain; flex-shrink:0;
+    filter: drop-shadow(0 0 5px rgba(201,162,75,0.3));
   }
-  .feature-icon-badge img{ width:32px; height:32px; object-fit:contain; }
-  .feature-icon-badge svg{ width:30px; height:30px; }
+  .feature-icon-badge svg{ width:32px; height:32px; flex-shrink:0; }
   .feature-label{
     font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase;
     color: var(--gold-bright); font-weight:600;
