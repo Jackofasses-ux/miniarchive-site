@@ -781,32 +781,23 @@
       </div>
     `).join("") : `<p style="color:var(--cream-dim); grid-column:1/-1;">${t("recipe_empty")}</p>`;
 
-    const campaignsHtml = (m.campaigns && m.campaigns.length)
-      ? m.campaigns.map(c => `<div class="history-row"><span>${c.name}<br><span style="color:var(--mono);font-size:0.75rem;">${c.meta}</span></span><span class="tag ${c.tagClass}">${c.tag}</span></div>`).join("")
-      : `<div class="history-row" style="color:var(--mono);">${t("model_history_none_logged")}</div>`;
-    const achievementsHtml = (m.achievements && m.achievements.length)
-      ? m.achievements.map(a => `<div class="history-row">${a}</div>`).join("")
-      : `<div class="history-row" style="color:var(--mono);">${t("model_history_none_logged")}</div>`;
     const ownerDisplay = m.ownerUsername
       ? `<a href="profile.html?username=${encodeURIComponent(m.ownerUsername)}" style="color:var(--gold-bright); text-decoration:underline;">${m.owner}</a>`
       : (m.owner || t("model_history_not_recorded"));
 
-    const ownershipHtml = m.ownership
-      ? `<div class="history-row">${m.ownership.client}</div><div class="history-row" style="color:var(--mono); font-size:0.8rem;">${m.ownership.since}</div><div class="history-row"><span class="tag win">${m.ownership.status}</span></div>`
-      : `<div class="history-row" style="color:var(--mono);">${ownerDisplay}</div>`;
-
     document.getElementById("historyGrid").innerHTML = `
-      <div class="history-card">
+      <div class="history-card" id="campaignsCard">
         <h3>${t("model_history_campaigns")}</h3>
-        ${campaignsHtml}
+        <div class="history-row" style="color:var(--mono);">${t("model_history_none_logged")}</div>
       </div>
       <div class="history-card" id="achievementsCard">
         <h3>${t("model_history_achievements")}</h3>
-        ${achievementsHtml}
+        <div class="history-row" style="color:var(--mono);">${t("model_history_none_logged")}</div>
       </div>
-      <div class="history-card">
+      <div class="history-card" id="ownershipCard">
         <h3>${t("model_history_ownership")}</h3>
-        ${ownershipHtml}
+        <div class="history-row"><div class="label" style="font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--mono);">${t("ownership_current_owner")}</div><div style="margin-top:4px;">${ownerDisplay}</div></div>
+        ${m.createdDate ? `<div class="history-row" style="margin-top:10px;"><div class="label" style="font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--mono);">${t("ownership_since")}</div><div style="margin-top:4px;">${m.createdDate}</div></div>` : ""}
       </div>
     `;
 
@@ -937,7 +928,7 @@
       .from("miniatures")
       .select(`
         id, archive_id, title, manufacturer, material, scale, base_size, description, status, hours_worked,
-        started_at, completed_at, owner_profile_id, painter_name, painter_profile_id, owner_visible,
+        started_at, completed_at, owner_profile_id, painter_name, painter_profile_id, owner_visible, created_at,
         photos ( image_url, photo_type ),
         owner:profiles!owner_profile_id ( username, display_name ),
         painter_profile:profiles!painter_profile_id ( username )
@@ -989,6 +980,7 @@
       painterUsername: painterUsername,
       owner: ownerLabel,
       ownerUsername: ownerUsername,
+      createdDate: data.created_at ? formatDate(data.created_at) : null,
       hours: data.hours_worked || 0,
       baseSize: data.base_size ? `${data.base_size}mm` : "—",
       description: data.description || t("model_no_description"),
@@ -1318,7 +1310,8 @@
   }
 
   async function loadGameLog(miniatureId){
-    const card = document.getElementById("achievementsCard");
+    const campaignsCard = document.getElementById("campaignsCard");
+    const achievementsCard = document.getElementById("achievementsCard");
 
     const { data: entries } = await supabaseClient
       .from("game_log_entries")
@@ -1326,7 +1319,7 @@
       .eq("miniature_id", miniatureId)
       .order("entry_date", { ascending: true }); // ascending — makes "first X" checks a simple .find()
 
-    if (!entries || !entries.length) return; // leave the existing "None logged" placeholder as-is
+    if (!entries || !entries.length) return; // leave the existing "None logged" placeholders as-is
 
     const entryIds = entries.map(e => e.id);
     const { data: tallies } = await supabaseClient
@@ -1349,8 +1342,9 @@
     const draws = entries.filter(e => e.result === "Draw").length;
     const campaignEntries = entries.filter(e => e.context === "Campaign");
     const tournamentEntries = entries.filter(e => e.context === "Tournament");
+    const tournamentWins = tournamentEntries.filter(e => e.result === "Win");
 
-    // ---- Achievements — derived from data, never logged directly, same
+    // ---- Milestones — derived from data, never logged directly, same
     // philosophy as the Creation Timeline's milestones. Kept conservative:
     // only things structurally guaranteed regardless of game system. ----
     const badges = ["First Game"]; // entries is non-empty at this point, so always true
@@ -1387,8 +1381,8 @@
       `;
     }).join("");
 
-    card.innerHTML = `
-      <h3>${t("model_history_achievements")}</h3>
+    campaignsCard.innerHTML = `
+      <h3>${t("model_history_campaigns")}</h3>
       ${statsHtml}
       ${badgesHtml}
       ${killSummaryHtml}
@@ -1402,6 +1396,20 @@
       log.style.display = isOpen ? "none" : "block";
       this.textContent = isOpen ? "View full log ▸" : "Hide full log ▾";
     });
+
+    // ---- Achievements — reserved for things that genuinely add value
+    // (tournament wins, painting competition wins). Painting competitions
+    // aren't tracked anywhere yet, so for now this only ever shows
+    // Tournament-context wins — a deliberately loose interim signal, not
+    // the full picture this card is meant to eventually hold.
+    if (tournamentWins.length){
+      achievementsCard.innerHTML = `
+        <h3>${t("model_history_achievements")}</h3>
+        <div class="gl-badges">
+          ${tournamentWins.map(e => `<span class="gl-badge">🏆 ${t("achievement_tournament_win")}${e.game_system ? ` — ${e.game_system}` : ""}</span>`).join("")}
+        </div>
+      `;
+    }
   }
 
   async function loadEditHistory(miniatureId){
