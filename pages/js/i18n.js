@@ -7,10 +7,21 @@
 //   Dynamic JS text:   `${t('featured_empty')}`
 //
 // Language source of truth, in priority order:
-//   1. Logged-in user's profiles.language (if session exists)
-//   2. localStorage 'miniarchive_lang'
+//   1. localStorage 'miniarchive_lang' (whatever you most recently picked
+//      in THIS browser — via the header dropdown OR a saved preference)
+//   2. Logged-in user's profiles.language (fallback for a fresh browser/
+//      device that's never picked a language here before)
 //   3. Browser language (navigator.language starts with 'fr' → 'fr')
 //   4. 'en'
+//
+// Deliberately two separate functions below:
+//   setLanguage()          — quick, local, casual switch (header dropdown).
+//                            Never touches the saved profile preference.
+//   savePreferredLanguage() — the ONLY path that writes to the profile.
+//                            Called exclusively from the Account →
+//                            Preferences "Save Preferences" button, so a
+//                            casual header toggle can never silently
+//                            overwrite something you deliberately saved.
 
 let CURRENT_LANG = "en";
 
@@ -41,9 +52,13 @@ function applyTranslations(){
 async function initLanguage(supabaseClient){
   const stored = localStorage.getItem("miniarchive_lang");
   const browserDefault = navigator.language && navigator.language.toLowerCase().startsWith("fr") ? "fr" : "en";
-  CURRENT_LANG = stored || browserDefault;
 
-  if (supabaseClient){
+  if (stored){
+    CURRENT_LANG = stored;
+  } else if (supabaseClient){
+    // No local choice yet on this browser — seed from the saved profile
+    // preference if logged in, otherwise fall back to browser language.
+    CURRENT_LANG = browserDefault;
     try {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session){
@@ -53,14 +68,13 @@ async function initLanguage(supabaseClient){
           .eq("id", session.user.id)
           .maybeSingle();
         if (error) console.error("Couldn't load language preference from profile:", error);
-        // Profile is the account-level source of truth once logged in — it
-        // should win over whatever's cached locally, since the whole point
-        // of storing it there is so it follows you across devices.
         if (profile?.language) CURRENT_LANG = profile.language;
       }
     } catch (err){
       console.error("Couldn't load language preference from profile:", err);
     }
+  } else {
+    CURRENT_LANG = browserDefault;
   }
 
   localStorage.setItem("miniarchive_lang", CURRENT_LANG);
@@ -68,29 +82,33 @@ async function initLanguage(supabaseClient){
   updateLangToggleUI();
 }
 
-async function setLanguage(lang, supabaseClient){
+function setLanguage(lang){
   CURRENT_LANG = lang;
   localStorage.setItem("miniarchive_lang", lang);
   applyTranslations();
   updateLangToggleUI();
   document.querySelectorAll(".lang-dropdown-menu.open").forEach(m => m.classList.remove("open"));
 
+  // Re-run any page-specific dynamic render functions that build text via
+  // t() at runtime (e.g. rendered cards, lists) — each page defines this
+  // if it has dynamic content that needs to react to a language switch.
+  if (typeof onLanguageChanged === "function") onLanguageChanged();
+}
+
+async function savePreferredLanguage(lang, supabaseClient){
+  setLanguage(lang); // apply immediately, same as any other switch
+
   if (supabaseClient){
     try {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session){
         const { error } = await supabaseClient.from("profiles").update({ language: lang }).eq("id", session.user.id);
-        if (error) console.error("Couldn't save language preference to profile — it will keep reverting on other pages until this is fixed:", error);
+        if (error) console.error("Couldn't save language preference to profile:", error);
       }
     } catch (err){
-      console.error("Couldn't save language preference to profile — it will keep reverting on other pages until this is fixed:", err);
+      console.error("Couldn't save language preference to profile:", err);
     }
   }
-
-  // Re-run any page-specific dynamic render functions that build text via
-  // t() at runtime (e.g. rendered cards, lists) — each page defines this
-  // if it has dynamic content that needs to react to a language switch.
-  if (typeof onLanguageChanged === "function") onLanguageChanged();
 }
 
 function updateLangToggleUI(){
