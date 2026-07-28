@@ -200,6 +200,44 @@
     color: var(--gold); border:1px solid rgba(201,162,75,0.4); padding:3px 7px; flex-shrink:0;
   }
   .add-paint-row{ display:flex; gap:10px; align-items:flex-start; }
+
+  .tally-chips-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
+  .tally-chip{
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.04em;
+    color: var(--cream-dim); background: var(--bg); border:1px solid var(--hairline);
+    padding:9px 14px; cursor:pointer; transition: border-color .15s ease, color .15s ease;
+  }
+  .tally-chip:hover{ border-color: var(--gold); color: var(--gold-bright); }
+  .tally-chip:active{ transform: scale(0.97); }
+  .tally-row{
+    display:flex; align-items:center; gap:10px; border:1px solid var(--hairline); background: var(--bg-raised);
+    padding:10px 12px; margin-bottom:8px; flex-wrap:wrap;
+  }
+  .tally-row .type-name{ font-size:0.9rem; flex:1; min-width:120px; }
+  .tally-row .count-stepper{ display:flex; align-items:center; gap:8px; }
+  .tally-row .count-stepper button{
+    width:26px; height:26px; background: var(--bg); border:1px solid var(--hairline); color: var(--cream);
+    cursor:pointer; font-size:1rem; line-height:1;
+  }
+  .tally-row .count-stepper button:hover{ border-color: var(--gold); color: var(--gold-bright); }
+  .tally-row .count-value{ font-family:'IBM Plex Mono', monospace; min-width:20px; text-align:center; }
+  .tally-row .details-toggle{
+    font-family:'IBM Plex Mono', monospace; font-size:0.66rem; color: var(--gold); background:none; border:none; cursor:pointer;
+  }
+  .tally-row .remove-tally{ background:none; border:none; color: var(--error); cursor:pointer; font-size:0.95rem; }
+  .tally-details{
+    flex-basis:100%; margin-top:10px; padding-top:10px; border-top:1px solid var(--hairline); display:none;
+  }
+  .tally-details.open{ display:block; }
+  .tally-details input[type="text"]{
+    width:100%; background: var(--bg); border:1px solid var(--hairline); color: var(--cream);
+    padding: 9px 12px; font-family:'Jost', sans-serif; font-size:0.85rem; margin-bottom:8px;
+  }
+  .tally-target-picked{
+    display:flex; align-items:center; gap:8px; border:1px solid var(--gold); background: rgba(201,162,75,0.06);
+    padding:7px 10px; margin-bottom:8px; font-size:0.82rem;
+  }
+  .tally-target-picked .clear-target{ background:none; border:none; color: var(--error); cursor:pointer; margin-left:auto; }
   .add-paint-row select{
     background: var(--bg); border:1px solid var(--hairline); color: var(--cream);
     padding: 11px 10px; font-family:'Jost', sans-serif; font-size:0.85rem; flex-shrink:0; width:150px;
@@ -559,6 +597,102 @@
           <span class="progress-note" id="teProgressNote"></span>
         </div>
       </div>
+      </div>
+    </fieldset>
+
+    <fieldset id="gameLogFieldset">
+      <div class="legend collapsible-legend" id="gameLogToggle">
+        <span>Game Log</span>
+        <span class="collapse-hint">Optional — click to expand</span>
+        <span class="collapse-arrow">▸</span>
+      </div>
+      <div id="gameLogContent" style="display:none;">
+        <div id="gameLogEntriesList"></div>
+        <button type="button" class="btn-ghost" id="addGameLogEntryBtn" style="margin-top:14px;">+ Log Activity</button>
+
+        <div class="timeline-form" id="gameLogForm" style="display:none;">
+          <div class="field-grid">
+            <div class="field">
+              <label for="glDate">Date</label>
+              <input id="glDate" type="text" inputmode="numeric" placeholder="YYYY-MM-DD" maxlength="10">
+            </div>
+            <div class="field">
+              <label for="glActivityType">Activity <span class="req">*</span></label>
+              <select id="glActivityType">
+                <option value="Game">Game</option>
+                <option value="Tournament">Tournament</option>
+                <option value="Painting Competition">Painting Competition</option>
+                <option value="Repair">Repair</option>
+                <option value="Restoration">Restoration</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-grid" id="glGameFields" style="margin-top:16px;">
+            <div class="field">
+              <label for="glContext">Context</label>
+              <select id="glContext">
+                <option value="Casual">Casual</option>
+                <option value="Matched Play">Matched Play</option>
+                <option value="Campaign">Campaign</option>
+                <option value="Tournament">Tournament</option>
+                <option value="Narrative">Narrative</option>
+                <option value="League">League</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="field" id="glCampaignField" style="display:none;">
+              <label for="glCampaignName">Campaign</label>
+              <input id="glCampaignName" type="text" placeholder="e.g. Leviathan Campaign">
+            </div>
+            <div class="field">
+              <label for="glResult">Result</label>
+              <select id="glResult">
+                <option value="">—</option>
+                <option value="Win">Win</option>
+                <option value="Loss">Loss</option>
+                <option value="Draw">Draw</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field full" style="margin-top:16px;">
+            <label>Tallies <span style="color:var(--mono); text-transform:none; letter-spacing:0;">(optional)</span></label>
+            <div class="tally-chips-row">
+              <button type="button" class="tally-chip" data-type="Character Kill">Character Kill</button>
+              <button type="button" class="tally-chip" data-type="Vehicle Kill">Vehicle Kill</button>
+              <button type="button" class="tally-chip" data-type="Monster Kill">Monster Kill</button>
+              <button type="button" class="tally-chip" data-type="Titanic Kill">Titanic Kill</button>
+              <button type="button" class="tally-chip" data-type="Warlord Kill">Warlord Kill</button>
+              <button type="button" class="tally-chip" data-type="MVP">MVP</button>
+            </div>
+            <div id="gameLogTalliesList"></div>
+            <div class="add-paint-row" style="margin-top:10px;">
+              <input type="text" id="glCustomTallyType" placeholder="Custom tally (e.g. Boss Kill, Quest Completed)…" list="tallySuggestions" style="flex:1; background:var(--bg); border:1px solid var(--hairline); color:var(--cream); padding:11px 13px; font-family:'Jost', sans-serif; font-size:0.9rem;">
+              <datalist id="tallySuggestions">
+                <option value="Character Kill">
+                <option value="Vehicle Kill">
+                <option value="Monster Kill">
+                <option value="Titanic Kill">
+                <option value="Warlord Kill">
+                <option value="MVP">
+                <option value="Objective Secured">
+              </datalist>
+              <button type="button" class="btn-ghost" id="addCustomTallyBtn">+ Add</button>
+            </div>
+          </div>
+
+          <div class="field full" style="margin-top:16px;">
+            <label for="glNotes">Notes <span style="color:var(--mono); text-transform:none; letter-spacing:0;">(optional)</span></label>
+            <textarea id="glNotes" placeholder="Anything worth remembering about this one…"></textarea>
+          </div>
+
+          <div class="submit-row" style="margin-top:26px;">
+            <button type="button" class="btn-gold" id="saveGameLogEntryBtn">Save Entry</button>
+            <button type="button" class="btn-ghost" id="cancelGameLogEntryBtn">Cancel</button>
+            <button type="button" class="btn-delete" id="deleteGameLogEntryBtn" style="display:none;">Delete Entry</button>
+          </div>
+        </div>
       </div>
     </fieldset>
 
@@ -932,6 +1066,11 @@
         await commitTimelineEntries(modelId);
       }
 
+      if (pendingGameLogEntries.some(e => e._status !== "existing") || deletedGameLogEntryIds.length){
+        progressNote.textContent = "Saving game log…";
+        await commitGameLogEntries(modelId);
+      }
+
       progressNote.textContent = "";
       showTopSuccess(`Saved. This is still a private draft — <a href="collection.html?mine=true" style="color:var(--gold-bright);">view it in My Collection</a>, or publish it below when it's ready.`);
       history.replaceState({}, "", `edit-model.html?id=${modelId}`);
@@ -986,6 +1125,11 @@
       if (pendingTimelineEntries.some(e => e._status !== "existing") || deletedTimelineEntryIds.length){
         progressNote.textContent = "Saving timeline entries…";
         await commitTimelineEntries(modelId);
+      }
+
+      if (pendingGameLogEntries.some(e => e._status !== "existing") || deletedGameLogEntryIds.length){
+        progressNote.textContent = "Saving game log…";
+        await commitGameLogEntries(modelId);
       }
 
       progressNote.textContent = "Generating Archive ID…";
@@ -1201,6 +1345,13 @@
         await commitTimelineEntries(modelId, { logEdits: true });
         progressNote.textContent = "";
         renderTimelineEntriesList();
+      }
+
+      if (pendingGameLogEntries.some(e => e._status !== "existing") || deletedGameLogEntryIds.length){
+        progressNote.textContent = "Saving game log…";
+        await commitGameLogEntries(modelId);
+        progressNote.textContent = "";
+        renderGameLogEntriesList();
       }
 
       showTopSuccess(`Saved. <a href="model.html?id=${modelId}" style="color:var(--gold-bright);">View its archive page →</a>`);
@@ -1467,6 +1618,356 @@
   function todayDateString(){
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  // ---- Game Log: activities (games, tournaments, comps, repairs) with
+  // flexible tallies. Same in-memory-pending-until-save pattern as the
+  // Creation Timeline — nothing writes to the database until the main
+  // Save/Publish action, regardless of how much gets logged first. ----
+  let pendingGameLogEntries = [];
+  let deletedGameLogEntryIds = [];
+  let nextGameLogLocalId = 1;
+  let editingGameLogLocalId = null;
+  let currentTallies = [];
+  let nextTallyLocalId = 1;
+  let activeTallyTargetLocalId = null; // which tally's "who?" search is currently focused
+
+  document.getElementById("gameLogToggle").addEventListener("click", () => {
+    const toggle = document.getElementById("gameLogToggle");
+    const content = document.getElementById("gameLogContent");
+    const isOpen = toggle.classList.toggle("open");
+    content.style.display = isOpen ? "block" : "none";
+  });
+
+  function updateGameFieldVisibility(){
+    const activityType = document.getElementById("glActivityType").value;
+    const isGameLike = activityType === "Game" || activityType === "Tournament";
+    document.getElementById("glGameFields").style.display = isGameLike ? "grid" : "none";
+    updateCampaignFieldVisibility();
+  }
+  function updateCampaignFieldVisibility(){
+    document.getElementById("glCampaignField").style.display = document.getElementById("glContext").value === "Campaign" ? "block" : "none";
+  }
+  document.getElementById("glActivityType").addEventListener("change", updateGameFieldVisibility);
+  document.getElementById("glContext").addEventListener("change", updateCampaignFieldVisibility);
+
+  function resetGameLogForm(){
+    editingGameLogLocalId = null;
+    currentTallies = [];
+    document.getElementById("glDate").value = todayDateString();
+    document.getElementById("glActivityType").value = "Game";
+    document.getElementById("glContext").value = "Casual";
+    document.getElementById("glCampaignName").value = "";
+    document.getElementById("glResult").value = "";
+    document.getElementById("glNotes").value = "";
+    document.getElementById("glCustomTallyType").value = "";
+    document.getElementById("deleteGameLogEntryBtn").style.display = "none";
+    updateGameFieldVisibility();
+    renderTallyRows();
+  }
+
+  function renderTallyRows(){
+    const list = document.getElementById("gameLogTalliesList");
+    list.innerHTML = currentTallies.map(tally => {
+      const targetHtml = (tally.targetMiniatureId || tally.targetFreetext)
+        ? `<div class="tally-target-picked"><span>${tally.targetName || tally.targetFreetext}</span><button type="button" class="clear-target" data-local-id="${tally._localId}">×</button></div>`
+        : "";
+      return `
+        <div class="tally-row" data-local-id="${tally._localId}">
+          <span class="type-name">${tally.tallyType}</span>
+          <div class="count-stepper">
+            <button type="button" class="tally-dec" data-local-id="${tally._localId}">−</button>
+            <span class="count-value">${tally.count}</span>
+            <button type="button" class="tally-inc" data-local-id="${tally._localId}">+</button>
+          </div>
+          <button type="button" class="details-toggle" data-local-id="${tally._localId}">${tally._detailsOpen ? "Hide details" : "Add details ▸"}</button>
+          <button type="button" class="remove-tally" data-local-id="${tally._localId}">×</button>
+          <div class="tally-details ${tally._detailsOpen ? "open" : ""}">
+            ${targetHtml}
+            <input type="text" placeholder="Who? Search Mini Archive…" class="tally-target-search" data-local-id="${tally._localId}" autocomplete="off">
+            <div class="paint-search-results" data-local-id="${tally._localId}"></div>
+            <textarea placeholder="Notes on this one…" class="tally-notes" data-local-id="${tally._localId}" style="width:100%; background:var(--bg); border:1px solid var(--hairline); color:var(--cream); padding:9px 12px; font-family:'Jost', sans-serif; font-size:0.85rem; min-height:50px;">${tally.notes || ""}</textarea>
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    list.querySelectorAll(".tally-inc").forEach(btn => btn.addEventListener("click", () => {
+      const tally = currentTallies.find(t => t._localId == btn.dataset.localId);
+      if (tally){ tally.count += 1; renderTallyRows(); }
+    }));
+    list.querySelectorAll(".tally-dec").forEach(btn => btn.addEventListener("click", () => {
+      const tally = currentTallies.find(t => t._localId == btn.dataset.localId);
+      if (tally && tally.count > 1){ tally.count -= 1; renderTallyRows(); }
+    }));
+    list.querySelectorAll(".remove-tally").forEach(btn => btn.addEventListener("click", () => {
+      currentTallies = currentTallies.filter(t => t._localId != btn.dataset.localId);
+      renderTallyRows();
+    }));
+    list.querySelectorAll(".details-toggle").forEach(btn => btn.addEventListener("click", () => {
+      const tally = currentTallies.find(t => t._localId == btn.dataset.localId);
+      if (tally){ tally._detailsOpen = !tally._detailsOpen; renderTallyRows(); }
+    }));
+    list.querySelectorAll(".clear-target").forEach(btn => btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const tally = currentTallies.find(t => t._localId == btn.dataset.localId);
+      if (tally){ tally.targetMiniatureId = null; tally.targetName = null; tally.targetFreetext = null; renderTallyRows(); }
+    }));
+    list.querySelectorAll(".tally-notes").forEach(el => el.addEventListener("input", () => {
+      const tally = currentTallies.find(t => t._localId == el.dataset.localId);
+      if (tally) tally.notes = el.value;
+    }));
+    list.querySelectorAll(".tally-target-search").forEach(input => {
+      input.addEventListener("input", async () => {
+        const localId = input.dataset.localId;
+        const results = list.querySelector(`.paint-search-results[data-local-id="${localId}"]`);
+        const query = input.value.trim();
+        if (query.length < 2){ results.classList.remove("open"); return; }
+
+        const { data: matches } = await supabaseClient
+          .from("miniatures")
+          .select("id, title, painter_name")
+          .ilike("title", `%${query}%`)
+          .eq("visibility", "public")
+          .eq("status", "completed")
+          .limit(10);
+
+        if (!matches || !matches.length){ results.classList.remove("open"); return; }
+        results.innerHTML = matches.map(m => `
+          <div class="paint-result-row" data-id="${m.id}" data-name="${m.title.replace(/"/g, "&quot;")}">
+            <span class="paint-result-name">${m.title}</span>
+            <span class="paint-result-meta">${m.painter_name || ""}</span>
+          </div>
+        `).join("");
+        results.classList.add("open");
+        results.querySelectorAll(".paint-result-row").forEach(row => {
+          row.addEventListener("click", () => {
+            const tally = currentTallies.find(t => t._localId == localId);
+            if (tally){
+              tally.targetMiniatureId = row.dataset.id;
+              tally.targetName = row.dataset.name;
+              tally.targetFreetext = null;
+            }
+            input.value = "";
+            results.classList.remove("open");
+            renderTallyRows();
+          });
+        });
+      });
+      // Typing without selecting a search result names an opponent freeform —
+      // committed onblur so we don't fight the search-as-you-type above.
+      input.addEventListener("blur", () => {
+        setTimeout(() => {
+          const tally = currentTallies.find(t => t._localId == input.dataset.localId);
+          if (tally && !tally.targetMiniatureId && input.value.trim()){
+            tally.targetFreetext = input.value.trim();
+            renderTallyRows();
+          }
+        }, 200); // let a click on a search result register first
+      });
+    });
+  }
+
+  function addOrIncrementTally(tallyType){
+    const existing = currentTallies.find(t => t.tallyType === tallyType && !t.targetMiniatureId && !t.targetFreetext);
+    if (existing){
+      existing.count += 1;
+    } else {
+      currentTallies.push({ _localId: nextTallyLocalId++, tallyType, count: 1, targetMiniatureId: null, targetName: null, targetFreetext: null, notes: null, _detailsOpen: false });
+    }
+    renderTallyRows();
+  }
+
+  document.querySelectorAll(".tally-chip").forEach(chip => {
+    chip.addEventListener("click", () => addOrIncrementTally(chip.dataset.type));
+  });
+  document.getElementById("addCustomTallyBtn").addEventListener("click", () => {
+    const input = document.getElementById("glCustomTallyType");
+    const value = input.value.trim();
+    if (!value) return;
+    currentTallies.push({ _localId: nextTallyLocalId++, tallyType: value, count: 1, targetMiniatureId: null, targetName: null, targetFreetext: null, notes: null, _detailsOpen: false });
+    input.value = "";
+    renderTallyRows();
+  });
+
+  function renderGameLogEntriesList(){
+    const list = document.getElementById("gameLogEntriesList");
+    if (!pendingGameLogEntries.length){ list.innerHTML = ""; return; }
+    const sorted = [...pendingGameLogEntries].sort((a, b) => (b.entryDate || "").localeCompare(a.entryDate || ""));
+    list.innerHTML = sorted.map(entry => {
+      const tallySummary = entry.tallies.map(t => `${t.tallyType} ×${t.count}`).join(", ");
+      const resultTag = entry.result ? ` · ${entry.result}` : "";
+      return `
+        <div class="timeline-event-card" data-local-id="${entry._localId}">
+          <div>
+            <div class="te-title">${entry.activityType}${resultTag}${entry._status !== "existing" ? ` <span style="color:var(--gold); font-size:0.65rem;">(unsaved)</span>` : ""}</div>
+            <div class="te-meta">${entry.entryDate}${tallySummary ? ` · ${tallySummary}` : ""}</div>
+          </div>
+        </div>
+      `;
+    }).join("");
+    list.querySelectorAll(".timeline-event-card").forEach(card => {
+      card.addEventListener("click", () => openGameLogEntryForEdit(parseInt(card.dataset.localId)));
+    });
+  }
+
+  function openGameLogEntryForEdit(localId){
+    const entry = pendingGameLogEntries.find(e => e._localId === localId);
+    if (!entry) return;
+    resetGameLogForm();
+    editingGameLogLocalId = localId;
+    document.getElementById("glDate").value = entry.entryDate;
+    document.getElementById("glActivityType").value = entry.activityType;
+    document.getElementById("glContext").value = entry.context || "Casual";
+    document.getElementById("glCampaignName").value = entry.campaignName || "";
+    document.getElementById("glResult").value = entry.result || "";
+    document.getElementById("glNotes").value = entry.notes || "";
+    updateGameFieldVisibility();
+    currentTallies = entry.tallies.map(t => ({ ...t, _localId: nextTallyLocalId++, _detailsOpen: false }));
+    renderTallyRows();
+    document.getElementById("deleteGameLogEntryBtn").style.display = "inline-block";
+    document.getElementById("gameLogForm").style.display = "block";
+    document.getElementById("gameLogForm").scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  document.getElementById("addGameLogEntryBtn").addEventListener("click", () => {
+    resetGameLogForm();
+    document.getElementById("gameLogForm").style.display = "block";
+    document.getElementById("gameLogForm").scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+  document.getElementById("cancelGameLogEntryBtn").addEventListener("click", () => {
+    document.getElementById("gameLogForm").style.display = "none";
+    resetGameLogForm();
+  });
+
+  document.getElementById("saveGameLogEntryBtn").addEventListener("click", () => {
+    const dateValue = document.getElementById("glDate").value.trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateValue)){
+      showTopError("Enter a complete date (YYYY-MM-DD).");
+      return;
+    }
+
+    const activityType = document.getElementById("glActivityType").value;
+    const isGameLike = activityType === "Game" || activityType === "Tournament";
+
+    const entryData = {
+      entryDate: dateValue,
+      activityType,
+      context: isGameLike ? document.getElementById("glContext").value : null,
+      campaignName: (isGameLike && document.getElementById("glContext").value === "Campaign") ? document.getElementById("glCampaignName").value.trim() || null : null,
+      result: isGameLike ? (document.getElementById("glResult").value || null) : null,
+      notes: document.getElementById("glNotes").value.trim() || null,
+      tallies: currentTallies.map(t => ({ tallyType: t.tallyType, count: t.count, targetMiniatureId: t.targetMiniatureId, targetName: t.targetName, targetFreetext: t.targetFreetext, notes: t.notes })),
+    };
+
+    if (editingGameLogLocalId){
+      const existing = pendingGameLogEntries.find(e => e._localId === editingGameLogLocalId);
+      Object.assign(existing, entryData);
+      if (existing._status === "existing") existing._status = "modified";
+    } else {
+      pendingGameLogEntries.push({ _localId: nextGameLogLocalId++, _dbId: null, _status: "new", ...entryData });
+    }
+
+    document.getElementById("gameLogForm").style.display = "none";
+    resetGameLogForm();
+    renderGameLogEntriesList();
+    showTopSuccess("Activity logged — it'll be saved when you save or publish this model.");
+  });
+
+  document.getElementById("deleteGameLogEntryBtn").addEventListener("click", () => {
+    if (!editingGameLogLocalId) return;
+    const entry = pendingGameLogEntries.find(e => e._localId === editingGameLogLocalId);
+    if (entry && entry._dbId) deletedGameLogEntryIds.push(entry._dbId);
+    pendingGameLogEntries = pendingGameLogEntries.filter(e => e._localId !== editingGameLogLocalId);
+    document.getElementById("gameLogForm").style.display = "none";
+    resetGameLogForm();
+    renderGameLogEntriesList();
+  });
+
+  async function loadExistingGameLogEntries(){
+    if (!modelId) return;
+    const { data: entries } = await supabaseClient
+      .from("game_log_entries")
+      .select("id, entry_date, activity_type, context, campaign_name, result, notes")
+      .eq("miniature_id", modelId)
+      .order("entry_date", { ascending: false });
+
+    for (const entry of (entries || [])){
+      const { data: tallies } = await supabaseClient
+        .from("game_log_tallies")
+        .select("tally_type, count, target_miniature_id, target_name:target_miniature_id(title), target_name_freetext, notes")
+        .eq("game_log_entry_id", entry.id);
+
+      pendingGameLogEntries.push({
+        _localId: nextGameLogLocalId++,
+        _dbId: entry.id,
+        _status: "existing",
+        entryDate: entry.entry_date,
+        activityType: entry.activity_type,
+        context: entry.context,
+        campaignName: entry.campaign_name,
+        result: entry.result,
+        notes: entry.notes,
+        tallies: (tallies || []).map(t => ({
+          tallyType: t.tally_type,
+          count: t.count,
+          targetMiniatureId: t.target_miniature_id,
+          targetName: t.target_name?.title || null,
+          targetFreetext: t.target_name_freetext,
+          notes: t.notes,
+        })),
+      });
+    }
+    renderGameLogEntriesList();
+  }
+
+  async function commitGameLogEntries(miniatureId){
+    if (deletedGameLogEntryIds.length){
+      await supabaseClient.from("game_log_entries").delete().in("id", deletedGameLogEntryIds);
+      deletedGameLogEntryIds = [];
+    }
+
+    for (const entry of pendingGameLogEntries){
+      if (entry._status === "existing") continue;
+
+      const payload = {
+        miniature_id: miniatureId,
+        entry_date: entry.entryDate,
+        activity_type: entry.activityType,
+        context: entry.context,
+        campaign_name: entry.campaignName,
+        result: entry.result,
+        notes: entry.notes,
+      };
+
+      let entryId = entry._dbId;
+      if (entryId){
+        const { error } = await supabaseClient.from("game_log_entries").update(payload).eq("id", entryId);
+        if (error) throw error;
+      } else {
+        const { data: inserted, error } = await supabaseClient.from("game_log_entries").insert(payload).select().single();
+        if (error) throw error;
+        entryId = inserted.id;
+      }
+
+      await supabaseClient.from("game_log_tallies").delete().eq("game_log_entry_id", entryId);
+      if (entry.tallies.length){
+        await supabaseClient.from("game_log_tallies").insert(
+          entry.tallies.map(t => ({
+            game_log_entry_id: entryId,
+            tally_type: t.tallyType,
+            count: t.count,
+            target_miniature_id: t.targetMiniatureId,
+            target_confirmed: false, // reciprocal confirmation UI is a future addition — always starts unconfirmed
+            target_name_freetext: t.targetFreetext,
+            notes: t.notes,
+          }))
+        );
+      }
+
+      entry._dbId = entryId;
+      entry._status = "existing";
+    }
   }
 
   let linkedPaintIds = []; // for the Paint category's multi-paint list
@@ -1917,6 +2418,13 @@
       document.getElementById("timelineToggle").classList.add("open");
       document.getElementById("timelineContent").style.display = "block";
     }
+
+    await loadExistingGameLogEntries();
+    if (pendingGameLogEntries.length){
+      document.getElementById("gameLogToggle").classList.add("open");
+      document.getElementById("gameLogContent").style.display = "block";
+    }
+
     applyStatusUI();
     document.getElementById("formWrap").style.display = "block";
   })();
