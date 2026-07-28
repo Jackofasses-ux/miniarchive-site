@@ -233,7 +233,7 @@
     margin-top:6px; font-family:'Cormorant Garamond', serif; font-size:1.15rem; font-weight:600; color: var(--cream);
   }
   .history-field .value a{ color: var(--gold-bright); text-decoration:underline; }
-  .gl-stats-row{ display:flex; gap:20px; margin-bottom: 16px; }
+  .gl-stats-row{ display:flex; flex-wrap:wrap; gap:16px 20px; margin-bottom: 16px; }
   .gl-stat .num{ font-family:'Cormorant Garamond', serif; font-size:1.6rem; font-weight:600; color: var(--gold-bright); }
   .gl-stat .label{ font-family:'IBM Plex Mono', monospace; font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); margin-top:2px; }
   .gl-badges{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
@@ -1384,7 +1384,9 @@
     const statsHtml = `
       <div class="gl-stats-row">
         <div class="gl-stat"><div class="num">${totalGames}</div><div class="label">Games</div></div>
-        <div class="gl-stat"><div class="num">${wins}-${losses}-${draws}</div><div class="label">W-L-D</div></div>
+        <div class="gl-stat"><div class="num">${wins}</div><div class="label">${t("stat_wins")}</div></div>
+        <div class="gl-stat"><div class="num">${losses}</div><div class="label">${t("stat_losses")}</div></div>
+        <div class="gl-stat"><div class="num">${draws}</div><div class="label">${t("stat_draws")}</div></div>
         ${campaignEntries.length ? `<div class="gl-stat"><div class="num">${campaignEntries.length}</div><div class="label">Campaigns</div></div>` : ""}
         ${tournamentEntries.length ? `<div class="gl-stat"><div class="num">${tournamentEntries.length}</div><div class="label">Tournaments</div></div>` : ""}
       </div>
