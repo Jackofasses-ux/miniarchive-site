@@ -497,6 +497,7 @@
       .eq("profile_id", session.user.id)
       .order("sort_order", { ascending: true });
 
+    document.getElementById("linksList").innerHTML = "";
     (links || []).forEach(l => addLinkRow(l.platform, l.url, l.id, l.is_public));
 
     const { data: models } = await supabaseClient
