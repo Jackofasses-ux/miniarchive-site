@@ -201,37 +201,34 @@
   }
   .add-paint-row{ display:flex; gap:10px; align-items:flex-start; }
 
-  .tally-chips-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px; }
-  .tally-chip{
-    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.04em;
-    color: var(--cream-dim); background: var(--bg); border:1px solid var(--hairline);
-    padding:9px 14px; cursor:pointer; transition: border-color .15s ease, color .15s ease;
-  }
-  .tally-chip:hover{ border-color: var(--gold); color: var(--gold-bright); }
-  .tally-chip:active{ transform: scale(0.97); }
   .tally-row{
     display:flex; align-items:center; gap:10px; border:1px solid var(--hairline); background: var(--bg-raised);
     padding:10px 12px; margin-bottom:8px; flex-wrap:wrap;
   }
+  .tally-row.virtual{ background:transparent; border-style:dashed; opacity:0.7; }
   .tally-row .type-name{ font-size:0.9rem; flex:1; min-width:120px; }
   .tally-row .count-stepper{ display:flex; align-items:center; gap:8px; }
   .tally-row .count-stepper button{
     width:26px; height:26px; background: var(--bg); border:1px solid var(--hairline); color: var(--cream);
     cursor:pointer; font-size:1rem; line-height:1;
   }
-  .tally-row .count-stepper button:hover{ border-color: var(--gold); color: var(--gold-bright); }
+  .tally-row .count-stepper button:hover:not(:disabled){ border-color: var(--gold); color: var(--gold-bright); }
+  .tally-row .count-stepper button:disabled{ opacity:0.3; cursor:default; }
   .tally-row .count-value{ font-family:'IBM Plex Mono', monospace; min-width:20px; text-align:center; }
-  .tally-row .details-toggle{
+  .tally-row .add-detail-btn{
     font-family:'IBM Plex Mono', monospace; font-size:0.66rem; color: var(--gold); background:none; border:none; cursor:pointer;
   }
-  .tally-row .remove-tally{ background:none; border:none; color: var(--error); cursor:pointer; font-size:0.95rem; }
-  .tally-details{
-    flex-basis:100%; margin-top:10px; padding-top:10px; border-top:1px solid var(--hairline); display:none;
+  .tally-row .remove-tally-type{ background:none; border:none; color: var(--error); cursor:pointer; font-size:0.95rem; }
+  .tally-details-wrap{ flex-basis:100%; }
+  .tally-detail-entry{
+    margin-top:10px; padding-top:10px; border-top:1px solid var(--hairline);
   }
-  .tally-details.open{ display:block; }
-  .tally-details input[type="text"]{
+  .tally-detail-entry input[type="text"], .tally-detail-entry textarea{
     width:100%; background: var(--bg); border:1px solid var(--hairline); color: var(--cream);
     padding: 9px 12px; font-family:'Jost', sans-serif; font-size:0.85rem; margin-bottom:8px;
+  }
+  .tally-detail-entry .remove-detail{
+    font-family:'IBM Plex Mono', monospace; font-size:0.64rem; color: var(--error); background:none; border:none; cursor:pointer;
   }
   .tally-target-picked{
     display:flex; align-items:center; gap:8px; border:1px solid var(--gold); background: rgba(201,162,75,0.06);
@@ -627,6 +624,7 @@
                 <option value="Necromunda">
                 <option value="Frostgrave">
                 <option value="Mordheim">
+                <option value="Warmachine">
                 <option value="D&D">
               </datalist>
             </div>
@@ -662,26 +660,9 @@
 
           <div class="field full" style="margin-top:16px;">
             <label>Tallies <span style="color:var(--mono); text-transform:none; letter-spacing:0;">(optional)</span></label>
-            <div class="tally-chips-row">
-              <button type="button" class="tally-chip" data-type="Character Kill">Character Kill</button>
-              <button type="button" class="tally-chip" data-type="Vehicle Kill">Vehicle Kill</button>
-              <button type="button" class="tally-chip" data-type="Monster Kill">Monster Kill</button>
-              <button type="button" class="tally-chip" data-type="Titanic Kill">Titanic Kill</button>
-              <button type="button" class="tally-chip" data-type="Warlord Kill">Warlord Kill</button>
-              <button type="button" class="tally-chip" data-type="MVP">MVP</button>
-            </div>
             <div id="gameLogTalliesList"></div>
             <div class="add-paint-row" style="margin-top:10px;">
-              <input type="text" id="glCustomTallyType" placeholder="Custom tally (e.g. Boss Kill, Quest Completed)…" list="tallySuggestions" style="flex:1; background:var(--bg); border:1px solid var(--hairline); color:var(--cream); padding:11px 13px; font-family:'Jost', sans-serif; font-size:0.9rem;">
-              <datalist id="tallySuggestions">
-                <option value="Character Kill">
-                <option value="Vehicle Kill">
-                <option value="Monster Kill">
-                <option value="Titanic Kill">
-                <option value="Warlord Kill">
-                <option value="MVP">
-                <option value="Objective Secured">
-              </datalist>
+              <input type="text" id="glCustomTallyType" placeholder="Add a different tally type…" style="flex:1; background:var(--bg); border:1px solid var(--hairline); color:var(--cream); padding:11px 13px; font-family:'Jost', sans-serif; font-size:0.9rem;">
               <button type="button" class="btn-ghost" id="addCustomTallyBtn">+ Add</button>
             </div>
           </div>
@@ -1663,61 +1644,136 @@
     renderTallyRows();
   }
 
+  // Suggested tallies vary by game system — not a rigid schema, just smarter
+  // defaults. Anything typed that isn't listed here still works fine via
+  // "+ Add a different tally type" below; this only changes which rows show
+  // up pre-populated at 0.
+  const GAME_SYSTEM_TALLY_SUGGESTIONS = {
+    "Warhammer 40,000": ["Character Kill", "Vehicle Kill", "Monster Kill", "Titanic Kill", "Warlord Kill", "MVP", "Objective Secured"],
+    "Kill Team": ["Operative Kill", "Objective Secured", "MVP"],
+    "Age of Sigmar": ["Hero Kill", "Monster Kill", "War Machine Kill", "MVP", "Objective Secured"],
+    "Warhammer: The Old World": ["Hero Kill", "Monster Kill", "War Machine Kill", "MVP"],
+    "Necromunda": ["Ganger Down", "Leader Down", "Objective Secured"],
+    "Frostgrave": ["Wizard KO", "Apprentice KO", "Treasure Retrieved", "Scenario Victory"],
+    "Mordheim": ["Warband Member Down", "Leader Down", "Treasure Retrieved"],
+    "Warmachine": ["Warcaster Kill", "Warjack Destroyed", "Solo Kill", "Scenario Point"],
+    "D&D": ["Boss Kill", "Level Up", "Quest Completed", "Character Death", "Magic Item Found"],
+  };
+  const DEFAULT_TALLY_SUGGESTIONS = ["Kill", "Objective Secured", "MVP"];
+
+  function getTallySuggestions(){
+    const system = document.getElementById("glGameSystem").value.trim();
+    return GAME_SYSTEM_TALLY_SUGGESTIONS[system] || DEFAULT_TALLY_SUGGESTIONS;
+  }
+
+  document.getElementById("glGameSystem").addEventListener("input", renderTallyRows);
+
   function renderTallyRows(){
     const list = document.getElementById("gameLogTalliesList");
-    list.innerHTML = currentTallies.map(tally => {
-      const targetHtml = (tally.targetMiniatureId || tally.targetFreetext)
-        ? `<div class="tally-target-picked"><span>${tally.targetName || tally.targetFreetext}</span><button type="button" class="clear-target" data-local-id="${tally._localId}">×</button></div>`
-        : "";
-      return `
-        <div class="tally-row" data-local-id="${tally._localId}">
-          <span class="type-name">${tally.tallyType}</span>
-          <div class="count-stepper">
-            <button type="button" class="tally-dec" data-local-id="${tally._localId}">−</button>
-            <span class="count-value">${tally.count}</span>
-            <button type="button" class="tally-inc" data-local-id="${tally._localId}">+</button>
-          </div>
-          <button type="button" class="details-toggle" data-local-id="${tally._localId}">${tally._detailsOpen ? "Hide details" : "Add details ▸"}</button>
-          <button type="button" class="remove-tally" data-local-id="${tally._localId}">×</button>
-          <div class="tally-details ${tally._detailsOpen ? "open" : ""}">
-            ${targetHtml}
-            <input type="text" placeholder="Who? Search Mini Archive…" class="tally-target-search" data-local-id="${tally._localId}" autocomplete="off">
-            <div class="paint-search-results" data-local-id="${tally._localId}"></div>
-            <textarea placeholder="Notes on this one…" class="tally-notes" data-local-id="${tally._localId}" style="width:100%; background:var(--bg); border:1px solid var(--hairline); color:var(--cream); padding:9px 12px; font-family:'Jost', sans-serif; font-size:0.85rem; min-height:50px;">${tally.notes || ""}</textarea>
-          </div>
-        </div>
-      `;
-    }).join("");
+    const existingTypes = new Set(currentTallies.map(t => t.tallyType));
+    const virtualTypes = getTallySuggestions().filter(s => !existingTypes.has(s));
 
+    const realRowsHtml = currentTallies.map(tally => renderTallyRow(tally, false)).join("");
+    const virtualRowsHtml = virtualTypes.map(type => renderTallyRow({ tallyType: type, count: 0, details: [] }, true)).join("");
+    list.innerHTML = realRowsHtml + virtualRowsHtml;
+
+    wireTallyRowEvents(list);
+  }
+
+  function renderTallyRow(tally, isVirtual){
+    const idAttr = isVirtual ? `data-virtual-type="${tally.tallyType.replace(/"/g, "&quot;")}"` : `data-local-id="${tally._localId}"`;
+    const canAddDetail = !isVirtual && tally.details.length < tally.count;
+    const detailsHtml = isVirtual ? "" : tally.details.map(d => renderDetailEntry(tally._localId, d)).join("");
+    return `
+      <div class="tally-row${isVirtual ? " virtual" : ""}">
+        <span class="type-name">${tally.tallyType}</span>
+        <div class="count-stepper">
+          <button type="button" class="tally-dec" ${idAttr} ${tally.count === 0 ? "disabled" : ""}>−</button>
+          <span class="count-value">${tally.count}</span>
+          <button type="button" class="tally-inc" ${idAttr}>+</button>
+        </div>
+        ${!isVirtual ? `<button type="button" class="remove-tally-type" data-local-id="${tally._localId}">×</button>` : ""}
+        <div class="tally-details-wrap">
+          ${detailsHtml}
+          ${canAddDetail ? `<button type="button" class="add-detail-btn" data-local-id="${tally._localId}">+ Add detail for one of these</button>` : ""}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderDetailEntry(tallyLocalId, detail){
+    const hasTarget = detail.targetMiniatureId || detail.targetFreetext;
+    const targetHtml = hasTarget
+      ? `<div class="tally-target-picked"><span>${detail.targetName || detail.targetFreetext}</span><button type="button" class="clear-target" data-local-id="${tallyLocalId}" data-detail-id="${detail._detailLocalId}">×</button></div>`
+      : `<input type="text" placeholder="Who? Search Mini Archive or type a name…" class="tally-target-search" data-local-id="${tallyLocalId}" data-detail-id="${detail._detailLocalId}" autocomplete="off">
+         <div class="paint-search-results" data-local-id="${tallyLocalId}" data-detail-id="${detail._detailLocalId}"></div>`;
+    return `
+      <div class="tally-detail-entry" data-local-id="${tallyLocalId}" data-detail-id="${detail._detailLocalId}">
+        ${targetHtml}
+        <textarea placeholder="Notes on this one…" class="tally-detail-notes" data-local-id="${tallyLocalId}" data-detail-id="${detail._detailLocalId}">${detail.notes || ""}</textarea>
+        <button type="button" class="remove-detail" data-local-id="${tallyLocalId}" data-detail-id="${detail._detailLocalId}">Remove this detail</button>
+      </div>
+    `;
+  }
+
+  function wireTallyRowEvents(list){
     list.querySelectorAll(".tally-inc").forEach(btn => btn.addEventListener("click", () => {
-      const tally = currentTallies.find(t => t._localId == btn.dataset.localId);
-      if (tally){ tally.count += 1; renderTallyRows(); }
+      if (btn.dataset.virtualType){
+        currentTallies.push({ _localId: nextTallyLocalId++, tallyType: btn.dataset.virtualType, count: 1, details: [] });
+      } else {
+        const tally = currentTallies.find(t => t._localId == btn.dataset.localId);
+        if (tally) tally.count += 1;
+      }
+      renderTallyRows();
     }));
+
     list.querySelectorAll(".tally-dec").forEach(btn => btn.addEventListener("click", () => {
+      if (btn.dataset.virtualType) return; // already at 0, nothing to do
       const tally = currentTallies.find(t => t._localId == btn.dataset.localId);
-      if (tally && tally.count > 1){ tally.count -= 1; renderTallyRows(); }
+      if (!tally || tally.count === 0) return;
+      tally.count -= 1;
+      if (tally.details.length > tally.count) tally.details = tally.details.slice(0, tally.count);
+      if (tally.count === 0 && tally.details.length === 0){
+        currentTallies = currentTallies.filter(t => t !== tally); // drop back to a virtual suggestion
+      }
+      renderTallyRows();
     }));
-    list.querySelectorAll(".remove-tally").forEach(btn => btn.addEventListener("click", () => {
+
+    list.querySelectorAll(".remove-tally-type").forEach(btn => btn.addEventListener("click", () => {
       currentTallies = currentTallies.filter(t => t._localId != btn.dataset.localId);
       renderTallyRows();
     }));
-    list.querySelectorAll(".details-toggle").forEach(btn => btn.addEventListener("click", () => {
+
+    list.querySelectorAll(".add-detail-btn").forEach(btn => btn.addEventListener("click", () => {
       const tally = currentTallies.find(t => t._localId == btn.dataset.localId);
-      if (tally){ tally._detailsOpen = !tally._detailsOpen; renderTallyRows(); }
+      if (tally) tally.details.push({ _detailLocalId: nextTallyLocalId++, targetMiniatureId: null, targetName: null, targetFreetext: null, notes: null });
+      renderTallyRows();
     }));
+
+    list.querySelectorAll(".remove-detail").forEach(btn => btn.addEventListener("click", () => {
+      const tally = currentTallies.find(t => t._localId == btn.dataset.localId);
+      if (tally) tally.details = tally.details.filter(d => d._detailLocalId != btn.dataset.detailId);
+      renderTallyRows();
+    }));
+
     list.querySelectorAll(".clear-target").forEach(btn => btn.addEventListener("click", (e) => {
       e.stopPropagation();
       const tally = currentTallies.find(t => t._localId == btn.dataset.localId);
-      if (tally){ tally.targetMiniatureId = null; tally.targetName = null; tally.targetFreetext = null; renderTallyRows(); }
+      const detail = tally?.details.find(d => d._detailLocalId == btn.dataset.detailId);
+      if (detail){ detail.targetMiniatureId = null; detail.targetName = null; detail.targetFreetext = null; renderTallyRows(); }
     }));
-    list.querySelectorAll(".tally-notes").forEach(el => el.addEventListener("input", () => {
+
+    list.querySelectorAll(".tally-detail-notes").forEach(el => el.addEventListener("input", () => {
       const tally = currentTallies.find(t => t._localId == el.dataset.localId);
-      if (tally) tally.notes = el.value;
+      const detail = tally?.details.find(d => d._detailLocalId == el.dataset.detailId);
+      if (detail) detail.notes = el.value;
     }));
+
     list.querySelectorAll(".tally-target-search").forEach(input => {
       input.addEventListener("input", async () => {
-        const localId = input.dataset.localId;
-        const results = list.querySelector(`.paint-search-results[data-local-id="${localId}"]`);
+        const tallyLocalId = input.dataset.localId;
+        const detailId = input.dataset.detailId;
+        const results = list.querySelector(`.paint-search-results[data-local-id="${tallyLocalId}"][data-detail-id="${detailId}"]`);
         const query = input.value.trim();
         if (query.length < 2){ results.classList.remove("open"); return; }
 
@@ -1739,25 +1795,24 @@
         results.classList.add("open");
         results.querySelectorAll(".paint-result-row").forEach(row => {
           row.addEventListener("click", () => {
-            const tally = currentTallies.find(t => t._localId == localId);
-            if (tally){
-              tally.targetMiniatureId = row.dataset.id;
-              tally.targetName = row.dataset.name;
-              tally.targetFreetext = null;
+            const tally = currentTallies.find(t => t._localId == tallyLocalId);
+            const detail = tally?.details.find(d => d._detailLocalId == detailId);
+            if (detail){
+              detail.targetMiniatureId = row.dataset.id;
+              detail.targetName = row.dataset.name;
+              detail.targetFreetext = null;
             }
-            input.value = "";
-            results.classList.remove("open");
             renderTallyRows();
           });
         });
       });
-      // Typing without selecting a search result names an opponent freeform —
-      // committed onblur so we don't fight the search-as-you-type above.
+      // Typing without selecting a search result names an opponent freeform.
       input.addEventListener("blur", () => {
         setTimeout(() => {
           const tally = currentTallies.find(t => t._localId == input.dataset.localId);
-          if (tally && !tally.targetMiniatureId && input.value.trim()){
-            tally.targetFreetext = input.value.trim();
+          const detail = tally?.details.find(d => d._detailLocalId == input.dataset.detailId);
+          if (detail && !detail.targetMiniatureId && input.value.trim()){
+            detail.targetFreetext = input.value.trim();
             renderTallyRows();
           }
         }, 200); // let a click on a search result register first
@@ -1765,24 +1820,11 @@
     });
   }
 
-  function addOrIncrementTally(tallyType){
-    const existing = currentTallies.find(t => t.tallyType === tallyType && !t.targetMiniatureId && !t.targetFreetext);
-    if (existing){
-      existing.count += 1;
-    } else {
-      currentTallies.push({ _localId: nextTallyLocalId++, tallyType, count: 1, targetMiniatureId: null, targetName: null, targetFreetext: null, notes: null, _detailsOpen: false });
-    }
-    renderTallyRows();
-  }
-
-  document.querySelectorAll(".tally-chip").forEach(chip => {
-    chip.addEventListener("click", () => addOrIncrementTally(chip.dataset.type));
-  });
   document.getElementById("addCustomTallyBtn").addEventListener("click", () => {
     const input = document.getElementById("glCustomTallyType");
     const value = input.value.trim();
     if (!value) return;
-    currentTallies.push({ _localId: nextTallyLocalId++, tallyType: value, count: 1, targetMiniatureId: null, targetName: null, targetFreetext: null, notes: null, _detailsOpen: false });
+    currentTallies.push({ _localId: nextTallyLocalId++, tallyType: value, count: 1, details: [] });
     input.value = "";
     renderTallyRows();
   });
@@ -1820,7 +1862,11 @@
     document.getElementById("glResult").value = entry.result || "";
     document.getElementById("glNotes").value = entry.notes || "";
     updateCampaignFieldVisibility();
-    currentTallies = entry.tallies.map(t => ({ ...t, _localId: nextTallyLocalId++, _detailsOpen: false }));
+    currentTallies = entry.tallies.map(t => ({
+      ...t,
+      _localId: nextTallyLocalId++,
+      details: (t.details || []).map(d => ({ ...d, _detailLocalId: nextTallyLocalId++ })),
+    }));
     renderTallyRows();
     document.getElementById("deleteGameLogEntryBtn").style.display = "inline-block";
     document.getElementById("gameLogForm").style.display = "block";
@@ -1851,7 +1897,7 @@
       campaignName: document.getElementById("glContext").value === "Campaign" ? document.getElementById("glCampaignName").value.trim() || null : null,
       result: document.getElementById("glResult").value || null,
       notes: document.getElementById("glNotes").value.trim() || null,
-      tallies: currentTallies.map(t => ({ tallyType: t.tallyType, count: t.count, targetMiniatureId: t.targetMiniatureId, targetName: t.targetName, targetFreetext: t.targetFreetext, notes: t.notes })),
+      tallies: currentTallies.map(t => ({ tallyType: t.tallyType, count: t.count, details: t.details.map(d => ({ targetMiniatureId: d.targetMiniatureId, targetName: d.targetName, targetFreetext: d.targetFreetext, notes: d.notes })) })),
     };
 
     if (editingGameLogLocalId){
@@ -1892,6 +1938,20 @@
         .select("tally_type, count, target_miniature_id, target_name:target_miniature_id(title), target_name_freetext, notes")
         .eq("game_log_entry_id", entry.id);
 
+      const grouped = {};
+      (tallies || []).forEach(t => {
+        if (!grouped[t.tally_type]) grouped[t.tally_type] = { count: 0, details: [] };
+        grouped[t.tally_type].count += t.count;
+        if (t.target_miniature_id || t.target_name_freetext){
+          grouped[t.tally_type].details.push({
+            targetMiniatureId: t.target_miniature_id,
+            targetName: t.target_name?.title || null,
+            targetFreetext: t.target_name_freetext,
+            notes: t.notes,
+          });
+        }
+      });
+
       pendingGameLogEntries.push({
         _localId: nextGameLogLocalId++,
         _dbId: entry.id,
@@ -1902,14 +1962,7 @@
         campaignName: entry.campaign_name,
         result: entry.result,
         notes: entry.notes,
-        tallies: (tallies || []).map(t => ({
-          tallyType: t.tally_type,
-          count: t.count,
-          targetMiniatureId: t.target_miniature_id,
-          targetName: t.target_name?.title || null,
-          targetFreetext: t.target_name_freetext,
-          notes: t.notes,
-        })),
+        tallies: Object.keys(grouped).map(type => ({ tallyType: type, count: grouped[type].count, details: grouped[type].details })),
       });
     }
     renderGameLogEntriesList();
@@ -1945,18 +1998,35 @@
       }
 
       await supabaseClient.from("game_log_tallies").delete().eq("game_log_entry_id", entryId);
-      if (entry.tallies.length){
-        await supabaseClient.from("game_log_tallies").insert(
-          entry.tallies.map(t => ({
+
+      const tallyRows = [];
+      entry.tallies.forEach(t => {
+        (t.details || []).forEach(d => {
+          tallyRows.push({
             game_log_entry_id: entryId,
             tally_type: t.tallyType,
-            count: t.count,
-            target_miniature_id: t.targetMiniatureId,
+            count: 1,
+            target_miniature_id: d.targetMiniatureId,
             target_confirmed: false, // reciprocal confirmation UI is a future addition — always starts unconfirmed
-            target_name_freetext: t.targetFreetext,
-            notes: t.notes,
-          }))
-        );
+            target_name_freetext: d.targetFreetext,
+            notes: d.notes,
+          });
+        });
+        const undetailedCount = t.count - (t.details ? t.details.length : 0);
+        if (undetailedCount > 0){
+          tallyRows.push({
+            game_log_entry_id: entryId,
+            tally_type: t.tallyType,
+            count: undetailedCount,
+            target_miniature_id: null,
+            target_confirmed: false,
+            target_name_freetext: null,
+            notes: null,
+          });
+        }
+      });
+      if (tallyRows.length){
+        await supabaseClient.from("game_log_tallies").insert(tallyRows);
       }
 
       entry._dbId = entryId;
