@@ -233,6 +233,10 @@
     margin-top:6px; font-family:'Cormorant Garamond', serif; font-size:1.15rem; font-weight:600; color: var(--cream);
   }
   .history-field .value a{ color: var(--gold-bright); text-decoration:underline; }
+  .gl-subhead{
+    font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase;
+    color: var(--gold); margin-bottom:10px;
+  }
   .gl-stats-row{ display:flex; flex-wrap:wrap; gap:16px 20px; margin-bottom: 16px; }
   .gl-stat .num{ font-family:'Cormorant Garamond', serif; font-size:1.6rem; font-weight:600; color: var(--gold-bright); }
   .gl-stat .label{ font-family:'IBM Plex Mono', monospace; font-size:0.6rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--mono); margin-top:2px; }
@@ -1382,15 +1386,16 @@
     const tournamentWins = tournamentEntries.filter(e => e.result === "Win");
 
     const statsHtml = `
+      <div class="gl-subhead">${t("gl_subhead_record")}</div>
       <div class="gl-stats-row">
-        <div class="gl-stat"><div class="num">${totalGames}</div><div class="label">Games</div></div>
+        <div class="gl-stat"><div class="num">${totalGames}</div><div class="label">${t("stat_games")}</div></div>
         <div class="gl-stat"><div class="num">${wins}</div><div class="label">${t("stat_wins")}</div></div>
         <div class="gl-stat"><div class="num">${losses}</div><div class="label">${t("stat_losses")}</div></div>
         <div class="gl-stat"><div class="num">${draws}</div><div class="label">${t("stat_draws")}</div></div>
-        ${campaignEntries.length ? `<div class="gl-stat"><div class="num">${campaignEntries.length}</div><div class="label">Campaigns</div></div>` : ""}
-        ${tournamentEntries.length ? `<div class="gl-stat"><div class="num">${tournamentEntries.length}</div><div class="label">Tournaments</div></div>` : ""}
+        ${campaignEntries.length ? `<div class="gl-stat"><div class="num">${campaignEntries.length}</div><div class="label">${t("stat_campaigns")}</div></div>` : ""}
+        ${tournamentEntries.length ? `<div class="gl-stat"><div class="num">${tournamentEntries.length}</div><div class="label">${t("stat_tournaments")}</div></div>` : ""}
       </div>
-      ${Object.keys(killTotals).length ? `<div class="gl-kill-summary">${Object.keys(killTotals).map(type => `${type} ×${killTotals[type]}`).join(" · ")}</div>` : ""}
+      ${Object.keys(killTotals).length ? `<div class="gl-subhead">${t("gl_subhead_kills")}</div><div class="gl-kill-summary">${Object.keys(killTotals).map(type => `${type} ×${killTotals[type]}`).join(" · ")}</div>` : ""}
     `;
 
     // ---- Which entry earned which milestone, so it can be shown inline
