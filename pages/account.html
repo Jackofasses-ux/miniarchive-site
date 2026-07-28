@@ -822,7 +822,6 @@
     const { data: { session } } = await supabaseClient.auth.getSession();
     currentSession = session;
     await initLanguage(supabaseClient);
-    document.getElementById("prefLanguage").value = CURRENT_LANG;
 
     if (!session){
       document.getElementById("gate").style.display = "block";
@@ -832,14 +831,27 @@
     renderLoggedInNav(session);
     document.getElementById("dashWrap").style.display = "block";
     loadDashboard(session);
+    loadSavedLanguagePreference(session);
   })();
+
+  // This is deliberately independent of CURRENT_LANG / the header dropdown —
+  // it shows only what's actually saved to your profile, fetched fresh from
+  // the database, so switching the page's display language anywhere never
+  // makes it look like your saved preference changed too.
+  async function loadSavedLanguagePreference(session){
+    const { data: profile } = await supabaseClient
+      .from("profiles")
+      .select("language")
+      .eq("id", session.user.id)
+      .maybeSingle();
+    document.getElementById("prefLanguage").value = profile?.language || "en";
+  }
 
   function onLanguageChanged(){
     if (currentSession){
       renderLoggedInNav(currentSession);
       loadDashboard(currentSession);
     }
-    document.getElementById("prefLanguage").value = CURRENT_LANG;
   }
 
   document.getElementById("savePreferencesBtn").addEventListener("click", async () => {
