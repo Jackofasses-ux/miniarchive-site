@@ -212,18 +212,21 @@
   .hero-actions{ display:flex; gap:16px; margin-top: 44px; }
 
   /* ---------- Ticker strip ---------- */
-  .ticker{
+  .feature-grid{
     border-top: 1px solid var(--hairline);
     border-bottom: 1px solid var(--hairline);
-    padding: 18px 56px;
+    padding: 40px 56px;
     display:flex;
-    gap: 60px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--mono);
-    letter-spacing: 0.05em;
+    gap: 50px;
     flex-wrap: wrap;
   }
+  .feature-item{ display:flex; align-items:flex-start; gap:14px; flex:1; min-width:180px; }
+  .feature-item img{ width:36px; height:36px; object-fit:contain; flex-shrink:0; margin-top:2px; }
+  .feature-label{
+    font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.1em; text-transform:uppercase;
+    color: var(--gold-bright);
+  }
+  .feature-desc{ margin-top:4px; font-size:0.85rem; color: var(--cream-dim); line-height:1.4; }
   .ticker span b{ color: var(--gold); font-weight: 500; }
 
   /* ---------- Section shell ---------- */
@@ -391,7 +394,7 @@
     header{ padding: 18px 24px; }
     nav ul{ display:none; }
     .hero{ padding: 80px 24px 70px; }
-    .ticker{ padding: 16px 24px; gap: 30px; }
+    .feature-grid{ padding: 24px; gap: 28px; }
     section.block{ padding: 70px 24px; }
     .grid-3, .how-grid{ grid-template-columns: 1fr; }
     .cert-teaser{ grid-template-columns: 1fr; gap: 40px; }
@@ -445,11 +448,42 @@
   </div>
 </section>
 
-<div class="ticker">
-  <span><b>01</b> — <span data-i18n="ticker_1">Model created</span></span>
-  <span><b>02</b> — <span data-i18n="ticker_2">Every step logged</span></span>
-  <span><b>03</b> — <span data-i18n="ticker_3">Photographed, front to back</span></span>
-  <span><b>04</b> — <span data-i18n="ticker_4">Archived for good</span></span>
+<div class="feature-grid">
+  <div class="feature-item">
+    <img src="images/icon-photograph.png" alt="">
+    <div>
+      <div class="feature-label" data-i18n="feature_photograph_label">Photograph</div>
+      <div class="feature-desc" data-i18n="feature_photograph_desc">Showcase your finished work.</div>
+    </div>
+  </div>
+  <div class="feature-item">
+    <img src="images/icon-document.png" alt="">
+    <div>
+      <div class="feature-label" data-i18n="feature_document_label">Document</div>
+      <div class="feature-desc" data-i18n="feature_document_desc">Record recipes, techniques & notes.</div>
+    </div>
+  </div>
+  <div class="feature-item">
+    <img src="images/icon-track.png" alt="">
+    <div>
+      <div class="feature-label" data-i18n="feature_track_label">Track</div>
+      <div class="feature-desc" data-i18n="feature_track_desc">Log time and capture progress.</div>
+    </div>
+  </div>
+  <div class="feature-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1.4" style="width:36px; height:36px; flex-shrink:0; margin-top:2px;"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <div>
+      <div class="feature-label" data-i18n="feature_organize_label">Organize</div>
+      <div class="feature-desc" data-i18n="feature_organize_desc">Curate collections and displays.</div>
+    </div>
+  </div>
+  <div class="feature-item">
+    <img src="images/icon-preserve.png" alt="">
+    <div>
+      <div class="feature-label" data-i18n="feature_preserve_label">Preserve</div>
+      <div class="feature-desc" data-i18n="feature_preserve_desc">Your legacy. Always.</div>
+    </div>
+  </div>
 </div>
 
 <section class="block" id="collection">
