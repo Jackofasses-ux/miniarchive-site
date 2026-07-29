@@ -1,1 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Archive</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/translations.js"></script>
+<script src="js/i18n.js"></script>
+<style>
+  :root{
+    --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2621;
+    --gold:#c9a24b; --gold-bright:#e0bd6b; --cream:#f2ede2; --cream-dim:#b9b2a3; --mono:#6b6357; --error:#c9605a;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .box{ text-align:center; max-width:400px; }
+  .shield{ width:56px; height:56px; margin:0 auto 20px; }
+  .spinner{
+    width:28px; height:28px; border:2px solid var(--hairline); border-top-color: var(--gold);
+    border-radius:50%; margin:0 auto 16px; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  p{ color: var(--cream-dim); font-size:0.95rem; line-height:1.5; }
+  .error-icon{
+    width:44px; height:44px; margin:0 auto 16px; border:1px solid var(--error); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; color: var(--error); font-size:1.3rem;
+  }
+  h1{ font-family:'Cormorant Garamond', serif; font-size:1.4rem; font-weight:600; margin: 0 0 10px; }
+  a.btn{
+    display:inline-block; margin-top:20px; background: var(--gold); color:#0c0b09; text-decoration:none;
+    font-family:'IBM Plex Mono', monospace; font-size:0.75rem; letter-spacing:0.08em; text-transform:uppercase;
+    padding:12px 22px;
+  }
+</style>
+</head>
+<body>
 
+<div class="box" id="loadingBox">
+  <div class="spinner"></div>
+  <p data-i18n="nfc_loading">Looking up this model…</p>
+</div>
+
+<div class="box" id="errorBox" style="display:none;">
+  <div class="error-icon">!</div>
+  <h1 data-i18n="nfc_not_found_title">Tag not recognized</h1>
+  <p data-i18n="nfc_not_found_desc">This tag isn't linked to a model on Mini Archive yet.</p>
+  <a class="btn" href="index.html" data-i18n="nfc_back_home">Back to Mini Archive</a>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  (async () => {
+    await initLanguage(supabaseClient);
+
+    // This page is deliberately simple right now — resolve the Archive ID
+    // printed/encoded on the tag to a real model and go straight there.
+    // Every future upgrade (are you the owner? quick-log shortcut instead
+    // of the normal page? flagged lost/stolen? silently note the scan?)
+    // gets added HERE later — the tag itself never needs to change, since
+    // it only ever points at this one stable URL.
+    const archiveId = new URLSearchParams(window.location.search).get("id");
+
+    if (!archiveId){
+      document.getElementById("loadingBox").style.display = "none";
+      document.getElementById("errorBox").style.display = "block";
+      return;
+    }
+
+    const { data, error } = await supabaseClient
+      .from("miniatures")
+      .select("id")
+      .eq("archive_id", archiveId)
+      .maybeSingle();
+
+    if (error || !data){
+      document.getElementById("loadingBox").style.display = "none";
+      document.getElementById("errorBox").style.display = "block";
+      return;
+    }
+
+    window.location.replace(`model.html?id=${data.id}`);
+  })();
+</script>
+
+</body>
+</html>
