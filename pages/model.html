@@ -247,6 +247,17 @@
     padding:6px 12px;
   }
   .gl-kill-summary{ font-size:0.85rem; color: var(--cream-dim); margin-bottom:14px; line-height:1.5; }
+  .gl-detail{ margin-top:16px; padding-top:16px; border-top:1px solid var(--hairline); }
+  .gl-kill-line{ font-size:0.85rem; color: var(--cream-dim); padding:4px 0; }
+  .gl-achv-list{ display:flex; flex-wrap:wrap; align-items:center; gap:10px 14px; }
+  .gl-achv-mini{ font-size:0.85rem; color: var(--gold-bright); }
+  .gl-more{ font-family:'IBM Plex Mono', monospace; font-size:0.68rem; color: var(--mono); }
+  .gl-campaign-list{ font-size:0.85rem; color: var(--cream-dim); }
+  .gl-view-full-link{
+    display:inline-block; margin-top:16px; font-family:'IBM Plex Mono', monospace; font-size:0.72rem;
+    letter-spacing:0.04em; color: var(--gold); text-decoration:none;
+  }
+  .gl-view-full-link:hover{ color: var(--gold-bright); }
   .gl-expand-toggle{
     font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--gold); background:none;
     border:none; cursor:pointer; padding:0;
@@ -479,6 +490,14 @@
   <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
   <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;" data-i18n="model_history_title">Model History</h2>
   <div class="history-grid" id="historyGrid"></div>
+
+  <div id="fullGameHistorySection" style="display:none; margin-top:30px;">
+    <div class="section-head" style="margin-bottom:24px;">
+      <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+      <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:1.6rem; margin-top:20px;" id="fullGameHistoryTitle">Full Game History</h2>
+    </div>
+    <div id="fullGameHistoryFeed"></div>
+  </div>
 </section>
 
 <section class="block" id="editHistorySection" style="display:none;">
@@ -1374,9 +1393,12 @@
       killTotals[row.tally_type] = (killTotals[row.tally_type] || 0) + row.count;
     });
 
-    // ---- Lifetime stats — the only thing that's a permanent, always-
-    // visible summary. Just current-state numbers, no badges here; those
-    // belong to the moment they were earned, not the header. ----
+    // A kill tally already says "kill" via its header/icon — no need to
+    // repeat it on every line ("Character Kill" → "Character").
+    function trimKillWord(type){
+      return type.replace(/ Kill$/i, "");
+    }
+
     const totalGames = entries.length;
     const wins = entries.filter(e => e.result === "Win").length;
     const losses = entries.filter(e => e.result === "Loss").length;
@@ -1384,34 +1406,94 @@
     const campaignEntries = entries.filter(e => e.context === "Campaign");
     const tournamentEntries = entries.filter(e => e.context === "Tournament");
     const tournamentWins = tournamentEntries.filter(e => e.result === "Win");
+    const totalKills = Object.values(killTotals).reduce((sum, n) => sum + n, 0);
 
-    const statsHtml = `
+    const firstGameEntryId = entries[0].id;
+    const firstWinEntry = entries.find(e => e.result === "Win");
+    const firstWinEntryId = firstWinEntry ? firstWinEntry.id : null;
+
+    // Achievements, each tagged with the date they were actually earned —
+    // kept conservative, same as before: only things structurally
+    // guaranteed regardless of game system.
+    const allAchievements = [{ name: t("achievement_first_game"), date: entries[0].entry_date }];
+    if (firstWinEntry) allAchievements.push({ name: t("achievement_first_win"), date: firstWinEntry.entry_date });
+
+    // Distinct campaign names, in order of first appearance.
+    const campaignNames = [];
+    entries.forEach(e => {
+      if (e.campaign_name && !campaignNames.includes(e.campaign_name)) campaignNames.push(e.campaign_name);
+    });
+
+    // ---- Tier 1: overview — a real summary, always visible, no detail ----
+    const overviewHtml = `
       <div class="gl-subhead">${t("gl_subhead_record")}</div>
       <div class="gl-stats-row">
         <div class="gl-stat"><div class="num">${totalGames}</div><div class="label">${t("stat_games")}</div></div>
         <div class="gl-stat"><div class="num">${wins}</div><div class="label">${t("stat_wins")}</div></div>
         <div class="gl-stat"><div class="num">${losses}</div><div class="label">${t("stat_losses")}</div></div>
         <div class="gl-stat"><div class="num">${draws}</div><div class="label">${t("stat_draws")}</div></div>
-        ${campaignEntries.length ? `<div class="gl-stat"><div class="num">${campaignEntries.length}</div><div class="label">${t("stat_campaigns")}</div></div>` : ""}
+        <div class="gl-stat"><div class="num">${totalKills}</div><div class="label">${t("stat_kills")}</div></div>
+        ${campaignNames.length ? `<div class="gl-stat"><div class="num">${campaignNames.length}</div><div class="label">${t("stat_campaigns")}</div></div>` : ""}
         ${tournamentEntries.length ? `<div class="gl-stat"><div class="num">${tournamentEntries.length}</div><div class="label">${t("stat_tournaments")}</div></div>` : ""}
       </div>
-      ${Object.keys(killTotals).length ? `<div class="gl-subhead">${t("gl_subhead_kills")}</div><div class="gl-kill-summary">${Object.keys(killTotals).map(type => `${type} ×${killTotals[type]}`).join(" · ")}</div>` : ""}
     `;
 
-    // ---- Which entry earned which milestone, so it can be shown inline
-    // in the feed at the moment it actually happened — not as a permanent
-    // badge shelf. Kept conservative, same as before: only things
-    // structurally guaranteed regardless of game system. ----
-    const firstGameEntryId = entries[0].id;
-    const firstWinEntry = entries.find(e => e.result === "Win");
-    const firstWinEntryId = firstWinEntry ? firstWinEntry.id : null;
+    // ---- Tier 2: expandable snapshot — a bit more detail, not everything ----
+    const killLinesHtml = Object.keys(killTotals).length
+      ? `<div class="gl-subhead">${t("gl_subhead_kills")}</div>` +
+        Object.keys(killTotals).map(type => `<div class="gl-kill-line">☠ ${trimKillWord(type)} ×${killTotals[type]}</div>`).join("")
+      : "";
 
-    const feedHtml = [...entries].reverse().map((entry, idx) => {
+    const ACHV_CAP = 3;
+    const achievementSnapshotHtml = `
+      <div class="gl-subhead">${t("model_history_achievements")}</div>
+      <div class="gl-achv-list">
+        ${allAchievements.slice(0, ACHV_CAP).map(a => `<div class="gl-achv-mini">🏅 ${a.name}</div>`).join("")}
+        ${allAchievements.length > ACHV_CAP ? `<div class="gl-more">+${allAchievements.length - ACHV_CAP} ${t("gl_more")}</div>` : ""}
+      </div>
+    `;
+
+    const CAMPAIGN_CAP = 2;
+    const campaignSnapshotHtml = campaignNames.length ? `
+      <div class="gl-subhead">${t("stat_campaigns")}</div>
+      <div class="gl-campaign-list">${campaignNames.slice(0, CAMPAIGN_CAP).join(", ")}${campaignNames.length > CAMPAIGN_CAP ? ` +${campaignNames.length - CAMPAIGN_CAP} ${t("gl_more")}` : ""}</div>
+    ` : "";
+
+    campaignsCard.innerHTML = `
+      <h3>${t("model_history_campaigns")}</h3>
+      ${overviewHtml}
+      <button type="button" class="gl-expand-toggle" id="glDetailToggle">${t("gl_more_detail")} ▸</button>
+      <div class="gl-detail" id="glDetail" style="display:none;">
+        ${killLinesHtml}
+        ${achievementSnapshotHtml}
+        ${campaignSnapshotHtml}
+        <a href="#fullGameHistorySection" class="gl-view-full-link" id="glViewFullLink">${t("gl_view_full_history")} →</a>
+      </div>
+    `;
+
+    document.getElementById("glDetailToggle").addEventListener("click", function(){
+      const detail = document.getElementById("glDetail");
+      const isOpen = detail.style.display === "block";
+      detail.style.display = isOpen ? "none" : "block";
+      this.textContent = isOpen ? `${t("gl_more_detail")} ▸` : `${t("gl_less_detail")} ▾`;
+    });
+
+    document.getElementById("glViewFullLink").addEventListener("click", (e) => {
+      e.preventDefault();
+      const section = document.getElementById("fullGameHistorySection");
+      section.style.display = "block";
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    // ---- Tier 3: full chronological history — its own separate section,
+    // reached via the link above. Whether this eventually becomes a
+    // shadowbox/modal instead of an inline section, and whether it grows
+    // filtering, is still an open design question — this just gets a
+    // working version shipped without pre-committing to either. ----
+    document.getElementById("fullGameHistoryTitle").textContent = t("gl_full_history_title");
+    document.getElementById("fullGameHistoryFeed").innerHTML = [...entries].reverse().map(entry => {
       const entryTallies = talliesByEntry[entry.id] || [];
 
-      // Group by tally type — a "Character Kill ×3" group with any named
-      // targets listed underneath, instead of three separate blocks all
-      // saying "Character Kill".
       const grouped = {};
       entryTallies.forEach(row => {
         if (!grouped[row.tally_type]) grouped[row.tally_type] = { count: 0, named: [] };
@@ -1437,21 +1519,20 @@
         `).join("");
         return `
           <div class="gl-kill-group">
-            <div class="gl-kill-type">☠ ${type} ×${g.count}</div>
+            <div class="gl-kill-type">☠ ${trimKillWord(type)} ×${g.count}</div>
             ${namedHtml}
           </div>
         `;
       }).join("");
 
-      const killSummaryLine = Object.keys(grouped).map(type => `${type} ×${grouped[type].count}`).join(", ");
+      const killSummaryLine = Object.keys(grouped).map(type => `${trimKillWord(type)} ×${grouped[type].count}`).join(", ");
 
       const achievementsThisEntry = [];
       if (entry.id === firstGameEntryId) achievementsThisEntry.push(t("achievement_first_game"));
       if (entry.id === firstWinEntryId) achievementsThisEntry.push(t("achievement_first_win"));
       const achievementHtml = achievementsThisEntry.map(a => `
         <div class="gl-achievement">
-          <div class="gl-achievement-eyebrow">🏅 ${t("achievement_unlocked")}</div>
-          <div class="gl-achievement-name">${a}</div>
+          <div class="gl-achievement-name">🏅 ${a}</div>
         </div>
       `).join("");
 
@@ -1472,12 +1553,6 @@
         </div>
       `;
     }).join("");
-
-    campaignsCard.innerHTML = `
-      <h3>${t("model_history_campaigns")}</h3>
-      ${statsHtml}
-      <div class="gl-feed">${feedHtml}</div>
-    `;
 
     // ---- Achievements card — reserved for things that genuinely add
     // value (tournament wins, painting competition wins). Painting
