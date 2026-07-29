@@ -350,6 +350,12 @@ const TRANSLATIONS = {
     gl_more: "more",
     gl_view_full_history: "View Full History",
     gl_full_history_title: "Full Game History",
+
+    // ---- nfc.html ----
+    nfc_loading: "Looking up this model…",
+    nfc_not_found_title: "Tag not recognized",
+    nfc_not_found_desc: "This tag isn't linked to a model on Mini Archive yet.",
+    nfc_back_home: "Back to Mini Archive",
     model_history_none_logged: "None logged",
     model_history_not_recorded: "Not recorded",
     gallery_no_photos: "No photos uploaded yet.",
@@ -877,6 +883,12 @@ const TRANSLATIONS = {
     gl_more: "de plus",
     gl_view_full_history: "Voir l'historique complet",
     gl_full_history_title: "Historique complet des parties",
+
+    // ---- nfc.html ----
+    nfc_loading: "Recherche du modèle…",
+    nfc_not_found_title: "Puce non reconnue",
+    nfc_not_found_desc: "Cette puce n'est pas encore liée à un modèle sur Mini Archive.",
+    nfc_back_home: "Retour à Mini Archive",
     model_history_none_logged: "Aucun consigné",
     model_history_not_recorded: "Non enregistré",
     gallery_no_photos: "Aucune photo téléversée pour l'instant.",
