@@ -35,7 +35,11 @@
     font-family:'IBM Plex Mono', monospace; font-size:0.75rem; letter-spacing:0.08em; text-transform:uppercase;
     padding:12px 22px;
   }
-  .shield-icon{ width:52px; height:52px; margin:0 auto 18px; color: var(--gold); }
+  .header-logo{ width:44px; height:auto; margin:0 auto 20px; display:block; }
+  .model-photo{
+    width:120px; height:120px; margin:0 auto 18px; border-radius:50%;
+    object-fit:cover; border:1px solid var(--hairline); display:none;
+  }
   .choice-actions{ display:flex; flex-direction:column; gap:12px; margin-top:24px; }
   .choice-actions a{
     display:block; text-decoration:none; padding:16px 22px;
@@ -61,9 +65,12 @@
 </div>
 
 <div class="box" id="ownerChoiceBox" style="display:none;">
-  <svg class="shield-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
+  <picture>
+    <source srcset="images/logo-mark.webp" type="image/webp">
+    <img class="header-logo" src="images/logo-mark-optimized.png" alt="Mini Archive">
+  </picture>
+  <img id="ownerModelPhoto" class="model-photo" alt="">
   <h1 data-i18n="nfc_owner_title">Welcome back</h1>
-  <p id="ownerModelName" style="color:var(--gold-bright); font-weight:600; margin-bottom:4px;"></p>
   <p data-i18n="nfc_owner_desc">What would you like to do?</p>
   <div class="choice-actions">
     <a class="primary" href="#" id="logGameLink" data-i18n="nfc_log_game">Log Game</a>
@@ -95,7 +102,7 @@
 
     const { data, error } = await supabaseClient
       .from("miniatures")
-      .select("id, title, owner_profile_id")
+      .select("id, title, owner_profile_id, photos ( image_url, photo_type )")
       .eq("archive_id", archiveId)
       .maybeSingle();
 
@@ -114,7 +121,13 @@
     }
 
     document.getElementById("loadingBox").style.display = "none";
-    if (data.title) document.getElementById("ownerModelName").textContent = data.title;
+    const frontPhoto = (data.photos || []).find(p => p.photo_type === "front");
+    if (frontPhoto){
+      const photoEl = document.getElementById("ownerModelPhoto");
+      photoEl.src = frontPhoto.image_url;
+      photoEl.alt = data.title || "";
+      photoEl.style.display = "block";
+    }
     document.getElementById("logGameLink").href = `edit-model.html?id=${data.id}&quicklog=1`;
     document.getElementById("viewModelLink").href = `model.html?id=${data.id}`;
     document.getElementById("ownerChoiceBox").style.display = "block";
