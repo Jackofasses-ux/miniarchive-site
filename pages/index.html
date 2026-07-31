@@ -78,6 +78,7 @@
     font-weight: 600;
   }
   nav{ display:flex; align-items:center; gap:40px; position:relative; }
+  .nav-collapsible{ display:flex; align-items:center; gap:40px; }
   nav ul{ display:flex; gap: 34px; list-style:none; }
   .nav-toggle{
     display:none; background:none; border:none; cursor:pointer; padding:6px;
@@ -429,17 +430,25 @@
 
   /* ---------- Responsive ---------- */
   @media (max-width: 900px){
-    header{ padding: 18px 24px; backdrop-filter: none; background: rgba(12,11,9,0.97); }
+    header{ padding: 14px 20px; backdrop-filter: none; background: rgba(12,11,9,0.97); }
+    .brand{ flex-direction: column; align-items: flex-start; gap:4px; }
+    .brand-name{ font-size: 1.1rem; line-height:1.1; }
     .nav-toggle{ display:flex; }
-    nav ul{
-      display:none; position:absolute; top:calc(100% + 18px); left:-24px; right:-24px;
-      flex-direction:column; gap:0; background: var(--bg); border-bottom:1px solid var(--hairline);
-      padding:8px 24px; z-index:60;
+    .nav-collapsible{
+      display:none; position:absolute; top:calc(100% + 14px); left:-20px; right:-20px;
+      flex-direction:column; align-items:stretch; gap:0; background: var(--bg);
+      border-bottom:1px solid var(--hairline); padding:8px 20px 16px; z-index:60;
+      max-height: calc(100vh - 80px); overflow-y: auto;
     }
-    nav ul.open{ display:flex; }
+    .nav-collapsible.open{ display:flex; }
+    nav ul{ display:flex; flex-direction:column; gap:0; width:100%; }
     nav ul li{ border-top:1px solid var(--hairline); }
     nav ul li:first-child{ border-top:none; }
     nav ul li a{ display:block; padding:14px 0; }
+    .nav-collapsible .lang-dropdown{ margin-top:14px; align-self:flex-start; }
+    .nav-collapsible #authArea{ margin-top:14px; display:flex; flex-direction:column; gap:10px; align-items:stretch; }
+    .nav-collapsible #authArea .login-link{ padding:10px 0; }
+    .nav-collapsible #authArea .btn-gold{ text-align:center; }
     .hero-inner{ padding: 80px 24px 70px; flex-direction: column; text-align: left; }
     .hero-image{ margin-top: 30px; }
     .hero-image img{ max-width: 260px; }
@@ -467,25 +476,27 @@
     <button type="button" class="nav-toggle" id="navToggle" aria-label="Menu">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
     </button>
-    <ul id="navMenu">
-      <li><a href="collection.html" data-i18n="nav_collection">Collection</a></li>
-      <li><a href="#how" data-i18n="nav_how_it_works">How it works</a></li>
-      <li><a href="#provenance" data-i18n="nav_provenance">Provenance</a></li>
-      <li><a href="#about" data-i18n="nav_about">About</a></li>
-    </ul>
-    <div class="lang-dropdown">
-      <button type="button" class="lang-dropdown-btn" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('open')">
-        <span class="lang-dropdown-label">EN</span>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-      </button>
-      <div class="lang-dropdown-menu">
-        <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">🇬🇧 English</button>
-        <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">🇫🇷 Français</button>
+    <div class="nav-collapsible" id="navMenu">
+      <ul>
+        <li><a href="collection.html" data-i18n="nav_collection">Collection</a></li>
+        <li><a href="#how" data-i18n="nav_how_it_works">How it works</a></li>
+        <li><a href="#provenance" data-i18n="nav_provenance">Provenance</a></li>
+        <li><a href="#about" data-i18n="nav_about">About</a></li>
+      </ul>
+      <div class="lang-dropdown">
+        <button type="button" class="lang-dropdown-btn" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('open')">
+          <span class="lang-dropdown-label">EN</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="lang-dropdown-menu">
+          <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">🇬🇧 English</button>
+          <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">🇫🇷 Français</button>
+        </div>
       </div>
-    </div>
-    <div id="authArea">
-      <a class="login-link" href="login.html" data-i18n="nav_login">Log in</a>
-      <a class="btn-gold" href="start.html" data-i18n="nav_start_archive">Start an Archive</a>
+      <div id="authArea">
+        <a class="login-link" href="login.html" data-i18n="nav_login">Log in</a>
+        <a class="btn-gold" href="start.html" data-i18n="nav_start_archive">Start an Archive</a>
+      </div>
     </div>
   </nav>
 </header>
