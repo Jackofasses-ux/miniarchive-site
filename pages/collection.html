@@ -206,9 +206,9 @@
 
   @media (max-width: 1100px){ .grid{ grid-template-columns: repeat(3, 1fr); } }
   @media (max-width: 800px){
-    header{ padding:14px 20px; backdrop-filter: none; background: rgba(12,11,9,0.97); }
-    .brand{ flex-direction: column; align-items: flex-start; gap:2px; }
-    .brand-name{ font-size: 1rem; line-height:1.1; }
+    header{ padding:14px 20px; backdrop-filter: none; background: rgba(12,11,9,0.97); gap:12px; }
+    .brand{ gap:8px; }
+    .brand-name{ font-size: 1rem; }
     .nav-toggle, .user-toggle{ display:flex; }
     nav{ display:contents; }
     nav ul{
@@ -220,16 +220,29 @@
     nav ul li{ border-top:1px solid var(--hairline); }
     nav ul li:first-child{ border-top:none; }
     nav ul li a{ display:block; padding:14px 0; }
+    header > .lang-dropdown{ margin-left:auto; }
+    .lang-dropdown-btn{ padding:6px 9px; font-size:0.62rem; }
     .user-group{
       display:none; position:absolute; top:calc(100% + 14px); right:20px; width:min(78vw, 260px);
       flex-direction:column; align-items:stretch; gap:14px; background: var(--bg); border:1px solid var(--hairline);
       padding:16px 20px; z-index:60;
     }
     .user-group.open{ display:flex; }
-    .user-group .lang-dropdown{ align-self:flex-start; }
     .user-group #authArea{ display:flex; flex-direction:column; gap:10px; align-items:stretch; }
     .user-group #authArea .login-link{ padding:6px 0; }
     .user-group #authArea .btn-gold{ text-align:center; }
+    /* Once the account panel is open, its contents should just be visible —
+       no second tap on a nested toggle to reveal the same-level options. */
+    .user-group .user-menu-btn{
+      pointer-events:none; display:flex; justify-content:space-between; width:100%;
+      padding-bottom:10px; border-bottom:1px solid var(--hairline); font-weight:600;
+    }
+    .user-group .user-menu-btn svg{ display:none; }
+    .user-group .dropdown{
+      display:flex !important; position:static !important; flex-direction:column;
+      background:none; border:none; padding:0; box-shadow:none; min-width:0;
+    }
+    .user-group .dropdown a, .user-group .dropdown button{ padding:10px 0; text-align:left; }
     .page-head, .controls, .result-count, .grid{ padding-left:24px; padding-right:24px; }
     .grid{ grid-template-columns: repeat(2, 1fr); }
     footer{ flex-direction:column; gap:14px; text-align:center; padding:24px; }
@@ -257,22 +270,22 @@
       <li><a href="index.html#about" data-i18n="nav_about">About</a></li>
     </ul>
     <div class="user-group" id="userMenu">
-      <div class="lang-dropdown">
-        <button type="button" class="lang-dropdown-btn" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('open')">
-          <span class="lang-dropdown-label">EN</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-        <div class="lang-dropdown-menu">
-          <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">🇬🇧 English</button>
-          <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">🇫🇷 Français</button>
-        </div>
-      </div>
       <div id="authArea">
         <a class="login-link" href="login.html" data-i18n="nav_login">Log in</a>
         <a class="btn-gold" href="start.html" data-i18n="nav_start_archive">Start an Archive</a>
       </div>
     </div>
   </nav>
+  <div class="lang-dropdown">
+    <button type="button" class="lang-dropdown-btn" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('open')">
+      <span class="lang-dropdown-label">EN</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="lang-dropdown-menu">
+      <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">🇬🇧 English</button>
+      <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">🇫🇷 Français</button>
+    </div>
+  </div>
   <button type="button" class="user-toggle" id="userToggle" aria-label="Account">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
   </button>
@@ -433,11 +446,15 @@
 
     const { data: profile } = await supabaseClient
       .from("profiles")
-      .select("username, display_name")
+      .select("username, display_name, avatar_url")
       .eq("id", session.user.id)
       .maybeSingle();
 
     const label = profile?.username || profile?.display_name || session.user.email;
+
+    if (profile?.avatar_url){
+      document.getElementById("userToggle").innerHTML = `<img src="${profile.avatar_url}" alt="" style="width:26px; height:26px; border-radius:50%; object-fit:cover;">`;
+    }
 
     authArea.innerHTML = `
       <button class="user-menu-btn" id="userMenuBtn">${label} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
