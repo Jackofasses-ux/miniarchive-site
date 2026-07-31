@@ -1373,7 +1373,7 @@
 
     const { data: entries } = await supabaseClient
       .from("game_log_entries")
-      .select("id, entry_date, game_system, context, campaign_name, result, notes")
+      .select("id, entry_date, game_system, context, campaign_name, tournament_name, tournament_placement, result, notes")
       .eq("miniature_id", miniatureId)
       .order("entry_date", { ascending: true }); // ascending — makes "first X" checks a simple .find()
 
@@ -1405,8 +1405,28 @@
     const draws = entries.filter(e => e.result === "Draw").length;
     const campaignEntries = entries.filter(e => e.context === "Campaign");
     const tournamentEntries = entries.filter(e => e.context === "Tournament");
-    const tournamentWins = tournamentEntries.filter(e => e.result === "Win");
     const totalKills = Object.values(killTotals).reduce((sum, n) => sum + n, 0);
+
+    // Group tournament rounds by tournament_name so a 5-round event shows
+    // its real aggregate round record — but that's NOT the same claim as
+    // winning the event overall (brackets/cuts/judged placement aren't
+    // derivable from round results). Placement is its own explicit field.
+    // Entries with no name given can't be reliably grouped with each
+    // other (we don't actually know they're the same event), so those
+    // fall back to being shown individually.
+    const namedTournamentGroups = {};
+    tournamentEntries.forEach(e => {
+      if (!e.tournament_name) return;
+      if (!namedTournamentGroups[e.tournament_name]) namedTournamentGroups[e.tournament_name] = { games: 0, wins: 0, losses: 0, draws: 0, placement: null };
+      const g = namedTournamentGroups[e.tournament_name];
+      g.games += 1;
+      if (e.result === "Win") g.wins += 1;
+      if (e.result === "Loss") g.losses += 1;
+      if (e.result === "Draw") g.draws += 1;
+      if (e.tournament_placement) g.placement = e.tournament_placement;
+    });
+    const unnamedTournamentWins = tournamentEntries.filter(e => !e.tournament_name && e.result === "Win");
+    const distinctTournamentCount = Object.keys(namedTournamentGroups).length;
 
     const firstGameEntryId = entries[0].id;
     const firstWinEntry = entries.find(e => e.result === "Win");
@@ -1434,7 +1454,7 @@
         <div class="gl-stat"><div class="num">${draws}</div><div class="label">${t("stat_draws")}</div></div>
         <div class="gl-stat"><div class="num">${totalKills}</div><div class="label">${t("stat_kills")}</div></div>
         ${campaignNames.length ? `<div class="gl-stat"><div class="num">${campaignNames.length}</div><div class="label">${t("stat_campaigns")}</div></div>` : ""}
-        ${tournamentEntries.length ? `<div class="gl-stat"><div class="num">${tournamentEntries.length}</div><div class="label">${t("stat_tournaments")}</div></div>` : ""}
+        ${distinctTournamentCount ? `<div class="gl-stat"><div class="num">${distinctTournamentCount}</div><div class="label">${t("stat_tournaments")}</div></div>` : ""}
       </div>
     `;
 
@@ -1555,16 +1575,25 @@
     }).join("");
 
     // ---- Achievements card — reserved for things that genuinely add
-    // value (tournament wins, painting competition wins). Painting
-    // competitions aren't tracked anywhere yet, so for now this only ever
-    // shows Tournament-context wins — a deliberately loose interim signal,
-    // not the full picture this card is meant to eventually hold.
-    if (tournamentWins.length){
+    // value (named tournament results, painting competition wins).
+    // Painting competitions aren't tracked anywhere yet. Named tournaments
+    // show their actual claimed placement if one was entered ("1st Place",
+    // "Best Painted"); winning most of your rounds is a different claim
+    // from winning the event, so that's never invented from the round
+    // record alone. Unnamed tournament-context wins (no name given, so
+    // rounds can't be grouped) fall back to a plain per-game badge. ----
+    const namedTournamentBadges = Object.keys(namedTournamentGroups).map(name => {
+      const g = namedTournamentGroups[name];
+      const outcome = g.placement || `${g.wins}W-${g.losses}L-${g.draws}D`;
+      return `<span class="gl-badge">🏆 ${name} — ${outcome}</span>`;
+    });
+    const unnamedBadges = unnamedTournamentWins.map(e => `<span class="gl-badge">🏆 ${t("achievement_tournament_win")}${e.game_system ? ` — ${e.game_system}` : ""}</span>`);
+    const allTournamentBadges = [...namedTournamentBadges, ...unnamedBadges];
+
+    if (allTournamentBadges.length){
       achievementsCard.innerHTML = `
         <h3>${t("model_history_achievements")}</h3>
-        <div class="gl-badges">
-          ${tournamentWins.map(e => `<span class="gl-badge">🏆 ${t("achievement_tournament_win")}${e.game_system ? ` — ${e.game_system}` : ""}</span>`).join("")}
-        </div>
+        <div class="gl-badges">${allTournamentBadges.join("")}</div>
       `;
     }
   }
