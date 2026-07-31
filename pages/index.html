@@ -174,6 +174,24 @@
 
   /* ---------- Hero ---------- */
   .hero{
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 900px 550px at 12% 8%, rgba(94,84,64,0.55), transparent 60%),
+      radial-gradient(ellipse 800px 650px at 88% 75%, rgba(62,56,44,0.5), transparent 60%),
+      radial-gradient(ellipse 1000px 550px at 50% 105%, rgba(34,31,26,0.65), transparent 65%),
+      var(--bg);
+  }
+  .hero::after{
+    content:"";
+    position:absolute; inset:0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.1;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+  }
+  .hero-inner{
     padding: 100px 56px 70px;
     max-width: 1500px;
     margin: 0 auto;
@@ -182,20 +200,6 @@
     justify-content: center;
     gap: 70px;
     position: relative;
-    overflow: hidden;
-    background:
-      radial-gradient(ellipse 800px 500px at 12% 8%, rgba(74,66,52,0.35), transparent 60%),
-      radial-gradient(ellipse 700px 600px at 88% 75%, rgba(48,44,36,0.32), transparent 60%),
-      radial-gradient(ellipse 900px 500px at 50% 105%, rgba(26,24,20,0.5), transparent 65%),
-      var(--bg);
-  }
-  .hero::after{
-    content:"";
-    position:absolute; inset:0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    opacity: 0.05;
-    mix-blend-mode: overlay;
-    pointer-events: none;
   }
   .hero-text, .hero-image{ position: relative; z-index: 1; }
   .hero-text{ max-width: 620px; flex-shrink: 0; }
@@ -421,7 +425,7 @@
   @media (max-width: 900px){
     header{ padding: 18px 24px; }
     nav ul{ display:none; }
-    .hero{ padding: 80px 24px 70px; flex-direction: column; text-align: left; }
+    .hero-inner{ padding: 80px 24px 70px; flex-direction: column; text-align: left; }
     .hero-image{ margin-top: 30px; }
     .hero-image img{ max-width: 260px; }
     .feature-grid{ padding: 24px; gap: 28px; }
@@ -469,17 +473,19 @@
 </header>
 
 <section class="hero">
-  <div class="hero-text">
-    <div class="eyebrow" data-i18n="hero_eyebrow">A LIVING RECORD OF PAINTED MINIATURES</div>
-    <h1><span data-i18n="hero_title_line1">Every miniature</span><br><span class="accent" data-i18n="hero_title_accent">has a story.</span></h1>
-    <p class="lede" data-i18n="hero_lede">Mini Archive keeps the record straight — who painted it, how long it took, every colour that went into it, and where it's been since. Not just photos. Provenance.</p>
-    <div class="hero-actions">
-      <a class="btn-gold" href="collection.html" data-i18n="hero_cta_view_collection">View the Collection</a>
-      <a class="btn-ghost" href="#how" data-i18n="hero_cta_how_it_works">How it works</a>
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="eyebrow" data-i18n="hero_eyebrow">A LIVING RECORD OF PAINTED MINIATURES</div>
+      <h1><span data-i18n="hero_title_line1">Every miniature</span><br><span class="accent" data-i18n="hero_title_accent">has a story.</span></h1>
+      <p class="lede" data-i18n="hero_lede">Mini Archive keeps the record straight — who painted it, how long it took, every colour that went into it, and where it's been since. Not just photos. Provenance.</p>
+      <div class="hero-actions">
+        <a class="btn-gold" href="collection.html" data-i18n="hero_cta_view_collection">View the Collection</a>
+        <a class="btn-ghost" href="#how" data-i18n="hero_cta_how_it_works">How it works</a>
+      </div>
     </div>
-  </div>
-  <div class="hero-image">
-    <img src="images/hero-brand-tight.png" alt="Mini Archive">
+    <div class="hero-image">
+      <img src="images/hero-brand-tight.png" alt="Mini Archive">
+    </div>
   </div>
 </section>
 
