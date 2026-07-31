@@ -58,13 +58,13 @@
   .brand-mark{ display:flex; align-items:center; }
   .brand-mark img{ height:32px; width:auto; }
   .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
-  nav{ display:flex; align-items:center; gap:40px; position:relative; }
-  .nav-collapsible{ display:flex; align-items:center; gap:40px; }
-  .nav-toggle{
+  nav{ display:flex; align-items:center; gap:40px; }
+  .user-group{ display:flex; align-items:center; gap:20px; }
+  .nav-toggle, .user-toggle{
     display:none; background:none; border:none; cursor:pointer; padding:6px;
     color: var(--cream); align-items:center; justify-content:center;
   }
-  .nav-toggle svg{ width:24px; height:24px; }
+  .nav-toggle svg, .user-toggle svg{ width:24px; height:24px; }
   nav ul{ display:flex; gap:34px; list-style:none; }
   nav ul li a{ font-size:0.85rem; color: var(--cream-dim); position:relative; padding-bottom:4px; }
   nav ul li a::after{ content:''; position:absolute; left:0; bottom:0; width:0; height:1px; background: var(--gold-bright); transition:width .35s ease; }
@@ -400,22 +400,27 @@
 
   @media (max-width: 1000px){
     header{ padding:14px 20px; backdrop-filter: none; background: rgba(12,11,9,0.97); }
-    .brand{ flex-direction: column; align-items: flex-start; gap:4px; }
-    .brand-name{ font-size: 1.1rem; line-height:1.1; }
-    .nav-toggle{ display:flex; }
-    .nav-collapsible{
-      display:none; position:absolute; top:calc(100% + 14px); left:-20px; right:-20px;
-      flex-direction:column; align-items:stretch; gap:0; background: var(--bg);
-      border-bottom:1px solid var(--hairline); padding:8px 20px 16px; z-index:60;
-      max-height: calc(100vh - 80px); overflow-y: auto;
+    .brand{ flex-direction: column; align-items: flex-start; gap:2px; }
+    .brand-name{ font-size: 1rem; line-height:1.1; }
+    .nav-toggle, .user-toggle{ display:flex; }
+    nav{ display:contents; }
+    nav ul{
+      display:none; position:absolute; top:calc(100% + 14px); left:20px; width:min(78vw, 300px);
+      flex-direction:column; gap:0; background: var(--bg); border:1px solid var(--hairline);
+      padding:8px 20px 16px; z-index:60;
     }
-    .nav-collapsible.open{ display:flex; }
-    nav ul{ display:flex; flex-direction:column; gap:0; width:100%; }
+    nav ul.open{ display:flex; }
     nav ul li{ border-top:1px solid var(--hairline); }
     nav ul li:first-child{ border-top:none; }
     nav ul li a{ display:block; padding:14px 0; }
-    .nav-collapsible .lang-dropdown{ margin-top:14px; align-self:flex-start; }
-    .nav-collapsible .btn-gold{ margin-top:10px; text-align:center; }
+    .user-group{
+      display:none; position:absolute; top:calc(100% + 14px); right:20px; width:min(78vw, 260px);
+      flex-direction:column; align-items:stretch; gap:12px; background: var(--bg); border:1px solid var(--hairline);
+      padding:16px 20px; z-index:60;
+    }
+    .user-group.open{ display:flex; }
+    .user-group .lang-dropdown{ align-self:flex-start; }
+    .user-group .btn-gold{ text-align:center; }
     main{ padding: 40px 24px 20px; }
     .profile-grid{ grid-template-columns: 1fr; }
     section.block{ padding: 50px 24px; }
@@ -430,21 +435,21 @@
 <body>
 
 <header>
+  <button type="button" class="nav-toggle" id="navToggle" aria-label="Menu">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+  </button>
   <a class="brand" href="index.html">
     <div class="brand-mark"><picture><source srcset="images/logo-mark.webp" type="image/webp"><img src="images/logo-mark-optimized.png" alt="Mini Archive" width="32" height="41"></picture></div>
     <div class="brand-name">MINI ARCHIVE</div>
   </a>
   <nav>
-    <button type="button" class="nav-toggle" id="navToggle" aria-label="Menu">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
-    </button>
-    <div class="nav-collapsible" id="navMenu">
-      <ul>
-        <li><a href="collection.html" data-i18n="nav_collection">Collection</a></li>
-        <li><a href="index.html#how" data-i18n="nav_how_it_works">How it works</a></li>
-        <li><a href="index.html#provenance" data-i18n="nav_provenance">Provenance</a></li>
-        <li><a href="index.html#about" data-i18n="nav_about">About</a></li>
-      </ul>
+    <ul id="navMenu">
+      <li><a href="collection.html" data-i18n="nav_collection">Collection</a></li>
+      <li><a href="index.html#how" data-i18n="nav_how_it_works">How it works</a></li>
+      <li><a href="index.html#provenance" data-i18n="nav_provenance">Provenance</a></li>
+      <li><a href="index.html#about" data-i18n="nav_about">About</a></li>
+    </ul>
+    <div class="user-group" id="userMenu">
       <div class="lang-dropdown">
         <button type="button" class="lang-dropdown-btn" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('open')">
           <span class="lang-dropdown-label">EN</span>
@@ -459,6 +464,9 @@
       <a class="btn-gold" href="collection.html" data-i18n="model_back_to_collection">← Back to Collection</a>
     </div>
   </nav>
+  <button type="button" class="user-toggle" id="userToggle" aria-label="Account">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+  </button>
 </header>
 
 <main>
@@ -1730,15 +1738,28 @@
 
   const navToggle = document.getElementById("navToggle");
   const navMenu = document.getElementById("navMenu");
+  const userToggle = document.getElementById("userToggle");
+  const userMenu = document.getElementById("userMenu");
+
   navToggle.addEventListener("click", (e) => {
     e.stopPropagation();
+    userMenu.classList.remove("open");
     navMenu.classList.toggle("open");
+  });
+  userToggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    navMenu.classList.remove("open");
+    userMenu.classList.toggle("open");
   });
   navMenu.querySelectorAll("a").forEach(link => {
     link.addEventListener("click", () => navMenu.classList.remove("open"));
   });
+  userMenu.querySelectorAll("a").forEach(link => {
+    link.addEventListener("click", () => userMenu.classList.remove("open"));
+  });
   document.addEventListener("click", (e) => {
     if (!navMenu.contains(e.target) && e.target !== navToggle) navMenu.classList.remove("open");
+    if (!userMenu.contains(e.target) && e.target !== userToggle) userMenu.classList.remove("open");
   });
 </script>
 
