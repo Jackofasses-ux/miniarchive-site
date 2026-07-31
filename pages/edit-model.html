@@ -201,6 +201,31 @@
   }
   .add-paint-row{ display:flex; gap:10px; align-items:flex-start; }
 
+  .gl-round{
+    border:1px solid var(--hairline); background: var(--bg-raised); padding:16px; margin-bottom:12px;
+  }
+  .gl-round-label{
+    font-family:'IBM Plex Mono', monospace; font-size:0.66rem; letter-spacing:0.08em; text-transform:uppercase;
+    color: var(--gold); margin-bottom:12px;
+  }
+  .gl-round-fields{ display:flex; gap:14px; align-items:flex-start; flex-wrap:wrap; }
+  .gl-round-fields select{
+    background: var(--bg); border:1px solid var(--hairline); color: var(--cream);
+    padding:9px 12px; font-family:'Jost', sans-serif; font-size:0.88rem;
+  }
+  .gl-round-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  .gl-round-chip{
+    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; color: var(--cream-dim);
+    background: var(--bg); border:1px solid var(--hairline); padding:6px 10px; cursor:pointer;
+  }
+  .gl-round-chip:hover{ border-color: var(--gold); color: var(--gold-bright); }
+  .gl-round-tally-row{
+    display:flex; align-items:center; gap:10px; margin-top:8px; font-size:0.82rem; color: var(--cream-dim);
+  }
+  .gl-round-tally-row button{
+    width:22px; height:22px; background: var(--bg); border:1px solid var(--hairline); color: var(--cream);
+    cursor:pointer; font-size:0.9rem; line-height:1;
+  }
   .tally-row{
     display:flex; align-items:center; gap:10px; border:1px solid var(--hairline); background: var(--bg-raised);
     padding:10px 12px; margin-bottom:8px; flex-wrap:wrap;
@@ -647,7 +672,11 @@
               <label for="glCampaignName">Campaign</label>
               <input id="glCampaignName" type="text" placeholder="e.g. Leviathan Campaign">
             </div>
-            <div class="field">
+            <div class="field" id="glTournamentField" style="display:none;">
+              <label for="glTournamentName">Tournament</label>
+              <input id="glTournamentName" type="text" placeholder="e.g. NOVA Open 2026">
+            </div>
+            <div class="field" id="glSingleResultField">
               <label for="glResult">Result</label>
               <select id="glResult">
                 <option value="">—</option>
@@ -658,12 +687,22 @@
             </div>
           </div>
 
-          <div class="field full" style="margin-top:16px;">
+          <div class="field full" style="margin-top:16px;" id="glSingleTalliesSection">
             <label>Tallies <span style="color:var(--mono); text-transform:none; letter-spacing:0;">(optional)</span></label>
             <div id="gameLogTalliesList"></div>
             <div class="add-paint-row" style="margin-top:10px;">
               <input type="text" id="glCustomTallyType" placeholder="Add a different tally type…" style="flex:1; background:var(--bg); border:1px solid var(--hairline); color:var(--cream); padding:11px 13px; font-family:'Jost', sans-serif; font-size:0.9rem;">
               <button type="button" class="btn-ghost" id="addCustomTallyBtn">+ Add</button>
+            </div>
+          </div>
+
+          <div class="field full" style="margin-top:16px; display:none;" id="glRoundsSection">
+            <label>Rounds</label>
+            <div class="hint" style="margin-bottom:14px;">Fill in a round's result and a new one appears below it. Leave the last one blank when you're done.</div>
+            <div id="glRoundsContainer"></div>
+            <div class="field" style="margin-top:20px; max-width:280px;">
+              <label for="glTournamentPlacement">Final Placement <span style="color:var(--mono); text-transform:none; letter-spacing:0;">(optional)</span></label>
+              <input id="glTournamentPlacement" type="text" placeholder="e.g. 1st Place, Best Painted, Top 8">
             </div>
           </div>
 
@@ -1625,17 +1664,115 @@
   });
 
   function updateCampaignFieldVisibility(){
-    document.getElementById("glCampaignField").style.display = document.getElementById("glContext").value === "Campaign" ? "block" : "none";
+    const context = document.getElementById("glContext").value;
+    document.getElementById("glCampaignField").style.display = context === "Campaign" ? "block" : "none";
+    document.getElementById("glTournamentField").style.display = context === "Tournament" ? "block" : "none";
+
+    // The round-by-round wizard only applies when logging a brand new
+    // tournament — editing one existing round afterward uses the plain
+    // single-round fields, same as any other entry, to keep that simple.
+    const useRoundsWizard = !editingGameLogLocalId && context === "Tournament";
+    document.getElementById("glRoundsSection").style.display = useRoundsWizard ? "block" : "none";
+    document.getElementById("glSingleResultField").style.display = useRoundsWizard ? "none" : "block";
+    document.getElementById("glSingleTalliesSection").style.display = useRoundsWizard ? "none" : "block";
+    if (useRoundsWizard) renderRounds();
   }
   document.getElementById("glContext").addEventListener("change", updateCampaignFieldVisibility);
+
+  function materializeTrailingRound(){
+    const round = { _localId: nextRoundLocalId++, result: "", tallies: [] };
+    currentRounds.push(round);
+    return round;
+  }
+
+  function renderRounds(){
+    const container = document.getElementById("glRoundsContainer");
+    const suggestions = getTallySuggestions();
+    const roundsToShow = [...currentRounds, { _localId: null, result: "", tallies: [] }]; // trailing empty round
+
+    container.innerHTML = roundsToShow.map((round, idx) => {
+      const roundId = round._localId ?? "pending";
+      const chipsHtml = suggestions.map(s => `<button type="button" class="gl-round-chip" data-type="${s}" data-round-id="${roundId}">${s}</button>`).join("");
+      const talliesHtml = round.tallies.map(t => `
+        <div class="gl-round-tally-row">
+          <span style="flex:1;">${t.tallyType}</span>
+          <button type="button" class="gl-round-tally-dec" data-tally-type="${t.tallyType.replace(/"/g, "&quot;")}" data-round-id="${roundId}">−</button>
+          <span>${t.count}</span>
+          <button type="button" class="gl-round-tally-inc" data-tally-type="${t.tallyType.replace(/"/g, "&quot;")}" data-round-id="${roundId}">+</button>
+        </div>
+      `).join("");
+      return `
+        <div class="gl-round">
+          <div class="gl-round-label">Round ${idx + 1}</div>
+          <div class="gl-round-fields">
+            <select class="gl-round-result" data-round-id="${roundId}">
+              <option value="">—</option>
+              <option value="Win" ${round.result === "Win" ? "selected" : ""}>Win</option>
+              <option value="Loss" ${round.result === "Loss" ? "selected" : ""}>Loss</option>
+              <option value="Draw" ${round.result === "Draw" ? "selected" : ""}>Draw</option>
+            </select>
+          </div>
+          <div class="gl-round-chips">${chipsHtml}</div>
+          ${talliesHtml}
+        </div>
+      `;
+    }).join("");
+
+    function resolveRound(el){
+      if (el.dataset.roundId === "pending") return materializeTrailingRound();
+      return currentRounds.find(r => r._localId == el.dataset.roundId);
+    }
+
+    container.querySelectorAll(".gl-round-result").forEach(select => {
+      select.addEventListener("change", () => {
+        const round = resolveRound(select);
+        round.result = select.value;
+        renderRounds();
+      });
+    });
+    container.querySelectorAll(".gl-round-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        const round = resolveRound(chip);
+        const existing = round.tallies.find(t => t.tallyType === chip.dataset.type);
+        if (existing) existing.count += 1;
+        else round.tallies.push({ tallyType: chip.dataset.type, count: 1 });
+        renderRounds();
+      });
+    });
+    container.querySelectorAll(".gl-round-tally-inc").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const round = currentRounds.find(r => r._localId == btn.dataset.roundId);
+        const tally = round?.tallies.find(t => t.tallyType === btn.dataset.tallyType);
+        if (tally) tally.count += 1;
+        renderRounds();
+      });
+    });
+    container.querySelectorAll(".gl-round-tally-dec").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const round = currentRounds.find(r => r._localId == btn.dataset.roundId);
+        const tally = round?.tallies.find(t => t.tallyType === btn.dataset.tallyType);
+        if (tally && tally.count > 0){
+          tally.count -= 1;
+          if (tally.count === 0) round.tallies = round.tallies.filter(t => t !== tally);
+        }
+        renderRounds();
+      });
+    });
+  }
+
+  let currentRounds = [];
+  let nextRoundLocalId = 1;
 
   function resetGameLogForm(){
     editingGameLogLocalId = null;
     currentTallies = [];
+    currentRounds = [];
     document.getElementById("glDate").value = todayDateString();
     document.getElementById("glGameSystem").value = "";
     document.getElementById("glContext").value = "Casual";
     document.getElementById("glCampaignName").value = "";
+    document.getElementById("glTournamentName").value = "";
+    document.getElementById("glTournamentPlacement").value = "";
     document.getElementById("glResult").value = "";
     document.getElementById("glNotes").value = "";
     document.getElementById("glCustomTallyType").value = "";
@@ -1859,6 +1996,7 @@
     document.getElementById("glGameSystem").value = entry.gameSystem || "";
     document.getElementById("glContext").value = entry.context || "Casual";
     document.getElementById("glCampaignName").value = entry.campaignName || "";
+    document.getElementById("glTournamentName").value = entry.tournamentName || "";
     document.getElementById("glResult").value = entry.result || "";
     document.getElementById("glNotes").value = entry.notes || "";
     updateCampaignFieldVisibility();
@@ -1890,11 +2028,54 @@
       return;
     }
 
+    const context = document.getElementById("glContext").value;
+    const isNewTournamentWizard = !editingGameLogLocalId && context === "Tournament";
+
+    if (isNewTournamentWizard){
+      const playedRounds = currentRounds.filter(r => r.result);
+      if (!playedRounds.length){
+        showTopError("Log at least one round's result.");
+        return;
+      }
+
+      const gameSystem = document.getElementById("glGameSystem").value.trim() || null;
+      const tournamentName = document.getElementById("glTournamentName").value.trim() || null;
+      const placement = document.getElementById("glTournamentPlacement").value.trim() || null;
+      const notes = document.getElementById("glNotes").value.trim() || null;
+
+      playedRounds.forEach((round, idx) => {
+        const isLast = idx === playedRounds.length - 1;
+        pendingGameLogEntries.push({
+          _localId: nextGameLogLocalId++,
+          _dbId: null,
+          _status: "new",
+          entryDate: dateValue,
+          gameSystem,
+          context: "Tournament",
+          campaignName: null,
+          tournamentName,
+          // Placement is a property of the whole event, not any one round —
+          // stored on the last round entered so it's only recorded once.
+          tournamentPlacement: isLast ? placement : null,
+          result: round.result,
+          notes: isLast ? notes : null,
+          tallies: round.tallies.map(t => ({ tallyType: t.tallyType, count: t.count, details: [] })),
+        });
+      });
+
+      document.getElementById("gameLogForm").style.display = "none";
+      resetGameLogForm();
+      renderGameLogEntriesList();
+      showTopSuccess(`${playedRounds.length} round${playedRounds.length === 1 ? "" : "s"} logged — they'll be saved when you save or publish this model.`);
+      return;
+    }
+
     const entryData = {
       entryDate: dateValue,
       gameSystem: document.getElementById("glGameSystem").value.trim() || null,
-      context: document.getElementById("glContext").value,
-      campaignName: document.getElementById("glContext").value === "Campaign" ? document.getElementById("glCampaignName").value.trim() || null : null,
+      context,
+      campaignName: context === "Campaign" ? document.getElementById("glCampaignName").value.trim() || null : null,
+      tournamentName: context === "Tournament" ? document.getElementById("glTournamentName").value.trim() || null : null,
       result: document.getElementById("glResult").value || null,
       notes: document.getElementById("glNotes").value.trim() || null,
       tallies: currentTallies.map(t => ({ tallyType: t.tallyType, count: t.count, details: t.details.map(d => ({ targetMiniatureId: d.targetMiniatureId, targetName: d.targetName, targetFreetext: d.targetFreetext, notes: d.notes })) })),
@@ -1928,7 +2109,7 @@
     if (!modelId) return;
     const { data: entries } = await supabaseClient
       .from("game_log_entries")
-      .select("id, entry_date, game_system, context, campaign_name, result, notes")
+      .select("id, entry_date, game_system, context, campaign_name, tournament_name, tournament_placement, result, notes")
       .eq("miniature_id", modelId)
       .order("entry_date", { ascending: false });
 
@@ -1960,6 +2141,8 @@
         gameSystem: entry.game_system,
         context: entry.context,
         campaignName: entry.campaign_name,
+        tournamentName: entry.tournament_name,
+        tournamentPlacement: entry.tournament_placement,
         result: entry.result,
         notes: entry.notes,
         tallies: Object.keys(grouped).map(type => ({ tallyType: type, count: grouped[type].count, details: grouped[type].details })),
@@ -1983,6 +2166,8 @@
         game_system: entry.gameSystem,
         context: entry.context,
         campaign_name: entry.campaignName,
+        tournament_name: entry.tournamentName,
+        tournament_placement: entry.tournamentPlacement,
         result: entry.result,
         notes: entry.notes,
       };
