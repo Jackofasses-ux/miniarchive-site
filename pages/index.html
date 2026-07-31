@@ -77,8 +77,13 @@
     letter-spacing: 0.06em;
     font-weight: 600;
   }
-  nav{ display:flex; align-items:center; gap:40px; }
+  nav{ display:flex; align-items:center; gap:40px; position:relative; }
   nav ul{ display:flex; gap: 34px; list-style:none; }
+  .nav-toggle{
+    display:none; background:none; border:none; cursor:pointer; padding:6px;
+    color: var(--cream); align-items:center; justify-content:center;
+  }
+  .nav-toggle svg{ width:24px; height:24px; }
   nav ul li a{
     font-size: 0.85rem;
     letter-spacing: 0.04em;
@@ -424,8 +429,17 @@
 
   /* ---------- Responsive ---------- */
   @media (max-width: 900px){
-    header{ padding: 18px 24px; }
-    nav ul{ display:none; }
+    header{ padding: 18px 24px; backdrop-filter: none; background: rgba(12,11,9,0.97); }
+    .nav-toggle{ display:flex; }
+    nav ul{
+      display:none; position:absolute; top:calc(100% + 18px); left:-24px; right:-24px;
+      flex-direction:column; gap:0; background: var(--bg); border-bottom:1px solid var(--hairline);
+      padding:8px 24px; z-index:60;
+    }
+    nav ul.open{ display:flex; }
+    nav ul li{ border-top:1px solid var(--hairline); }
+    nav ul li:first-child{ border-top:none; }
+    nav ul li a{ display:block; padding:14px 0; }
     .hero-inner{ padding: 80px 24px 70px; flex-direction: column; text-align: left; }
     .hero-image{ margin-top: 30px; }
     .hero-image img{ max-width: 260px; }
@@ -446,11 +460,14 @@
 
 <header>
   <a class="brand" href="index.html">
-    <div class="brand-mark"><img src="images/logo-mark.png" alt="Mini Archive"></div>
+    <div class="brand-mark"><picture><source srcset="images/logo-mark.webp" type="image/webp"><img src="images/logo-mark-optimized.png" alt="Mini Archive" width="32" height="41"></picture></div>
     <div class="brand-name">MINI ARCHIVE</div>
   </a>
   <nav>
-    <ul>
+    <button type="button" class="nav-toggle" id="navToggle" aria-label="Menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+    <ul id="navMenu">
       <li><a href="collection.html" data-i18n="nav_collection">Collection</a></li>
       <li><a href="#how" data-i18n="nav_how_it_works">How it works</a></li>
       <li><a href="#provenance" data-i18n="nav_provenance">Provenance</a></li>
@@ -485,28 +502,32 @@
       </div>
     </div>
     <div class="hero-image">
-      <img src="images/hero-brand-tight.png" alt="Mini Archive">
+      <picture>
+      <source media="(max-width: 640px)" srcset="images/hero-brand-mobile.webp" type="image/webp">
+      <source srcset="images/hero-brand-tight.webp" type="image/webp">
+      <img src="images/hero-brand-tight.png" alt="Mini Archive" width="1024" height="765">
+    </picture>
     </div>
   </div>
 </section>
 
 <div class="feature-grid">
   <div class="feature-item">
-    <div class="feature-icon-badge"><img src="images/icon-photograph.png" alt=""></div>
+    <div class="feature-icon-badge"><img src="images/icon-photograph.png" alt="" loading="lazy"></div>
     <div>
       <div class="feature-label" data-i18n="feature_photograph_label">Photograph</div>
       <div class="feature-desc" data-i18n="feature_photograph_desc">Showcase your finished work.</div>
     </div>
   </div>
   <div class="feature-item">
-    <div class="feature-icon-badge"><img src="images/icon-document.png" alt=""></div>
+    <div class="feature-icon-badge"><img src="images/icon-document.png" alt="" loading="lazy"></div>
     <div>
       <div class="feature-label" data-i18n="feature_document_label">Document</div>
       <div class="feature-desc" data-i18n="feature_document_desc">Record recipes, techniques & notes.</div>
     </div>
   </div>
   <div class="feature-item">
-    <div class="feature-icon-badge"><img src="images/icon-track.png" alt=""></div>
+    <div class="feature-icon-badge"><img src="images/icon-track.png" alt="" loading="lazy"></div>
     <div>
       <div class="feature-label" data-i18n="feature_track_label">Track</div>
       <div class="feature-desc" data-i18n="feature_track_desc">Log time and capture progress.</div>
@@ -520,7 +541,7 @@
     </div>
   </div>
   <div class="feature-item">
-    <div class="feature-icon-badge"><img src="images/icon-preserve.png" alt=""></div>
+    <div class="feature-icon-badge"><img src="images/icon-preserve.png" alt="" loading="lazy"></div>
     <div>
       <div class="feature-label" data-i18n="feature_preserve_label">Preserve</div>
       <div class="feature-desc" data-i18n="feature_preserve_desc">Your legacy. Always.</div>
@@ -743,6 +764,19 @@
       window.location.reload();
     });
   }
+
+  const navToggle = document.getElementById("navToggle");
+  const navMenu = document.getElementById("navMenu");
+  navToggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    navMenu.classList.toggle("open");
+  });
+  navMenu.querySelectorAll("a").forEach(link => {
+    link.addEventListener("click", () => navMenu.classList.remove("open"));
+  });
+  document.addEventListener("click", (e) => {
+    if (!navMenu.contains(e.target) && e.target !== navToggle) navMenu.classList.remove("open");
+  });
 </script>
 
 </body>

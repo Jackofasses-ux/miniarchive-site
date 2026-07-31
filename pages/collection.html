@@ -59,7 +59,12 @@
   nav ul li a::after{ content:''; position:absolute; left:0; bottom:0; width:0; height:1px; background: var(--gold-bright); transition:width .35s ease; }
   nav ul li a:hover{ color: var(--cream); }
   nav ul li a:hover::after{ width:100%; }
-  nav{ display:flex; align-items:center; gap:40px; }
+  nav{ display:flex; align-items:center; gap:40px; position:relative; }
+  .nav-toggle{
+    display:none; background:none; border:none; cursor:pointer; padding:6px;
+    color: var(--cream); align-items:center; justify-content:center;
+  }
+  .nav-toggle svg{ width:24px; height:24px; }
   .btn-gold{
     font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
     color:#0c0b09; background: var(--gold); padding:11px 22px; border:1px solid var(--gold);
@@ -200,8 +205,17 @@
 
   @media (max-width: 1100px){ .grid{ grid-template-columns: repeat(3, 1fr); } }
   @media (max-width: 800px){
-    header{ padding:18px 24px; }
-    nav ul{ display:none; }
+    header{ padding:18px 24px; backdrop-filter: none; background: rgba(12,11,9,0.97); }
+    .nav-toggle{ display:flex; }
+    nav ul{
+      display:none; position:absolute; top:calc(100% + 18px); left:-24px; right:-24px;
+      flex-direction:column; gap:0; background: var(--bg); border-bottom:1px solid var(--hairline);
+      padding:8px 24px; z-index:60;
+    }
+    nav ul.open{ display:flex; }
+    nav ul li{ border-top:1px solid var(--hairline); }
+    nav ul li:first-child{ border-top:none; }
+    nav ul li a{ display:block; padding:14px 0; }
     .page-head, .controls, .result-count, .grid{ padding-left:24px; padding-right:24px; }
     .grid{ grid-template-columns: repeat(2, 1fr); }
     footer{ flex-direction:column; gap:14px; text-align:center; padding:24px; }
@@ -215,11 +229,14 @@
 
 <header>
   <a class="brand" href="index.html">
-    <div class="brand-mark"><img src="images/logo-mark.png" alt="Mini Archive"></div>
+    <div class="brand-mark"><picture><source srcset="images/logo-mark.webp" type="image/webp"><img src="images/logo-mark-optimized.png" alt="Mini Archive" width="32" height="41"></picture></div>
     <div class="brand-name">MINI ARCHIVE</div>
   </a>
   <nav>
-    <ul>
+    <button type="button" class="nav-toggle" id="navToggle" aria-label="Menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+    <ul id="navMenu">
       <li><a class="active" href="collection.html" data-i18n="nav_collection">Collection</a></li>
       <li><a href="index.html#how" data-i18n="nav_how_it_works">How it works</a></li>
       <li><a href="index.html#provenance" data-i18n="nav_provenance">Provenance</a></li>
@@ -423,6 +440,19 @@
       window.location.reload();
     });
   }
+
+  const navToggle = document.getElementById("navToggle");
+  const navMenu = document.getElementById("navMenu");
+  navToggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    navMenu.classList.toggle("open");
+  });
+  navMenu.querySelectorAll("a").forEach(link => {
+    link.addEventListener("click", () => navMenu.classList.remove("open"));
+  });
+  document.addEventListener("click", (e) => {
+    if (!navMenu.contains(e.target) && e.target !== navToggle) navMenu.classList.remove("open");
+  });
 </script>
 
 </body>
