@@ -175,8 +175,15 @@
   /* ---------- Hero ---------- */
   .hero{
     padding: 120px 56px 100px;
-    max-width: 1100px;
+    max-width: 1300px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 50px;
   }
+  .hero-text{ max-width: 620px; flex-shrink: 0; }
+  .hero-image{ flex-shrink: 1; min-width: 0; }
+  .hero-image img{ width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto; }
   .hero h1{
     font-family:'Cormorant Garamond', serif;
     font-weight: 500;
@@ -397,7 +404,9 @@
   @media (max-width: 900px){
     header{ padding: 18px 24px; }
     nav ul{ display:none; }
-    .hero{ padding: 80px 24px 70px; }
+    .hero{ padding: 80px 24px 70px; flex-direction: column; text-align: left; }
+    .hero-image{ margin-top: 30px; }
+    .hero-image img{ max-width: 260px; }
     .feature-grid{ padding: 24px; gap: 28px; }
     section.block{ padding: 70px 24px; }
     .grid-3, .how-grid{ grid-template-columns: 1fr; }
@@ -443,12 +452,17 @@
 </header>
 
 <section class="hero">
-  <div class="eyebrow" data-i18n="hero_eyebrow">A LIVING RECORD OF PAINTED MINIATURES</div>
-  <h1><span data-i18n="hero_title_line1">Every miniature</span><br><span class="accent" data-i18n="hero_title_accent">has a story.</span></h1>
-  <p class="lede" data-i18n="hero_lede">Mini Archive keeps the record straight — who painted it, how long it took, every colour that went into it, and where it's been since. Not just photos. Provenance.</p>
-  <div class="hero-actions">
-    <a class="btn-gold" href="collection.html" data-i18n="hero_cta_view_collection">View the Collection</a>
-    <a class="btn-ghost" href="#how" data-i18n="hero_cta_how_it_works">How it works</a>
+  <div class="hero-text">
+    <div class="eyebrow" data-i18n="hero_eyebrow">A LIVING RECORD OF PAINTED MINIATURES</div>
+    <h1><span data-i18n="hero_title_line1">Every miniature</span><br><span class="accent" data-i18n="hero_title_accent">has a story.</span></h1>
+    <p class="lede" data-i18n="hero_lede">Mini Archive keeps the record straight — who painted it, how long it took, every colour that went into it, and where it's been since. Not just photos. Provenance.</p>
+    <div class="hero-actions">
+      <a class="btn-gold" href="collection.html" data-i18n="hero_cta_view_collection">View the Collection</a>
+      <a class="btn-ghost" href="#how" data-i18n="hero_cta_how_it_works">How it works</a>
+    </div>
+  </div>
+  <div class="hero-image">
+    <img src="images/hero-brand.png" alt="Mini Archive — a living record of painted miniatures">
   </div>
 </section>
 
