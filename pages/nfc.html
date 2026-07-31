@@ -35,6 +35,15 @@
     font-family:'IBM Plex Mono', monospace; font-size:0.75rem; letter-spacing:0.08em; text-transform:uppercase;
     padding:12px 22px;
   }
+  .shield-icon{ width:52px; height:52px; margin:0 auto 18px; color: var(--gold); }
+  .choice-actions{ display:flex; flex-direction:column; gap:12px; margin-top:24px; }
+  .choice-actions a{
+    display:block; text-decoration:none; padding:16px 22px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase;
+  }
+  .choice-actions .primary{ background: var(--gold); color:#0c0b09; }
+  .choice-actions .secondary{ background:none; border:1px solid var(--hairline); color: var(--cream); }
+  .choice-actions .secondary:hover{ border-color: var(--gold); color: var(--gold-bright); }
 </style>
 </head>
 <body>
@@ -51,6 +60,17 @@
   <a class="btn" href="index.html" data-i18n="nfc_back_home">Back to Mini Archive</a>
 </div>
 
+<div class="box" id="ownerChoiceBox" style="display:none;">
+  <svg class="shield-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
+  <h1 data-i18n="nfc_owner_title">Welcome back</h1>
+  <p id="ownerModelName" style="color:var(--gold-bright); font-weight:600; margin-bottom:4px;"></p>
+  <p data-i18n="nfc_owner_desc">What would you like to do?</p>
+  <div class="choice-actions">
+    <a class="primary" href="#" id="logGameLink" data-i18n="nfc_log_game">Log Game</a>
+    <a class="secondary" href="#" id="viewModelLink" data-i18n="nfc_view_model">View Model Info</a>
+  </div>
+</div>
+
 <script>
   const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
@@ -60,11 +80,11 @@
     await initLanguage(supabaseClient);
 
     // This page is deliberately simple right now — resolve the Archive ID
-    // printed/encoded on the tag to a real model and go straight there.
-    // Every future upgrade (are you the owner? quick-log shortcut instead
-    // of the normal page? flagged lost/stolen? silently note the scan?)
-    // gets added HERE later — the tag itself never needs to change, since
-    // it only ever points at this one stable URL.
+    // printed/encoded on the tag to a real model, check whether the
+    // current logged-in user is the owner, and route accordingly. Every
+    // future upgrade (flagged lost/stolen? silently note the scan?) gets
+    // added HERE later — the tag itself never needs to change, since it
+    // only ever points at this one stable URL.
     const archiveId = new URLSearchParams(window.location.search).get("id");
 
     if (!archiveId){
@@ -75,7 +95,7 @@
 
     const { data, error } = await supabaseClient
       .from("miniatures")
-      .select("id")
+      .select("id, title, owner_profile_id")
       .eq("archive_id", archiveId)
       .maybeSingle();
 
@@ -85,7 +105,19 @@
       return;
     }
 
-    window.location.replace(`model.html?id=${data.id}`);
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const isOwner = session && session.user.id === data.owner_profile_id;
+
+    if (!isOwner){
+      window.location.replace(`model.html?id=${data.id}`);
+      return;
+    }
+
+    document.getElementById("loadingBox").style.display = "none";
+    if (data.title) document.getElementById("ownerModelName").textContent = data.title;
+    document.getElementById("logGameLink").href = `edit-model.html?id=${data.id}&quicklog=1`;
+    document.getElementById("viewModelLink").href = `model.html?id=${data.id}`;
+    document.getElementById("ownerChoiceBox").style.display = "block";
   })();
 </script>
 
