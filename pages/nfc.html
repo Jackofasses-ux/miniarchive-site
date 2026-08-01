@@ -86,15 +86,33 @@
   (async () => {
     await initLanguage(supabaseClient);
 
-    // This page is deliberately simple right now — resolve the Archive ID
-    // printed/encoded on the tag to a real model, check whether the
+    // This page is deliberately simple right now — resolve the opaque
+    // token encoded on the tag to a real model via nfc_tags (NOT the
+    // model's own Archive ID, which is public and sequential — anyone
+    // could walk MA-2026-00000001, 000002, etc. and reach this page for a
+    // model they never actually encountered a tag for), check whether the
     // current logged-in user is the owner, and route accordingly. Every
     // future upgrade (flagged lost/stolen? silently note the scan?) gets
     // added HERE later — the tag itself never needs to change, since it
     // only ever points at this one stable URL.
-    const archiveId = new URLSearchParams(window.location.search).get("id");
+    const tagToken = new URLSearchParams(window.location.search).get("tag");
 
-    if (!archiveId){
+    if (!tagToken){
+      document.getElementById("loadingBox").style.display = "none";
+      document.getElementById("errorBox").style.display = "block";
+      return;
+    }
+
+    const { data: tag, error: tagError } = await supabaseClient
+      .from("nfc_tags")
+      .select("miniature_id")
+      .eq("token", tagToken)
+      .eq("status", "active")
+      .maybeSingle();
+
+    if (tagError || !tag){
+      // Deliberately identical to "token never existed" for a revoked tag
+      // too — no information leak about which model it used to point to.
       document.getElementById("loadingBox").style.display = "none";
       document.getElementById("errorBox").style.display = "block";
       return;
@@ -103,7 +121,7 @@
     const { data, error } = await supabaseClient
       .from("miniatures")
       .select("id, title, owner_profile_id, photos ( image_url, photo_type )")
-      .eq("archive_id", archiveId)
+      .eq("id", tag.miniature_id)
       .maybeSingle();
 
     if (error || !data){
