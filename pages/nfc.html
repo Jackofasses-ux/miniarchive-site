@@ -128,7 +128,7 @@
       photoEl.alt = data.title || "";
       photoEl.style.display = "block";
     }
-    document.getElementById("logGameLink").href = `edit-model.html?id=${data.id}&quicklog=1`;
+    document.getElementById("logGameLink").href = `log-game.html?id=${data.id}`;
     document.getElementById("viewModelLink").href = `model.html?id=${data.id}`;
     document.getElementById("ownerChoiceBox").style.display = "block";
   })();
