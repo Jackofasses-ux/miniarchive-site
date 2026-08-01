@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log Game — Mini Archive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/translations.js"></script>
+<script src="js/i18n.js"></script>
+<style>
+  :root{
+    --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2621;
+    --gold:#c9a24b; --gold-bright:#e0bd6b; --cream:#f2ede2; --cream-dim:#b9b2a3; --mono:#6b6357; --error:#c9605a;
+  }
+  *{ box-sizing:border-box; }
+  body{
+    margin:0; background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif;
+    font-weight:300; line-height:1.5; padding:24px 20px 60px;
+  }
+  .wrap{ max-width:480px; margin:0 auto; }
+  .box{ text-align:center; padding:60px 20px; }
+  .spinner{
+    width:28px; height:28px; border:2px solid var(--hairline); border-top-color: var(--gold);
+    border-radius:50%; margin:0 auto 16px; animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  p{ color: var(--cream-dim); font-size:0.95rem; }
+  h1{ font-family:'Cormorant Garamond', serif; font-size:1.5rem; font-weight:600; margin:0 0 6px; }
+  .model-header{ display:flex; align-items:center; gap:14px; margin-bottom:28px; }
+  .model-header img{ width:54px; height:54px; border-radius:50%; object-fit:cover; border:1px solid var(--hairline); }
+  .model-header .eyebrow{
+    font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--gold);
+  }
+  .model-header h1{ margin-top:2px; }
+  .field{ margin-bottom:18px; }
+  .field label{
+    display:block; font-family:'IBM Plex Mono', monospace; font-size:0.66rem; letter-spacing:0.06em;
+    text-transform:uppercase; color: var(--mono); margin-bottom:7px;
+  }
+  .field input, .field select{
+    width:100%; background: var(--bg-raised); border:1px solid var(--hairline); color: var(--cream);
+    padding:11px 13px; font-family:'Jost', sans-serif; font-size:0.92rem;
+  }
+  .field-grid{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  .gl-round{ border:1px solid var(--hairline); background: var(--bg-raised); padding:16px; margin-bottom:12px; }
+  .gl-round-label{
+    font-family:'IBM Plex Mono', monospace; font-size:0.66rem; letter-spacing:0.08em; text-transform:uppercase;
+    color: var(--gold); margin-bottom:12px;
+  }
+  .gl-round-fields select{
+    background: var(--bg); border:1px solid var(--hairline); color: var(--cream);
+    padding:9px 12px; font-family:'Jost', sans-serif; font-size:0.88rem; width:100%;
+  }
+  .gl-round-chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
+  .gl-round-chip{
+    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; color: var(--cream-dim);
+    background: var(--bg); border:1px solid var(--hairline); padding:7px 11px; cursor:pointer;
+  }
+  .gl-round-chip:hover{ border-color: var(--gold); color: var(--gold-bright); }
+  .gl-round-tally-row{
+    display:flex; align-items:center; gap:10px; margin-top:8px; font-size:0.85rem; color: var(--cream-dim);
+  }
+  .gl-round-tally-row button{
+    width:24px; height:24px; background: var(--bg); border:1px solid var(--hairline); color: var(--cream);
+    cursor:pointer; font-size:0.95rem; line-height:1;
+  }
+  .btn-gold{
+    display:block; width:100%; text-align:center; background: var(--gold); color:#0c0b09; border:none;
+    font-family:'IBM Plex Mono', monospace; font-size:0.78rem; letter-spacing:0.08em; text-transform:uppercase;
+    padding:15px; cursor:pointer; margin-top:24px;
+  }
+  .btn-gold:disabled{ opacity:0.5; cursor:default; }
+  .btn-ghost{
+    display:block; width:100%; text-align:center; background:none; color: var(--cream); border:1px solid var(--hairline);
+    font-family:'IBM Plex Mono', monospace; font-size:0.75rem; letter-spacing:0.06em; text-transform:uppercase;
+    padding:13px; cursor:pointer; margin-top:10px; text-decoration:none;
+  }
+  .top-error{
+    display:none; border:1px solid var(--error); color: var(--error); background: rgba(201,96,90,0.08);
+    padding:12px 14px; font-size:0.85rem; margin-bottom:18px;
+  }
+  .success-icon{
+    width:48px; height:48px; margin:0 auto 16px; border:1px solid var(--gold); border-radius:50%;
+    display:flex; align-items:center; justify-content:center; color: var(--gold); font-size:1.4rem;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="box" id="loadingBox">
+    <div class="spinner"></div>
+    <p data-i18n="lg_loading">Loading…</p>
+  </div>
+
+  <div class="box" id="errorBox" style="display:none;">
+    <h1 data-i18n="lg_error_title">Can't open this</h1>
+    <p id="errorText" data-i18n="lg_error_not_owner">You need to be logged in as this model's owner to log a game.</p>
+  </div>
+
+  <div id="formBox" style="display:none;">
+    <div class="model-header">
+      <img id="modelPhoto" style="display:none;" alt="">
+      <div>
+        <div class="eyebrow" data-i18n="lg_eyebrow">Log Game</div>
+        <h1 id="modelTitle"></h1>
+      </div>
+    </div>
+
+    <div class="top-error" id="topError"></div>
+
+    <div class="field">
+      <label for="glDate" data-i18n="lg_date_label">Date</label>
+      <input id="glDate" type="text" inputmode="numeric" placeholder="YYYY-MM-DD" maxlength="10">
+    </div>
+    <div class="field">
+      <label for="glGameSystem" data-i18n="lg_game_system_label">Game System</label>
+      <input id="glGameSystem" type="text" placeholder="e.g. Warhammer 40,000" list="gameSystemSuggestions">
+      <datalist id="gameSystemSuggestions">
+        <option value="Warhammer 40,000">
+        <option value="Kill Team">
+        <option value="Age of Sigmar">
+        <option value="Warhammer: The Old World">
+        <option value="Necromunda">
+        <option value="Frostgrave">
+        <option value="Mordheim">
+        <option value="Warmachine">
+        <option value="Blood Bowl">
+        <option value="D&D">
+      </datalist>
+    </div>
+    <div class="field-grid">
+      <div class="field">
+        <label for="glContext" data-i18n="lg_context_label">Context</label>
+        <select id="glContext">
+          <option value="Casual">Casual</option>
+          <option value="Matched Play">Matched Play</option>
+          <option value="Campaign">Campaign</option>
+          <option value="Tournament">Tournament</option>
+          <option value="Narrative">Narrative</option>
+          <option value="League">League</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+      <div class="field" id="glCampaignField" style="display:none;">
+        <label for="glCampaignName" data-i18n="lg_campaign_label">Campaign</label>
+        <input id="glCampaignName" type="text" placeholder="e.g. Leviathan Campaign">
+      </div>
+      <div class="field" id="glTournamentField" style="display:none;">
+        <label for="glTournamentName" data-i18n="lg_tournament_label">Tournament</label>
+        <input id="glTournamentName" type="text" placeholder="e.g. NOVA Open 2026">
+      </div>
+    </div>
+
+    <div class="field">
+      <label data-i18n="lg_rounds_label">Rounds</label>
+      <p style="font-size:0.8rem; margin-top:-4px; margin-bottom:12px;" data-i18n="lg_rounds_hint">Fill in a round's result and a new one appears below it. Leave the last one blank when you're done.</p>
+      <div id="glRoundsContainer"></div>
+    </div>
+
+    <div class="field" id="glPlacementField" style="display:none;">
+      <label for="glTournamentPlacement" data-i18n="lg_placement_label">Final Placement (optional)</label>
+      <input id="glTournamentPlacement" type="text" placeholder="e.g. 1st Place, Best Painted, Top 8">
+    </div>
+
+    <div class="field">
+      <label for="glNotes" data-i18n="lg_notes_label">Notes (optional)</label>
+      <input id="glNotes" type="text" placeholder="Anything worth remembering about this one…">
+    </div>
+
+    <button type="button" class="btn-gold" id="saveBtn" data-i18n="lg_save_btn">Save Entry</button>
+    <a class="btn-ghost" href="#" id="viewModelLink" data-i18n="nfc_view_model">View Model Info</a>
+  </div>
+
+  <div class="box" id="successBox" style="display:none;">
+    <div class="success-icon">✓</div>
+    <h1 data-i18n="lg_saved_title">Logged</h1>
+    <p data-i18n="lg_saved_desc">That round is saved to this model's history.</p>
+    <button type="button" class="btn-gold" id="logAnotherBtn" data-i18n="lg_log_another">Log Another Round</button>
+    <a class="btn-ghost" href="#" id="successViewModelLink" data-i18n="nfc_view_model">View Model Info</a>
+  </div>
+
+</div>
+
+<script>
+  const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let miniatureId = null;
+  let currentRounds = [];
+  let nextRoundLocalId = 1;
+
+  function todayDateString(){
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  function showTopError(msg){
+    const el = document.getElementById("topError");
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+
+  const GAME_SYSTEM_TALLY_SUGGESTIONS = {
+    "Warhammer 40,000": ["Character Kill", "Vehicle Kill", "Monster Kill", "Titanic Kill", "Warlord Kill"],
+    "Kill Team": ["Operative Kill"],
+    "Age of Sigmar": ["Hero Kill", "Monster Kill", "War Machine Kill"],
+    "Warhammer: The Old World": ["Hero Kill", "Monster Kill", "War Machine Kill"],
+    "Necromunda": ["Ganger Down", "Leader Down"],
+    "Frostgrave": ["Wizard KO", "Apprentice KO", "Treasure Retrieved", "Scenario Victory"],
+    "Mordheim": ["Warband Member Down", "Leader Down", "Treasure Retrieved"],
+    "Warmachine": ["Warcaster Kill", "Warjack Destroyed", "Solo Kill", "Scenario Point"],
+    "Blood Bowl": ["Touchdown", "Casualty", "Completion", "Interception"],
+    "D&D": ["Boss Kill", "Level Up", "Quest Completed", "Character Death", "Magic Item Found"],
+  };
+  const DEFAULT_TALLY_SUGGESTIONS = ["Kill"];
+
+  function getTallySuggestions(){
+    const system = document.getElementById("glGameSystem").value.trim();
+    return GAME_SYSTEM_TALLY_SUGGESTIONS[system] || DEFAULT_TALLY_SUGGESTIONS;
+  }
+  document.getElementById("glGameSystem").addEventListener("input", renderRounds);
+
+  function updateContextFieldVisibility(){
+    const context = document.getElementById("glContext").value;
+    document.getElementById("glCampaignField").style.display = context === "Campaign" ? "block" : "none";
+    document.getElementById("glTournamentField").style.display = context === "Tournament" ? "block" : "none";
+    document.getElementById("glPlacementField").style.display = context === "Tournament" ? "block" : "none";
+  }
+  document.getElementById("glContext").addEventListener("change", updateContextFieldVisibility);
+
+  function materializeTrailingRound(){
+    const round = { _localId: nextRoundLocalId++, result: "", tallies: [] };
+    currentRounds.push(round);
+    return round;
+  }
+
+  function renderRounds(){
+    const container = document.getElementById("glRoundsContainer");
+    const suggestions = getTallySuggestions();
+    const roundsToShow = [...currentRounds, { _localId: null, result: "", tallies: [] }];
+
+    container.innerHTML = roundsToShow.map((round, idx) => {
+      const roundId = round._localId ?? "pending";
+      const chipsHtml = suggestions.map(s => `<button type="button" class="gl-round-chip" data-type="${s}" data-round-id="${roundId}">${s}</button>`).join("");
+      const talliesHtml = round.tallies.map(tly => `
+        <div class="gl-round-tally-row">
+          <span style="flex:1;">${tly.tallyType}</span>
+          <button type="button" class="gl-round-tally-dec" data-tally-type="${tly.tallyType.replace(/"/g, "&quot;")}" data-round-id="${roundId}">−</button>
+          <span>${tly.count}</span>
+          <button type="button" class="gl-round-tally-inc" data-tally-type="${tly.tallyType.replace(/"/g, "&quot;")}" data-round-id="${roundId}">+</button>
+        </div>
+      `).join("");
+      return `
+        <div class="gl-round">
+          <div class="gl-round-label">Round ${idx + 1}</div>
+          <select class="gl-round-result" data-round-id="${roundId}">
+            <option value="">—</option>
+            <option value="Win" ${round.result === "Win" ? "selected" : ""}>Win</option>
+            <option value="Loss" ${round.result === "Loss" ? "selected" : ""}>Loss</option>
+            <option value="Draw" ${round.result === "Draw" ? "selected" : ""}>Draw</option>
+          </select>
+          <div class="gl-round-chips">${chipsHtml}</div>
+          ${talliesHtml}
+        </div>
+      `;
+    }).join("");
+
+    function resolveRound(el){
+      if (el.dataset.roundId === "pending") return materializeTrailingRound();
+      return currentRounds.find(r => r._localId == el.dataset.roundId);
+    }
+
+    container.querySelectorAll(".gl-round-result").forEach(select => {
+      select.addEventListener("change", () => {
+        const round = resolveRound(select);
+        round.result = select.value;
+        renderRounds();
+      });
+    });
+    container.querySelectorAll(".gl-round-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        const round = resolveRound(chip);
+        const existing = round.tallies.find(t => t.tallyType === chip.dataset.type);
+        if (existing) existing.count += 1;
+        else round.tallies.push({ tallyType: chip.dataset.type, count: 1 });
+        renderRounds();
+      });
+    });
+    container.querySelectorAll(".gl-round-tally-inc").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const round = currentRounds.find(r => r._localId == btn.dataset.roundId);
+        const tly = round?.tallies.find(t => t.tallyType === btn.dataset.tallyType);
+        if (tly) tly.count += 1;
+        renderRounds();
+      });
+    });
+    container.querySelectorAll(".gl-round-tally-dec").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const round = currentRounds.find(r => r._localId == btn.dataset.roundId);
+        const tly = round?.tallies.find(t => t.tallyType === btn.dataset.tallyType);
+        if (tly && tly.count > 0){
+          tly.count -= 1;
+          if (tly.count === 0) round.tallies = round.tallies.filter(t => t !== tly);
+        }
+        renderRounds();
+      });
+    });
+  }
+
+  function resetForm(){
+    currentRounds = [];
+    document.getElementById("glDate").value = todayDateString();
+    document.getElementById("glContext").value = "Casual";
+    document.getElementById("glCampaignName").value = "";
+    document.getElementById("glTournamentName").value = "";
+    document.getElementById("glTournamentPlacement").value = "";
+    document.getElementById("glNotes").value = "";
+    document.getElementById("topError").style.display = "none";
+    updateContextFieldVisibility();
+    renderRounds();
+  }
+
+  document.getElementById("saveBtn").addEventListener("click", async () => {
+    const dateValue = document.getElementById("glDate").value.trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateValue)){
+      showTopError("Enter a complete date (YYYY-MM-DD).");
+      return;
+    }
+    const playedRounds = currentRounds.filter(r => r.result);
+    if (!playedRounds.length){
+      showTopError("Log at least one round's result.");
+      return;
+    }
+
+    const saveBtn = document.getElementById("saveBtn");
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving…";
+
+    const context = document.getElementById("glContext").value;
+    const gameSystem = document.getElementById("glGameSystem").value.trim() || null;
+    const campaignName = context === "Campaign" ? document.getElementById("glCampaignName").value.trim() || null : null;
+    const tournamentName = context === "Tournament" ? document.getElementById("glTournamentName").value.trim() || null : null;
+    const placement = context === "Tournament" ? document.getElementById("glTournamentPlacement").value.trim() || null : null;
+    const notes = document.getElementById("glNotes").value.trim() || null;
+
+    try {
+      for (let idx = 0; idx < playedRounds.length; idx++){
+        const round = playedRounds[idx];
+        const isLast = idx === playedRounds.length - 1;
+
+        const { data: inserted, error: entryError } = await supabaseClient
+          .from("game_log_entries")
+          .insert({
+            miniature_id: miniatureId,
+            entry_date: dateValue,
+            game_system: gameSystem,
+            context,
+            campaign_name: campaignName,
+            tournament_name: tournamentName,
+            tournament_placement: isLast ? placement : null,
+            result: round.result,
+            notes: isLast ? notes : null,
+          })
+          .select()
+          .single();
+        if (entryError) throw entryError;
+
+        if (round.tallies.length){
+          const { error: tallyError } = await supabaseClient
+            .from("game_log_tallies")
+            .insert(round.tallies.map(t => ({
+              game_log_entry_id: inserted.id,
+              tally_type: t.tallyType,
+              count: t.count,
+              target_confirmed: false,
+            })));
+          if (tallyError) throw tallyError;
+        }
+      }
+
+      document.getElementById("formBox").style.display = "none";
+      document.getElementById("successBox").style.display = "block";
+    } catch (err){
+      console.error(err);
+      showTopError(err.message || "Couldn't save this entry.");
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save Entry";
+    }
+  });
+
+  document.getElementById("logAnotherBtn").addEventListener("click", () => {
+    document.getElementById("successBox").style.display = "none";
+    document.getElementById("formBox").style.display = "block";
+    resetForm();
+  });
+
+  (async () => {
+    await initLanguage(supabaseClient);
+
+    const params = new URLSearchParams(window.location.search);
+    miniatureId = params.get("id");
+
+    if (!miniatureId){
+      document.getElementById("loadingBox").style.display = "none";
+      document.getElementById("errorBox").style.display = "block";
+      return;
+    }
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session){
+      document.getElementById("loadingBox").style.display = "none";
+      document.getElementById("errorBox").style.display = "block";
+      return;
+    }
+
+    const { data, error } = await supabaseClient
+      .from("miniatures")
+      .select("id, title, owner_profile_id, photos ( image_url, photo_type )")
+      .eq("id", miniatureId)
+      .maybeSingle();
+
+    if (error || !data || data.owner_profile_id !== session.user.id){
+      document.getElementById("loadingBox").style.display = "none";
+      document.getElementById("errorBox").style.display = "block";
+      return;
+    }
+
+    document.getElementById("modelTitle").textContent = data.title || "";
+    const frontPhoto = (data.photos || []).find(p => p.photo_type === "front");
+    if (frontPhoto){
+      const img = document.getElementById("modelPhoto");
+      img.src = frontPhoto.image_url;
+      img.style.display = "block";
+    }
+    document.getElementById("viewModelLink").href = `model.html?id=${miniatureId}`;
+    document.getElementById("successViewModelLink").href = `model.html?id=${miniatureId}`;
+
+    document.getElementById("loadingBox").style.display = "none";
+    document.getElementById("formBox").style.display = "block";
+    resetForm();
+  })();
+</script>
+
+</body>
+</html>
