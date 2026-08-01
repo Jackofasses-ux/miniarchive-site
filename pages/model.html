@@ -297,6 +297,19 @@
   .tag.ongoing{ color: var(--gold-bright); border-color: rgba(201,162,75,0.4); }
 
   /* Certificate */
+  .log-game-modal{
+    position:fixed; inset:0; background: rgba(0,0,0,0.75); z-index:200;
+    display:flex; align-items:center; justify-content:center; padding:20px;
+  }
+  .log-game-modal-inner{
+    position:relative; width:100%; max-width:540px; height:min(88vh, 780px);
+    background: var(--bg); border:1px solid var(--hairline);
+  }
+  .log-game-modal-close{
+    position:absolute; top:-14px; right:-14px; width:32px; height:32px; border-radius:50%;
+    background: var(--gold); color:#0c0b09; border:none; font-size:1.1rem; cursor:pointer; z-index:1;
+  }
+  #logGameFrame{ width:100%; height:100%; border:none; }
   .cert-box{
     max-width: 640px; margin: 40px auto 0;
     border:1px solid var(--hairline);
@@ -451,6 +464,7 @@
       <li><a href="index.html#about" data-i18n="nav_about">About</a></li>
     </ul>
     <div class="user-group" id="userMenu">
+      <button type="button" class="btn-gold" id="logGameButton" style="display:none;" data-i18n="nfc_log_game">Log Game</button>
       <a class="btn-gold" href="edit-model.html" id="editButton" style="display:none;" data-i18n="model_edit_this">Edit This Model</a>
       <a class="btn-gold" href="collection.html" data-i18n="model_back_to_collection">← Back to Collection</a>
     </div>
@@ -549,6 +563,13 @@
   <h2 style="font-family:'Cormorant Garamond', serif; font-weight:500; font-size:2.2rem;" data-i18n="model_cert_title">Certificate of Authenticity</h2>
   <div class="cert-box" id="certBox"></div>
 </section>
+
+<div class="log-game-modal" id="logGameModal" style="display:none;">
+  <div class="log-game-modal-inner">
+    <button type="button" class="log-game-modal-close" id="logGameModalClose" aria-label="Close">×</button>
+    <iframe id="logGameFrame" title="Log Game"></iframe>
+  </div>
+</div>
 
 <footer>
   <div>© 2026 Mini Archive. <span data-i18n="footer_tagline">Every miniature has a story.</span></div>
@@ -1048,6 +1069,10 @@
       const editBtn = document.getElementById("editButton");
       editBtn.href = `edit-model.html?id=${data.id}`;
       editBtn.style.display = "inline-block";
+
+      const logGameBtn = document.getElementById("logGameButton");
+      logGameBtn.style.display = "inline-block";
+      logGameBtn.addEventListener("click", () => openLogGameModal(data.id));
     }
 
     const realOwnerName = data.owner?.username || data.owner?.display_name || "Unknown";
@@ -1761,6 +1786,30 @@
   document.addEventListener("click", (e) => {
     if (!navMenu.contains(e.target) && e.target !== navToggle) navMenu.classList.remove("open");
     if (!userMenu.contains(e.target) && e.target !== userToggle) userMenu.classList.remove("open");
+  });
+
+  let logGameModalMiniatureId = null;
+
+  function openLogGameModal(miniatureId){
+    logGameModalMiniatureId = miniatureId;
+    document.getElementById("logGameFrame").src = `log-game.html?id=${miniatureId}`;
+    document.getElementById("logGameModal").style.display = "flex";
+  }
+  function closeLogGameModal(){
+    document.getElementById("logGameModal").style.display = "none";
+    document.getElementById("logGameFrame").src = ""; // reset so reopening starts fresh, not on the success screen
+  }
+  document.getElementById("logGameModalClose").addEventListener("click", closeLogGameModal);
+  document.getElementById("logGameModal").addEventListener("click", (e) => {
+    if (e.target.id === "logGameModal") closeLogGameModal();
+  });
+
+  // log-game.html posts this after a successful save, so the Game History
+  // card reflects the new entry immediately without a full page reload.
+  window.addEventListener("message", (e) => {
+    if (e.data === "miniarchive:game-logged" && logGameModalMiniatureId){
+      loadGameLog(logGameModalMiniatureId);
+    }
   });
 </script>
 
