@@ -265,6 +265,7 @@
     letter-spacing:0.04em; color: var(--gold); text-decoration:none;
   }
   .gl-view-full-link:hover{ color: var(--gold-bright); }
+  .log-game-card-btn{ margin-top:14px; margin-bottom:14px; }
   .gl-expand-toggle{
     font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--gold); background:none;
     border:none; cursor:pointer; padding:0;
@@ -465,7 +466,6 @@
       <li><a href="index.html#about" data-i18n="nav_about">About</a></li>
     </ul>
     <div class="user-group" id="userMenu">
-      <button type="button" class="btn-gold" id="logGameButton" style="display:none;" data-i18n="nfc_log_game">Log Game</button>
       <a class="btn-gold" href="edit-model.html" id="editButton" style="display:none;" data-i18n="model_edit_this">Edit This Model</a>
       <a class="btn-gold" href="collection.html" data-i18n="model_back_to_collection">← Back to Collection</a>
     </div>
@@ -944,6 +944,7 @@
 
   // ---- Photo view tab switching + drag-to-rotate ----
   let PHOTOS_BY_VIEW = {}; // populated after fetch, e.g. { front: "https://...", left: "https://..." }
+  let isOwnerViewing = false; // set once in loadRealModel, read by loadGameLog for the in-card Log Game button
   const VIEW_ORDER = ["front", "right", "rear", "left"]; // rotation order when dragging
   let currentViewIndex = 0;
 
@@ -1064,16 +1065,12 @@
     PHOTOS_BY_VIEW = {};
     (data.photos || []).forEach(p => { PHOTOS_BY_VIEW[p.photo_type] = p.image_url; });
 
-    const isOwnerViewing = session && session.user.id === data.owner_profile_id;
+    isOwnerViewing = session && session.user.id === data.owner_profile_id;
 
     if (isOwnerViewing){
       const editBtn = document.getElementById("editButton");
       editBtn.href = `edit-model.html?id=${data.id}`;
       editBtn.style.display = "inline-block";
-
-      const logGameBtn = document.getElementById("logGameButton");
-      logGameBtn.style.display = "inline-block";
-      logGameBtn.addEventListener("click", () => openLogGameModal(data.id));
     }
 
     const realOwnerName = data.owner?.username || data.owner?.display_name || "Unknown";
@@ -1432,13 +1429,21 @@
     const campaignsCard = document.getElementById("campaignsCard");
     const achievementsCard = document.getElementById("achievementsCard");
 
+    const logGameBtnHtml = isOwnerViewing
+      ? `<button type="button" class="btn-ghost log-game-card-btn" onclick="openLogGameModal('${miniatureId}')">${t("nfc_log_game")}</button>`
+      : "";
+
     const { data: entries } = await supabaseClient
       .from("game_log_entries")
       .select("id, entry_date, game_system, context, campaign_name, tournament_name, tournament_placement, result, notes")
       .eq("miniature_id", miniatureId)
       .order("entry_date", { ascending: true }); // ascending — makes "first X" checks a simple .find()
 
-    if (!entries || !entries.length) return; // leave the existing "None logged" placeholders as-is
+    if (!entries || !entries.length){
+      // leave the "None logged" placeholder, just add the button below it if this is the owner
+      if (logGameBtnHtml) campaignsCard.insertAdjacentHTML("beforeend", logGameBtnHtml);
+      return;
+    }
 
     const entryIds = entries.map(e => e.id);
     const { data: tallies } = await supabaseClient
@@ -1543,6 +1548,7 @@
     campaignsCard.innerHTML = `
       <h3>${t("model_history_campaigns")}</h3>
       ${overviewHtml}
+      ${logGameBtnHtml}
       <button type="button" class="gl-expand-toggle" id="glDetailToggle">${t("gl_more_detail")} ▸</button>
       <div class="gl-detail" id="glDetail" style="display:none;">
         ${killLinesHtml}
