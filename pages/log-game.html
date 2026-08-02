@@ -305,50 +305,70 @@
     resetForm();
   });
 
-  (async () => {
-    await initLanguage(supabaseClient);
-
-    const params = new URLSearchParams(window.location.search);
-    miniatureId = params.get("id");
-
-    if (!miniatureId){
-      document.getElementById("loadingBox").style.display = "none";
-      document.getElementById("errorBox").style.display = "block";
-      return;
-    }
-
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session){
-      document.getElementById("loadingBox").style.display = "none";
-      document.getElementById("errorBox").style.display = "block";
-      return;
-    }
-
-    const { data, error } = await supabaseClient
-      .from("miniatures")
-      .select("id, title, owner_profile_id, photos ( image_url, photo_type )")
-      .eq("id", miniatureId)
-      .maybeSingle();
-
-    if (error || !data || data.owner_profile_id !== session.user.id){
-      document.getElementById("loadingBox").style.display = "none";
-      document.getElementById("errorBox").style.display = "block";
-      return;
-    }
-
-    document.getElementById("modelTitle").textContent = data.title || "";
-    const frontPhoto = (data.photos || []).find(p => p.photo_type === "front");
-    if (frontPhoto){
-      const img = document.getElementById("modelPhoto");
-      img.src = frontPhoto.image_url;
-      img.style.display = "block";
-    }
-    document.getElementById("viewModelLink").href = `model.html?id=${miniatureId}`;
-    document.getElementById("successViewModelLink").href = `model.html?id=${miniatureId}`;
-
+  // If anything below hangs or throws without being caught, this makes sure
+  // the spinner never just spins forever with no explanation.
+  const loadTimeout = setTimeout(() => {
     document.getElementById("loadingBox").style.display = "none";
-    document.getElementById("formBox").style.display = "block";
-    resetForm();
+    document.getElementById("errorText").textContent = "This is taking longer than expected. Check your connection and try again.";
+    document.getElementById("errorBox").style.display = "block";
+  }, 10000);
+
+  (async () => {
+    try {
+      await initLanguage(supabaseClient);
+
+      const params = new URLSearchParams(window.location.search);
+      miniatureId = params.get("id");
+
+      if (!miniatureId){
+        clearTimeout(loadTimeout);
+        document.getElementById("loadingBox").style.display = "none";
+        document.getElementById("errorBox").style.display = "block";
+        return;
+      }
+
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session){
+        clearTimeout(loadTimeout);
+        document.getElementById("loadingBox").style.display = "none";
+        document.getElementById("errorBox").style.display = "block";
+        return;
+      }
+
+      const { data, error } = await supabaseClient
+        .from("miniatures")
+        .select("id, title, owner_profile_id, photos ( image_url, photo_type )")
+        .eq("id", miniatureId)
+        .maybeSingle();
+
+      if (error || !data || data.owner_profile_id !== session.user.id){
+        clearTimeout(loadTimeout);
+        document.getElementById("loadingBox").style.display = "none";
+        document.getElementById("errorBox").style.display = "block";
+        return;
+      }
+
+      document.getElementById("modelTitle").textContent = data.title || "";
+      const frontPhoto = (data.photos || []).find(p => p.photo_type === "front");
+      if (frontPhoto){
+        const img = document.getElementById("modelPhoto");
+        img.src = frontPhoto.image_url;
+        img.style.display = "block";
+      }
+      document.getElementById("viewModelLink").href = `model.html?id=${miniatureId}`;
+      document.getElementById("successViewModelLink").href = `model.html?id=${miniatureId}`;
+
+      clearTimeout(loadTimeout);
+      document.getElementById("loadingBox").style.display = "none";
+      document.getElementById("formBox").style.display = "block";
+      resetForm();
+    } catch (err){
+      console.error("log-game.html failed to load:", err);
+      clearTimeout(loadTimeout);
+      document.getElementById("loadingBox").style.display = "none";
+      document.getElementById("errorText").textContent = "Something went wrong loading this. Please try again.";
+      document.getElementById("errorBox").style.display = "block";
+    }
   })();
 </script>
 
