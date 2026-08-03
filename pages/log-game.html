@@ -82,6 +82,16 @@
     display:none; border:1px solid var(--error); color: var(--error); background: rgba(201,96,90,0.08);
     padding:12px 14px; font-size:0.85rem; margin-bottom:18px;
   }
+  .field-heading-row{ margin-bottom:18px; border-top:1px solid var(--hairline); padding-top:20px; }
+  #formModeTitle{ font-family:'Cormorant Garamond', serif; font-size:1.15rem; font-weight:600; margin:0; }
+  .recent-entry{
+    border:1px solid var(--hairline); background: var(--bg-raised); padding:12px 14px; margin-bottom:8px;
+    cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:10px;
+  }
+  .recent-entry:hover{ border-color: var(--gold); }
+  .recent-entry-main{ font-size:0.85rem; }
+  .recent-entry-date{ font-family:'IBM Plex Mono', monospace; font-size:0.66rem; color: var(--mono); white-space:nowrap; }
+  #deleteEntryBtn:hover{ background: rgba(201,96,90,0.08); }
   .success-icon{
     width:48px; height:48px; margin:0 auto 16px; border:1px solid var(--gold); border-radius:50%;
     display:flex; align-items:center; justify-content:center; color: var(--gold); font-size:1.4rem;
@@ -109,6 +119,15 @@
         <div class="eyebrow" data-i18n="lg_eyebrow">Log Game</div>
         <h1 id="modelTitle"></h1>
       </div>
+    </div>
+
+    <div class="field" id="recentEntriesField" style="display:none;">
+      <label data-i18n="lg_recent_label">Recent Entries</label>
+      <div id="recentEntriesList"></div>
+    </div>
+
+    <div class="field-heading-row" id="formModeHeading">
+      <h2 id="formModeTitle" data-i18n="lg_new_entry_heading">Log a New Round</h2>
     </div>
 
     <div class="top-error" id="topError"></div>
@@ -156,10 +175,21 @@
       </div>
     </div>
 
-    <div class="field">
+    <div class="field" id="roundsWizardField">
       <label data-i18n="lg_rounds_label">Rounds</label>
       <p style="font-size:0.8rem; margin-top:-4px; margin-bottom:12px;" data-i18n="lg_rounds_hint">Fill in a round's result and a new one appears below it. Leave the last one blank when you're done.</p>
       <div id="glRoundsContainer"></div>
+    </div>
+
+    <div class="field" id="editTalliesField" style="display:none;">
+      <label data-i18n="lg_result_label">Result</label>
+      <select id="glEditResult" style="margin-bottom:14px;">
+        <option value="">—</option>
+        <option value="Win">Win</option>
+        <option value="Loss">Loss</option>
+        <option value="Draw">Draw</option>
+      </select>
+      <div id="glEditTalliesContainer"></div>
     </div>
 
     <div class="field" id="glPlacementField" style="display:none;">
@@ -173,6 +203,8 @@
     </div>
 
     <button type="button" class="btn-gold" id="saveBtn" data-i18n="lg_save_btn">Save Entry</button>
+    <button type="button" class="btn-ghost" id="deleteEntryBtn" style="display:none; color:var(--error); border-color:var(--error);" data-i18n="lg_delete_btn">Delete This Entry</button>
+    <button type="button" class="btn-ghost" id="cancelEditBtn" style="display:none;" data-i18n="lg_cancel_edit_btn">Cancel, Log a New Round Instead</button>
     <a class="btn-ghost" href="#" id="viewModelLink" target="_top" data-i18n="nfc_view_model">View Model Info</a>
   </div>
 
@@ -206,7 +238,10 @@
     el.style.display = "block";
   }
 
-  document.getElementById("glGameSystem").addEventListener("input", renderRounds);
+  document.getElementById("glGameSystem").addEventListener("input", () => {
+    renderRounds();
+    if (editingEntryId) renderEditTallies();
+  });
 
   function updateContextFieldVisibility(){
     const context = document.getElementById("glContext").value;
@@ -215,6 +250,161 @@
     document.getElementById("glPlacementField").style.display = context === "Tournament" ? "block" : "none";
   }
   document.getElementById("glContext").addEventListener("change", updateContextFieldVisibility);
+
+  // ---- Edit mode (single already-saved entry — result + simple tally
+  // counts, no per-kill detail/opponent-linking. That level of detail
+  // stays the full editor's job; this is the fast path. ----
+  let editingEntryId = null;
+  let editingTallies = [];
+
+  function renderEditTallies(){
+    const container = document.getElementById("glEditTalliesContainer");
+    const suggestions = getTallySuggestions();
+    const shown = new Set(editingTallies.map(t => t.tallyType));
+    const chipsHtml = suggestions.map(s => `<button type="button" class="gl-round-chip" data-type="${s}">${s}</button>`).join("");
+    const talliesHtml = editingTallies.map(tly => `
+      <div class="gl-round-tally-row">
+        <span style="flex:1;">${tly.tallyType}</span>
+        <button type="button" class="edit-tally-dec" data-tally-type="${tly.tallyType.replace(/"/g, "&quot;")}">−</button>
+        <span>${tly.count}</span>
+        <button type="button" class="edit-tally-inc" data-tally-type="${tly.tallyType.replace(/"/g, "&quot;")}">+</button>
+      </div>
+    `).join("");
+    container.innerHTML = `<div class="gl-round-chips">${chipsHtml}</div>${talliesHtml}`;
+
+    container.querySelectorAll(".gl-round-chip").forEach(chip => {
+      chip.addEventListener("click", () => {
+        const existing = editingTallies.find(t => t.tallyType === chip.dataset.type);
+        if (existing) existing.count += 1;
+        else editingTallies.push({ tallyType: chip.dataset.type, count: 1 });
+        renderEditTallies();
+      });
+    });
+    container.querySelectorAll(".edit-tally-inc").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tly = editingTallies.find(t => t.tallyType === btn.dataset.tallyType);
+        if (tly) tly.count += 1;
+        renderEditTallies();
+      });
+    });
+    container.querySelectorAll(".edit-tally-dec").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tly = editingTallies.find(t => t.tallyType === btn.dataset.tallyType);
+        if (tly && tly.count > 0){
+          tly.count -= 1;
+          if (tly.count === 0) editingTallies = editingTallies.filter(t => t !== tly);
+        }
+        renderEditTallies();
+      });
+    });
+  }
+
+  async function fetchAndRenderRecentEntries(){
+    const { data: entries } = await supabaseClient
+      .from("game_log_entries")
+      .select("id, entry_date, game_system, context, campaign_name, tournament_name, tournament_placement, result, notes")
+      .eq("miniature_id", miniatureId)
+      .order("entry_date", { ascending: false })
+      .limit(15);
+
+    const field = document.getElementById("recentEntriesField");
+    if (!entries || !entries.length){
+      field.style.display = "none";
+      return;
+    }
+
+    const { data: tallies } = await supabaseClient
+      .from("game_log_tallies")
+      .select("game_log_entry_id, tally_type, count")
+      .in("game_log_entry_id", entries.map(e => e.id));
+    const talliesByEntry = {};
+    (tallies || []).forEach(t => {
+      if (!talliesByEntry[t.game_log_entry_id]) talliesByEntry[t.game_log_entry_id] = [];
+      talliesByEntry[t.game_log_entry_id].push(t);
+    });
+
+    const list = document.getElementById("recentEntriesList");
+    list.innerHTML = entries.map(entry => {
+      const eventName = entry.tournament_name || entry.campaign_name;
+      const tallySummary = (talliesByEntry[entry.id] || []).map(t => `${t.tally_type} ×${t.count}`).join(", ");
+      const summary = [entry.game_system, entry.result, eventName].filter(Boolean).join(" · ");
+      return `
+        <div class="recent-entry" data-entry-id="${entry.id}">
+          <div class="recent-entry-main">
+            <div>${summary || "Game"}</div>
+            ${tallySummary ? `<div style="color:var(--mono); font-size:0.78rem; margin-top:2px;">${tallySummary}</div>` : ""}
+          </div>
+          <div class="recent-entry-date">${entry.entry_date}</div>
+        </div>
+      `;
+    }).join("");
+
+    list.querySelectorAll(".recent-entry").forEach(card => {
+      card.addEventListener("click", () => {
+        const entry = entries.find(e => e.id === card.dataset.entryId);
+        enterEditMode(entry, talliesByEntry[entry.id] || []);
+      });
+    });
+
+    field.style.display = "block";
+  }
+
+  function enterEditMode(entry, tallies){
+    editingEntryId = entry.id;
+    editingTallies = tallies.map(t => ({ tallyType: t.tally_type, count: t.count }));
+
+    document.getElementById("formModeTitle").textContent = t("lg_edit_entry_heading");
+    document.getElementById("roundsWizardField").style.display = "none";
+    document.getElementById("editTalliesField").style.display = "block";
+    document.getElementById("deleteEntryBtn").style.display = "block";
+    document.getElementById("cancelEditBtn").style.display = "block";
+    document.getElementById("saveBtn").textContent = t("lg_save_changes_btn");
+
+    document.getElementById("glDate").value = entry.entry_date;
+    document.getElementById("glGameSystem").value = entry.game_system || "";
+    document.getElementById("glContext").value = entry.context || "Casual";
+    document.getElementById("glCampaignName").value = entry.campaign_name || "";
+    document.getElementById("glTournamentName").value = entry.tournament_name || "";
+    document.getElementById("glTournamentPlacement").value = entry.tournament_placement || "";
+    document.getElementById("glNotes").value = entry.notes || "";
+    document.getElementById("glEditResult").value = entry.result || "";
+    document.getElementById("topError").style.display = "none";
+    updateContextFieldVisibility();
+    renderEditTallies();
+    window.scrollTo({ top: document.getElementById("formModeHeading").offsetTop - 20, behavior: "smooth" });
+  }
+
+  function enterCreateMode(){
+    editingEntryId = null;
+    editingTallies = [];
+    document.getElementById("formModeTitle").textContent = t("lg_new_entry_heading");
+    document.getElementById("roundsWizardField").style.display = "block";
+    document.getElementById("editTalliesField").style.display = "none";
+    document.getElementById("deleteEntryBtn").style.display = "none";
+    document.getElementById("cancelEditBtn").style.display = "none";
+    document.getElementById("saveBtn").textContent = t("lg_save_btn");
+    resetForm();
+  }
+  document.getElementById("cancelEditBtn").addEventListener("click", enterCreateMode);
+
+  document.getElementById("deleteEntryBtn").addEventListener("click", async () => {
+    if (!editingEntryId) return;
+    if (!confirm(t("lg_delete_confirm"))) return;
+    const btn = document.getElementById("deleteEntryBtn");
+    btn.disabled = true;
+    try {
+      const { error } = await supabaseClient.from("game_log_entries").delete().eq("id", editingEntryId);
+      if (error) throw error;
+      if (window.parent !== window) window.parent.postMessage("miniarchive:game-logged", "*");
+      enterCreateMode();
+      fetchAndRenderRecentEntries();
+    } catch (err){
+      console.error(err);
+      showTopError(err.message || "Couldn't delete this entry.");
+    } finally {
+      btn.disabled = false;
+    }
+  });
 
   function resetForm(){
     currentRounds = [];
@@ -235,22 +425,84 @@
       showTopError("Enter a complete date (YYYY-MM-DD).");
       return;
     }
-    const playedRounds = currentRounds.filter(r => r.result);
-    if (!playedRounds.length){
-      showTopError("Log at least one round's result.");
-      return;
-    }
 
     const saveBtn = document.getElementById("saveBtn");
-    saveBtn.disabled = true;
-    saveBtn.textContent = "Saving…";
-
     const context = document.getElementById("glContext").value;
     const gameSystem = document.getElementById("glGameSystem").value.trim() || null;
     const campaignName = context === "Campaign" ? document.getElementById("glCampaignName").value.trim() || null : null;
     const tournamentName = context === "Tournament" ? document.getElementById("glTournamentName").value.trim() || null : null;
     const placement = context === "Tournament" ? document.getElementById("glTournamentPlacement").value.trim() || null : null;
     const notes = document.getElementById("glNotes").value.trim() || null;
+
+    // ---- Edit mode: update the one already-saved entry ----
+    if (editingEntryId){
+      const result = document.getElementById("glEditResult").value || null;
+      if (!result){
+        showTopError("Pick a result (Win/Loss/Draw).");
+        return;
+      }
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving…";
+      try {
+        const { error: updateError } = await supabaseClient
+          .from("game_log_entries")
+          .update({
+            entry_date: dateValue,
+            game_system: gameSystem,
+            context,
+            campaign_name: campaignName,
+            tournament_name: tournamentName,
+            tournament_placement: placement,
+            result,
+            notes,
+          })
+          .eq("id", editingEntryId);
+        if (updateError) throw updateError;
+
+        // Simplest correct way to sync tallies: replace them wholesale
+        // rather than diff. This mode never had per-kill detail/target
+        // links to begin with, so nothing meaningful is lost by doing that.
+        const { error: deleteTalliesError } = await supabaseClient
+          .from("game_log_tallies")
+          .delete()
+          .eq("game_log_entry_id", editingEntryId);
+        if (deleteTalliesError) throw deleteTalliesError;
+
+        if (editingTallies.length){
+          const { error: insertTalliesError } = await supabaseClient
+            .from("game_log_tallies")
+            .insert(editingTallies.map(t => ({
+              game_log_entry_id: editingEntryId,
+              tally_type: t.tallyType,
+              count: t.count,
+              target_confirmed: false,
+            })));
+          if (insertTalliesError) throw insertTalliesError;
+        }
+
+        if (window.parent !== window) window.parent.postMessage("miniarchive:game-logged", "*");
+        enterCreateMode();
+        fetchAndRenderRecentEntries();
+        document.getElementById("topError").style.display = "none";
+      } catch (err){
+        console.error(err);
+        showTopError(err.message || "Couldn't save these changes.");
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = t("lg_save_changes_btn");
+      }
+      return;
+    }
+
+    // ---- Create mode: the round wizard, possibly multiple rounds ----
+    const playedRounds = currentRounds.filter(r => r.result);
+    if (!playedRounds.length){
+      showTopError("Log at least one round's result.");
+      return;
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving…";
 
     try {
       for (let idx = 0; idx < playedRounds.length; idx++){
@@ -290,6 +542,7 @@
       document.getElementById("formBox").style.display = "none";
       document.getElementById("successBox").style.display = "block";
       if (window.parent !== window) window.parent.postMessage("miniarchive:game-logged", "*");
+      fetchAndRenderRecentEntries();
     } catch (err){
       console.error(err);
       showTopError(err.message || "Couldn't save this entry.");
@@ -302,7 +555,7 @@
   document.getElementById("logAnotherBtn").addEventListener("click", () => {
     document.getElementById("successBox").style.display = "none";
     document.getElementById("formBox").style.display = "block";
-    resetForm();
+    enterCreateMode();
   });
 
   // If anything below hangs or throws without being caught, this makes sure
@@ -362,6 +615,7 @@
       document.getElementById("loadingBox").style.display = "none";
       document.getElementById("formBox").style.display = "block";
       resetForm();
+      fetchAndRenderRecentEntries();
     } catch (err){
       console.error("log-game.html failed to load:", err);
       clearTimeout(loadTimeout);
