@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Log In — Mini Archive</title>
+<title>Reset Password — Mini Archive</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -15,7 +15,7 @@
     --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2620;
     --gold:#c9a24b; --gold-bright:#e8c877;
     --cream:#ece6d8; --cream-dim:#a89f8c; --mono:#8a8072;
-    --error:#c97b6a; --green:#8fae7a;
+    --green:#8fae7a; --error:#c97b6a;
   }
   *{ margin:0; padding:0; box-sizing:border-box; }
   body{
@@ -75,10 +75,6 @@
   .field.invalid input{ border-color: var(--error); }
   .field.invalid .error-msg{ display:block; }
 
-  .field-foot{ margin-top:10px; text-align:right; }
-  .field-foot a{ font-size:0.8rem; color: var(--gold-bright); }
-  .field-foot a:hover{ text-decoration: underline; }
-
   .submit-btn{
     width:100%; margin-top: 28px;
     font-family:'IBM Plex Mono', monospace; font-size:0.75rem; letter-spacing:0.14em; text-transform:uppercase;
@@ -86,10 +82,7 @@
     cursor:pointer; transition: background .25s ease;
   }
   .submit-btn:hover{ background: var(--gold-bright); }
-
-  .form-foot{ margin-top: 22px; text-align:center; font-size:0.85rem; color: var(--cream-dim); }
-  .form-foot a{ color: var(--gold-bright); }
-  .form-foot a:hover{ text-decoration: underline; }
+  .submit-btn:disabled{ opacity:0.6; cursor:not-allowed; }
 
   .top-error{
     margin-top: 20px; border:1px solid rgba(201,123,106,0.4); background: rgba(201,123,106,0.08);
@@ -99,19 +92,15 @@
     margin-top: 20px; border:1px solid rgba(143,174,122,0.4); background: rgba(143,174,122,0.08);
     padding: 12px 14px; font-size:0.82rem; color: var(--green); display:none;
   }
-  .resend-box{
-    margin-top: 20px; border:1px solid rgba(201,162,75,0.4); background: rgba(201,162,75,0.06);
-    padding: 16px 18px; display:none;
+
+  .state-loading, .state-error{ text-align:center; }
+  .state-error h1{ font-family:'Cormorant Garamond', serif; font-size:1.6rem; font-weight:600; margin-top:12px; }
+  .state-error p{ margin-top:14px; color: var(--cream-dim); font-size:0.9rem; }
+  .cta-row{ margin-top: 24px; }
+  .btn-gold{
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color:#0c0b09; background: var(--gold); padding: 13px 24px; border:1px solid var(--gold); display:inline-block;
   }
-  .resend-box p{ font-size:0.85rem; color: var(--cream); }
-  .btn-resend{
-    margin-top: 12px; width:100%;
-    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase;
-    color: #0c0b09; background: var(--gold); padding: 11px 16px; border:1px solid var(--gold); cursor:pointer;
-    transition: background .25s ease;
-  }
-  .btn-resend:hover{ background: var(--gold-bright); }
-  .btn-resend:disabled{ opacity:0.6; cursor:not-allowed; }
 
   footer{ border-top:1px solid var(--hairline); padding:28px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); }
 
@@ -119,9 +108,8 @@
     header{ padding:18px 20px; gap:12px; }
     .brand-name{ font-size:1rem; }
     .form-card{ padding: 32px 24px; }
-    footer{ flex-direction:column; gap:14px; text-align:center; padding:24px; }
+    footer{ flex-direction:column; gap:14px; text-align:center; }
   }
-  :focus-visible{ outline:1px solid var(--gold-bright); outline-offset:3px; }
 </style>
 </head>
 <body>
@@ -142,226 +130,125 @@
         <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">🇫🇷 Français</button>
       </div>
     </div>
-    <nav><a href="index.html" data-i18n="login_back_home">← Back home</a></nav>
+    <nav><a href="index.html" data-i18n="reset_back_home">← Back home</a></nav>
   </div>
 </header>
 
 <div class="center-wrap">
-  <div class="form-card">
-    <div class="eyebrow" data-i18n="login_eyebrow">Welcome Back</div>
-    <h1 data-i18n="login_title">Log in to your archive</h1>
-    <div class="sub" data-i18n="login_sub">Pick up right where you left off.</div>
+  <div class="form-card" id="loadingCard">
+    <p style="text-align:center; color:var(--cream-dim);" data-i18n="reset_verifying">Verifying your reset link…</p>
+  </div>
+
+  <div class="form-card" id="errorCard" style="display:none;">
+    <div class="state-error">
+      <div class="eyebrow" data-i18n="reset_invalid_eyebrow">Link Invalid</div>
+      <h1 data-i18n="reset_invalid_title">This reset link didn't work.</h1>
+      <p data-i18n="reset_invalid_desc">It may have expired, or already been used. Reset links are only valid for a short time.</p>
+      <div class="cta-row"><a class="btn-gold" href="login.html" data-i18n="reset_back_login">Back to Log In</a></div>
+    </div>
+  </div>
+
+  <div class="form-card" id="formCard" style="display:none;">
+    <div class="eyebrow" data-i18n="reset_eyebrow">Reset Password</div>
+    <h1 data-i18n="reset_title">Set a new password.</h1>
+    <div class="sub" data-i18n="reset_sub">Make it something you haven't used here before.</div>
 
     <div class="top-error" id="topError"></div>
     <div class="top-success" id="topSuccess"></div>
-    <div class="resend-box" id="resendBox" style="display:none;">
-      <p data-i18n="login_resend_notice">Your account exists but hasn't been confirmed yet.</p>
-      <button type="button" class="btn-resend" id="resendBtn" data-i18n="login_resend_btn">Resend Confirmation Email</button>
-    </div>
-    <div class="resend-box" id="forgotBox" style="display:none;">
-      <p data-i18n="login_forgot_notice">Enter your email below, then click here to get a password reset link.</p>
-      <button type="button" class="btn-resend" id="sendResetBtn" data-i18n="login_send_reset_btn">Send Reset Link</button>
-    </div>
 
-    <form id="loginForm" novalidate>
-      <div class="field" id="field-email">
-        <label for="email" data-i18n="login_email_label">Email</label>
-        <input id="email" type="email" placeholder="you@example.com" data-i18n-placeholder="login_email_placeholder">
-        <div class="error-msg" data-i18n="login_email_error">Enter a valid email address.</div>
-      </div>
-
+    <form id="resetForm" novalidate>
       <div class="field" id="field-password">
-        <label for="password" data-i18n="login_password_label">Password</label>
-        <input id="password" type="password" placeholder="Your password" data-i18n-placeholder="login_password_placeholder">
-        <div class="error-msg" data-i18n="login_password_error">Enter your password.</div>
-        <div class="field-foot"><a href="#" id="forgotPasswordLink" data-i18n="login_forgot_link">Forgot password?</a></div>
+        <label for="password" data-i18n="reset_new_password">New Password</label>
+        <input id="password" type="password" placeholder="At least 8 characters" data-i18n-placeholder="reset_new_password_placeholder">
+        <div class="error-msg" data-i18n="reset_new_password_error">Must be at least 8 characters.</div>
+      </div>
+      <div class="field" id="field-confirm">
+        <label for="confirmPassword" data-i18n="reset_confirm_password">Confirm New Password</label>
+        <input id="confirmPassword" type="password" placeholder="Type it again" data-i18n-placeholder="reset_confirm_password_placeholder">
+        <div class="error-msg" data-i18n="reset_confirm_password_error">Passwords don't match.</div>
       </div>
 
-      <button type="submit" class="submit-btn" data-i18n="login_submit">Log In</button>
+      <button type="submit" class="submit-btn" id="submitBtn" data-i18n="reset_submit">Set New Password</button>
     </form>
-
-    <div class="form-foot"><span data-i18n="login_no_archive">Don't have an archive yet? </span><a href="start.html" data-i18n="login_start_free">Start one for free</a></div>
-    <div class="form-foot"><span data-i18n="login_no_email">Didn't get a confirmation email? </span><a href="#" id="manualResendLink" data-i18n="login_resend_it">Resend it</a></div>
   </div>
 </div>
 
 <footer>
   <div>© 2026 Mini Archive. <span data-i18n="footer_tagline">Every miniature has a story.</span></div>
-  <div><a href="index.html" data-i18n="footer_home">Home</a></div>
+  <div><a href="login.html" data-i18n="footer_login">Log In</a></div>
 </footer>
 
 <script>
   const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  initLanguage(supabaseClient);
 
-  const form = document.getElementById("loginForm");
-  const topError = document.getElementById("topError");
-  const topSuccess = document.getElementById("topSuccess");
-  const resendBox = document.getElementById("resendBox");
-  const resendBtn = document.getElementById("resendBtn");
-  const submitBtn = form.querySelector(".submit-btn");
+  function showCard(id){
+    ["loadingCard", "errorCard", "formCard"].forEach(cardId => {
+      document.getElementById(cardId).style.display = (cardId === id) ? "block" : "none";
+    });
+  }
 
   function setInvalid(fieldId, invalid){
     document.getElementById(fieldId).classList.toggle("invalid", invalid);
   }
 
-  async function sendConfirmation(email){
-    return supabaseClient.auth.resend({ type: "signup", email });
-  }
+  initLanguage(supabaseClient);
 
-  form.addEventListener("submit", async (e) => {
+  (async () => {
+    // Supabase's client auto-processes the recovery token in the URL hash
+    // and establishes a session — same mechanism as the signup confirmation
+    // page. If there's no session, the link was invalid or already used.
+    const { data: { session } } = await supabaseClient.auth.getSession();
+
+    if (!session){
+      showCard("errorCard");
+      return;
+    }
+
+    window.history.replaceState({}, document.title, window.location.pathname);
+    showCard("formCard");
+  })();
+
+  document.getElementById("resetForm").addEventListener("submit", async (e) => {
     e.preventDefault();
+    const topError = document.getElementById("topError");
+    const topSuccess = document.getElementById("topSuccess");
     topError.style.display = "none";
     topSuccess.style.display = "none";
-    resendBox.style.display = "none";
 
-    const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value;
-    const emailValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-    const passwordValid = password.length > 0;
+    const confirmPassword = document.getElementById("confirmPassword").value;
+    const passwordValid = password.length >= 8;
+    const matches = password === confirmPassword;
 
-    setInvalid("field-email", !emailValid);
     setInvalid("field-password", !passwordValid);
+    setInvalid("field-confirm", passwordValid && !matches);
 
-    if (!(emailValid && passwordValid)) return;
+    if (!passwordValid || !matches) return;
 
+    const submitBtn = document.getElementById("submitBtn");
     submitBtn.disabled = true;
-    submitBtn.textContent = t("login_submit_loading");
+    submitBtn.textContent = t("reset_submit_saving");
 
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    const { error } = await supabaseClient.auth.updateUser({ password });
 
     submitBtn.disabled = false;
-    submitBtn.textContent = t("login_submit");
+    submitBtn.textContent = t("reset_submit");
 
     if (error){
-      // This is the specific, distinct error Supabase returns when the
-      // credentials are correct but the account was never confirmed —
-      // not a generic auth failure, so this is the real trigger for
-      // offering a resend, not a guess based on time elapsed.
-      const isUnconfirmed = error.message?.toLowerCase().includes("email not confirmed") || error.code === "email_not_confirmed";
-
-      if (isUnconfirmed){
-        resendBox.style.display = "block";
-        resendBtn.dataset.email = email;
-      } else {
-        topError.textContent = error.message;
-        topError.style.display = "block";
-      }
-      return;
-    }
-
-    // Successful login — check for deactivation/pending deletion before
-    // continuing. Logging in is itself the "cancel" action for both.
-    const { data: status } = await supabaseClient
-      .from("account_status")
-      .select("deactivated_at, pending_deletion_at")
-      .eq("profile_id", data.user.id)
-      .maybeSingle();
-
-    if (status && (status.deactivated_at || status.pending_deletion_at)){
-      const wasPendingDeletion = !!status.pending_deletion_at;
-
-      await supabaseClient
-        .from("account_status")
-        .update({ deactivated_at: null, pending_deletion_at: null })
-        .eq("profile_id", data.user.id);
-
-      submitBtn.disabled = true;
-      topSuccess.textContent = wasPendingDeletion
-        ? t("login_success_cancelled_deletion")
-        : t("login_success_reactivated");
-      topSuccess.style.display = "block";
-
-      setTimeout(() => { window.location.href = "collection.html"; }, 1800);
-      return;
-    }
-
-    window.location.href = "collection.html";
-  });
-
-  resendBtn.addEventListener("click", async () => {
-    const email = resendBtn.dataset.email;
-    resendBtn.disabled = true;
-    resendBtn.textContent = t("login_resend_sending");
-
-    const { error } = await sendConfirmation(email);
-
-    resendBtn.disabled = false;
-    resendBtn.textContent = t("login_resend_btn");
-
-    if (error){
-      topError.textContent = error.message || t("login_error_resend_generic");
+      topError.textContent = error.message || t("reset_error_generic");
       topError.style.display = "block";
       return;
     }
 
-    resendBox.style.display = "none";
-    topSuccess.textContent = t("login_success_confirmation_sent");
+    topSuccess.textContent = t("reset_success");
     topSuccess.style.display = "block";
-  });
+    document.getElementById("resetForm").style.display = "none";
 
-  document.getElementById("manualResendLink").addEventListener("click", async (e) => {
-    e.preventDefault();
-    const email = document.getElementById("email").value.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-      topError.textContent = t("login_error_enter_email_resend");
-      topError.style.display = "block";
-      document.getElementById("email").focus();
-      return;
-    }
-
-    topError.style.display = "none";
-    const { error } = await sendConfirmation(email);
-
-    if (error){
-      topError.textContent = error.message || t("login_error_resend_generic");
-      topError.style.display = "block";
-      return;
-    }
-
-    topSuccess.textContent = t("login_success_confirmation_sent");
-    topSuccess.style.display = "block";
-  });
-
-  document.getElementById("forgotPasswordLink").addEventListener("click", (e) => {
-    e.preventDefault();
-    topError.style.display = "none";
-    topSuccess.style.display = "none";
-    resendBox.style.display = "none";
-    document.getElementById("forgotBox").style.display = "block";
-  });
-
-  document.getElementById("sendResetBtn").addEventListener("click", async () => {
-    const email = document.getElementById("email").value.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-      topError.textContent = t("login_error_enter_email_reset");
-      topError.style.display = "block";
-      document.getElementById("email").focus();
-      return;
-    }
-
-    const btn = document.getElementById("sendResetBtn");
-    btn.disabled = true;
-    btn.textContent = t("login_resend_sending");
-
-    const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-      redirectTo: "https://www.miniarchive.net/reset-password.html",
-    });
-
-    btn.disabled = false;
-    btn.textContent = t("login_send_reset_btn");
-
-    if (error){
-      topError.textContent = error.message || t("login_error_reset_generic");
-      topError.style.display = "block";
-      return;
-    }
-
-    document.getElementById("forgotBox").style.display = "none";
-    topSuccess.textContent = t("login_reset_sent");
-    topSuccess.style.display = "block";
+    // Sign out so they log back in cleanly with the new password.
+    await supabaseClient.auth.signOut();
+    setTimeout(() => { window.location.href = "login.html"; }, 2000);
   });
 </script>
 
