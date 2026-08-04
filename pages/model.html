@@ -61,6 +61,30 @@
   .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
   nav{ display:flex; align-items:center; gap:40px; }
   .user-group{ display:flex; align-items:center; gap:20px; }
+  .login-link{
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase;
+    color: var(--cream-dim); transition: color 0.2s ease;
+  }
+  .login-link:hover{ color: var(--gold-bright); }
+  .btn-ghost{
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color: var(--cream); padding: 11px 22px; border: 1px solid var(--hairline); background: transparent;
+    cursor:pointer; transition: border-color 0.2s ease, color 0.2s ease;
+  }
+  .btn-ghost:hover{ border-color: var(--gold); color: var(--gold-bright); }
+  .user-toggle-wrap{ position:relative; }
+  .user-toggle-wrap img{ width:36px !important; height:36px !important; }
+  .dropdown{
+    position:absolute; top: calc(100% + 14px); right:0; min-width:200px;
+    background: var(--bg-raised); border:1px solid var(--hairline); display:none; flex-direction:column; z-index:60;
+  }
+  .dropdown.open{ display:flex; }
+  .dropdown a, .dropdown button{
+    text-align:left; padding: 13px 18px; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.06em;
+    text-transform:uppercase; color: var(--cream-dim); border-bottom:1px solid var(--hairline); background:none; border-left:none; border-right:none; border-top:none; cursor:pointer;
+  }
+  .dropdown a:last-child, .dropdown button:last-child{ border-bottom:none; }
+  .dropdown a:hover, .dropdown button:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
   .nav-toggle, .user-toggle{
     display:none; background:none; border:none; cursor:pointer; padding:6px;
     color: var(--cream); align-items:center; justify-content:center;
@@ -469,8 +493,8 @@
       <li><a href="index.html#about" data-i18n="nav_about">About</a></li>
     </ul>
     <div class="user-group" id="userMenu">
-      <a class="btn-gold" href="edit-model.html" id="editButton" style="display:none;" data-i18n="model_edit_this">Edit This Model</a>
-      <a class="btn-gold" href="collection.html" data-i18n="model_back_to_collection">← Back to Collection</a>
+      <a class="login-link" href="collection.html" data-i18n="model_back_to_collection">← Back to Collection</a>
+      <a class="btn-ghost" href="edit-model.html" id="editButton" style="display:none;" data-i18n="model_edit_this">Edit This Model</a>
     </div>
   </nav>
   <div class="lang-dropdown">
@@ -483,9 +507,11 @@
       <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">🇫🇷 Français</button>
     </div>
   </div>
-  <button type="button" class="user-toggle" id="userToggle" aria-label="Account">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-  </button>
+  <div class="user-toggle-wrap" id="userToggleWrap">
+    <button type="button" class="user-toggle" id="userToggle" aria-label="Account" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </button>
+  </div>
 </header>
 
 <main>
@@ -1061,6 +1087,8 @@
       editBtn.style.display = "inline-block";
     }
 
+    if (session) renderAccountIcon(session);
+
     const realOwnerName = data.owner?.username || data.owner?.display_name || "Unknown";
     const ownerVisibleToViewer = data.owner_visible || isOwnerViewing;
     const ownerLabel = ownerVisibleToViewer
@@ -1412,6 +1440,38 @@
 
   function isPhotoField(fieldName){
     return fieldName.startsWith("photo_") || fieldName === "Timeline Photo";
+  }
+
+  async function renderAccountIcon(session){
+    const { data: profile } = await supabaseClient
+      .from("profiles")
+      .select("avatar_url")
+      .eq("id", session.user.id)
+      .maybeSingle();
+
+    const toggle = document.getElementById("userToggle");
+    if (profile?.avatar_url){
+      toggle.innerHTML = `<img src="${profile.avatar_url}" alt="" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">`;
+    }
+    toggle.style.display = "flex";
+
+    const dropdown = document.createElement("div");
+    dropdown.className = "dropdown";
+    dropdown.id = "userDropdown";
+    dropdown.innerHTML = `
+      <a href="collection.html?mine=true">${t("nav_my_collection")}</a>
+      <a href="edit-model.html">${t("nav_add_model")}</a>
+      <a href="account.html">${t("nav_account_settings")}</a>
+      <button id="accountLogoutBtn">${t("nav_logout")}</button>
+    `;
+    document.getElementById("userToggleWrap").appendChild(dropdown);
+
+    toggle.addEventListener("click", (e) => { e.stopPropagation(); dropdown.classList.toggle("open"); });
+    document.addEventListener("click", () => dropdown.classList.remove("open"));
+    document.getElementById("accountLogoutBtn").addEventListener("click", async () => {
+      await supabaseClient.auth.signOut();
+      window.location.reload();
+    });
   }
 
   async function loadNfcStatus(miniatureId){
