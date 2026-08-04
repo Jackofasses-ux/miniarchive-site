@@ -248,6 +248,26 @@
     document.getElementById("glCampaignField").style.display = context === "Campaign" ? "block" : "none";
     document.getElementById("glTournamentField").style.display = context === "Tournament" ? "block" : "none";
     document.getElementById("glPlacementField").style.display = context === "Tournament" ? "block" : "none";
+
+    // The round-by-round wizard is for Tournament only — a Casual, Matched
+    // Play, Campaign, etc. game is just one result, not a growing list of
+    // rounds. Editing an already-saved entry always uses the simple
+    // single-result view regardless of context too, since it's already
+    // just one row, not a fresh multi-round session.
+    const useWizard = !editingEntryId && context === "Tournament";
+    document.getElementById("roundsWizardField").style.display = useWizard ? "block" : "none";
+    document.getElementById("editTalliesField").style.display = useWizard ? "none" : "block";
+    if (useWizard){
+      renderRounds();
+    } else {
+      if (!editingEntryId){
+        // Fresh simple-mode state when switching into it for a new entry —
+        // editing an existing entry already populated this itself.
+        editingTallies = [];
+        document.getElementById("glEditResult").value = "";
+      }
+      renderEditTallies();
+    }
   }
   document.getElementById("glContext").addEventListener("change", updateContextFieldVisibility);
 
@@ -494,10 +514,72 @@
       return;
     }
 
-    // ---- Create mode: the round wizard, possibly multiple rounds ----
-    const playedRounds = currentRounds.filter(r => r.result);
-    if (!playedRounds.length){
-      showTopError("Log at least one round's result.");
+    // ---- Create mode: Tournament uses the round wizard (possibly several
+    // rounds); everything else is just one simple entry, same shape as
+    // editing an existing one. ----
+    if (context === "Tournament"){
+      const playedRounds = currentRounds.filter(r => r.result);
+      if (!playedRounds.length){
+        showTopError("Log at least one round's result.");
+        return;
+      }
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving…";
+
+      try {
+        for (let idx = 0; idx < playedRounds.length; idx++){
+          const round = playedRounds[idx];
+          const isLast = idx === playedRounds.length - 1;
+
+          const { data: inserted, error: entryError } = await supabaseClient
+            .from("game_log_entries")
+            .insert({
+              miniature_id: miniatureId,
+              entry_date: dateValue,
+              game_system: gameSystem,
+              context,
+              campaign_name: campaignName,
+              tournament_name: tournamentName,
+              tournament_placement: isLast ? placement : null,
+              result: round.result,
+              notes: isLast ? notes : null,
+            })
+            .select()
+            .single();
+          if (entryError) throw entryError;
+
+          if (round.tallies.length){
+            const { error: tallyError } = await supabaseClient
+              .from("game_log_tallies")
+              .insert(round.tallies.map(t => ({
+                game_log_entry_id: inserted.id,
+                tally_type: t.tallyType,
+                count: t.count,
+                target_confirmed: false,
+              })));
+            if (tallyError) throw tallyError;
+          }
+        }
+
+        document.getElementById("formBox").style.display = "none";
+        document.getElementById("successBox").style.display = "block";
+        if (window.parent !== window) window.parent.postMessage("miniarchive:game-logged", "*");
+        fetchAndRenderRecentEntries();
+    } catch (err){
+      console.error(err);
+      showTopError(err.message || "Couldn't save this entry.");
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.textContent = "Save Entry";
+    }
+      return;
+    }
+
+    // ---- Simple single-entry save (Casual, Matched Play, Campaign, etc.) ----
+    const result = document.getElementById("glEditResult").value || null;
+    if (!result){
+      showTopError("Pick a result (Win/Loss/Draw).");
       return;
     }
 
@@ -505,38 +587,33 @@
     saveBtn.textContent = "Saving…";
 
     try {
-      for (let idx = 0; idx < playedRounds.length; idx++){
-        const round = playedRounds[idx];
-        const isLast = idx === playedRounds.length - 1;
+      const { data: inserted, error: entryError } = await supabaseClient
+        .from("game_log_entries")
+        .insert({
+          miniature_id: miniatureId,
+          entry_date: dateValue,
+          game_system: gameSystem,
+          context,
+          campaign_name: campaignName,
+          tournament_name: null,
+          tournament_placement: null,
+          result,
+          notes,
+        })
+        .select()
+        .single();
+      if (entryError) throw entryError;
 
-        const { data: inserted, error: entryError } = await supabaseClient
-          .from("game_log_entries")
-          .insert({
-            miniature_id: miniatureId,
-            entry_date: dateValue,
-            game_system: gameSystem,
-            context,
-            campaign_name: campaignName,
-            tournament_name: tournamentName,
-            tournament_placement: isLast ? placement : null,
-            result: round.result,
-            notes: isLast ? notes : null,
-          })
-          .select()
-          .single();
-        if (entryError) throw entryError;
-
-        if (round.tallies.length){
-          const { error: tallyError } = await supabaseClient
-            .from("game_log_tallies")
-            .insert(round.tallies.map(t => ({
-              game_log_entry_id: inserted.id,
-              tally_type: t.tallyType,
-              count: t.count,
-              target_confirmed: false,
-            })));
-          if (tallyError) throw tallyError;
-        }
+      if (editingTallies.length){
+        const { error: tallyError } = await supabaseClient
+          .from("game_log_tallies")
+          .insert(editingTallies.map(t => ({
+            game_log_entry_id: inserted.id,
+            tally_type: t.tallyType,
+            count: t.count,
+            target_confirmed: false,
+          })));
+        if (tallyError) throw tallyError;
       }
 
       document.getElementById("formBox").style.display = "none";
