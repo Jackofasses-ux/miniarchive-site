@@ -105,7 +105,7 @@
 
     const { data: tag, error: tagError } = await supabaseClient
       .from("nfc_tags")
-      .select("miniature_id")
+      .select("id, miniature_id, first_scanned_at")
       .eq("token", tagToken)
       .eq("status", "active")
       .maybeSingle();
@@ -136,6 +136,12 @@
     if (!isOwner){
       window.location.replace(`model.html?id=${data.id}`);
       return;
+    }
+
+    // First genuine scan by the actual owner — this is what turns "a tag
+    // record exists" into "verified." Only ever set once.
+    if (!tag.first_scanned_at){
+      await supabaseClient.from("nfc_tags").update({ first_scanned_at: new Date().toISOString() }).eq("id", tag.id);
     }
 
     document.getElementById("loadingBox").style.display = "none";
