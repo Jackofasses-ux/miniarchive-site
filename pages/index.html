@@ -147,6 +147,7 @@
   .login-link:hover{ color: var(--gold-bright); }
   #authArea{ display:flex; align-items:center; gap:20px; position:relative; }
   .user-menu-btn{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); border:1px solid var(--gold); padding:11px 20px; cursor:pointer; display:flex; align-items:center; gap:8px; transition: background 0.25s ease; }
+  @media (min-width: 901px){ #userMenuBtn{ display:none; } }
   .user-menu-btn:hover{ background: var(--gold-bright); color:#0c0b09; }
   .user-menu-btn svg{ stroke:#0c0b09; }
   .user-menu-btn svg{ width:10px; height:10px; }
@@ -200,10 +201,12 @@
     pointer-events: none;
   }
   .hero-inner{
-    padding: 100px 100px 70px 56px;
+    padding: 100px 56px 70px;
+    max-width: 1500px;
+    margin: 0 auto;
     display: flex;
     align-items: center;
-    justify-content: flex-start;
+    justify-content: center;
     gap: 70px;
     position: relative;
   }
@@ -776,6 +779,7 @@
     if (profile?.avatar_url){
       document.getElementById("userToggle").innerHTML = `<img src="${profile.avatar_url}" alt="" style="width:26px; height:26px; border-radius:50%; object-fit:cover;">`;
     }
+    document.getElementById("userToggle").style.display = "flex";
 
     authArea.innerHTML = `
       <button class="user-menu-btn" id="userMenuBtn">${label} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
@@ -812,6 +816,8 @@
     e.stopPropagation();
     navMenu.classList.remove("open");
     userMenu.classList.toggle("open");
+    const dropdown = document.getElementById("userDropdown");
+    if (dropdown) dropdown.classList.toggle("open");
   });
   navMenu.querySelectorAll("a").forEach(link => {
     link.addEventListener("click", () => navMenu.classList.remove("open"));
