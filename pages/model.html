@@ -106,6 +106,8 @@
   .nfc-box.unverified .value{ color: var(--cream-dim); }
   .nfc-box.unverified svg{ stroke: var(--mono); }
   .nfc-box.pending .value{ color: var(--gold); }
+  .nfc-box.verified .value{ color: var(--green); }
+  .nfc-box.verified svg{ stroke: var(--green); }
 
   /* Photo viewer */
   .photo-viewer{ border:1px solid var(--hairline); background: var(--bg-raised); }
@@ -1421,12 +1423,13 @@
       .eq("status", "active")
       .maybeSingle();
 
-    nfcBox.classList.remove("unverified", "pending");
+    nfcBox.classList.remove("unverified", "pending", "verified");
 
     if (tag && tag.first_scanned_at){
+      nfcBox.classList.add("verified");
       nfcBox.innerHTML = `
         <div class="left">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
           <div><div class="label">${t("info_nfc_verified")}</div><div class="value">${t("info_nfc_verified_desc")}</div></div>
         </div>
         <div class="arrow">→</div>
