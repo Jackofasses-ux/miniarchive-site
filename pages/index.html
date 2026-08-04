@@ -62,7 +62,7 @@
   /* ---------- Header ---------- */
   header{
     position: sticky; top:0; z-index: 50;
-    display:flex; align-items:center;
+    display:flex; align-items:center; gap:28px;
     padding: 22px 56px;
     background: rgba(12,11,9,0.88);
     backdrop-filter: blur(8px);
@@ -81,6 +81,8 @@
   nav{ display:flex; align-items:center; gap:40px; }
   nav ul{ display:flex; gap: 34px; list-style:none; }
   .user-group{ display:flex; align-items:center; gap:20px; }
+  .user-toggle-wrap{ position:relative; }
+  .user-toggle-wrap img{ width:36px !important; height:36px !important; }
   .nav-toggle, .user-toggle{
     display:none; background:none; border:none; cursor:pointer; padding:6px;
     color: var(--cream); align-items:center; justify-content:center;
@@ -517,9 +519,11 @@
       <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">🇫🇷 Français</button>
     </div>
   </div>
-  <button type="button" class="user-toggle" id="userToggle" aria-label="Account">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-  </button>
+  <div class="user-toggle-wrap" id="userToggleWrap">
+    <button type="button" class="user-toggle" id="userToggle" aria-label="Account">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+    </button>
+  </div>
 </header>
 
 <section class="hero">
@@ -777,7 +781,7 @@
     const label = profile?.username || profile?.display_name || session.user.email;
 
     if (profile?.avatar_url){
-      document.getElementById("userToggle").innerHTML = `<img src="${profile.avatar_url}" alt="" style="width:26px; height:26px; border-radius:50%; object-fit:cover;">`;
+      document.getElementById("userToggle").innerHTML = `<img src="${profile.avatar_url}" alt="" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">`;
     }
     document.getElementById("userToggle").style.display = "flex";
 
@@ -793,6 +797,8 @@
 
     const btn = document.getElementById("userMenuBtn");
     const dropdown = document.getElementById("userDropdown");
+    document.getElementById("userToggleWrap").appendChild(dropdown);
+    document.getElementById("userMenu").style.display = "none";
     btn.addEventListener("click", (e) => { e.stopPropagation(); dropdown.classList.toggle("open"); });
     document.addEventListener("click", () => dropdown.classList.remove("open"));
 
