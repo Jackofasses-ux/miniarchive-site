@@ -61,6 +61,8 @@
   .btn-ghost:hover{ border-color: var(--gold); color: var(--gold-bright); }
   .btn-ghost:disabled{ opacity:0.5; cursor:not-allowed; }
   .user-menu-btn{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); border:1px solid var(--gold); padding:11px 20px; cursor:pointer; display:flex; align-items:center; gap:8px; }
+  .user-toggle{ background:none; border:none; cursor:pointer; padding:6px; color: var(--cream); display:flex; align-items:center; justify-content:center; }
+  .user-toggle svg{ width:24px; height:24px; }
   .user-menu-btn svg{ width:10px; height:10px; stroke:#0c0b09; }
   .dropdown{ position:absolute; top: calc(100% + 14px); right:0; min-width:200px; background: var(--bg-raised); border:1px solid var(--hairline); display:none; flex-direction:column; z-index:60; }
   .dropdown.open{ display:flex; }
@@ -317,7 +319,8 @@
   footer{ border-top:1px solid var(--hairline); padding:28px 56px; display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono); margin-top: 60px; }
 
   @media (max-width: 700px){
-    header{ padding:18px 24px; }
+    header{ padding:18px 20px; gap:12px; }
+    .brand-name{ font-size:1rem; }
     .field-grid{ grid-template-columns: 1fr; }
     .photo-grid{ grid-template-columns: 1fr 1fr; }
     footer{ flex-direction:column; gap:14px; text-align:center; }
@@ -804,11 +807,14 @@
 
   async function renderLoggedInNav(session){
     const authArea = document.getElementById("authArea");
-    const { data: profile } = await supabaseClient.from("profiles").select("username, display_name").eq("id", session.user.id).maybeSingle();
-    const label = profile?.username || profile?.display_name || session.user.email;
+    const { data: profile } = await supabaseClient.from("profiles").select("username, display_name, avatar_url").eq("id", session.user.id).maybeSingle();
+
+    const avatarHtml = profile?.avatar_url
+      ? `<img src="${profile.avatar_url}" alt="" style="width:36px; height:36px; border-radius:50%; object-fit:cover;">`
+      : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>`;
 
     authArea.innerHTML = `
-      <button class="user-menu-btn" id="userMenuBtn">${label} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
+      <button type="button" class="user-toggle" id="userMenuBtn" aria-label="Account">${avatarHtml}</button>
       <div class="dropdown" id="userDropdown">
         <a href="collection.html?mine=true">My Collection</a>
         <a href="edit-model.html">Add a Model</a>
