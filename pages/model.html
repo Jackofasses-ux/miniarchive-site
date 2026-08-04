@@ -1425,32 +1425,28 @@
 
     nfcBox.classList.remove("unverified", "pending", "verified");
 
+    let statusKey, iconSvg, stateClass;
     if (tag && tag.first_scanned_at){
-      nfcBox.classList.add("verified");
-      nfcBox.innerHTML = `
-        <div class="left">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>
-          <div><div class="label">${t("info_nfc_verified")}</div><div class="value">${t("info_nfc_verified_desc")}</div></div>
-        </div>
-        <div class="arrow">→</div>
-      `;
+      statusKey = "info_nfc_status_verified";
+      stateClass = "verified";
+      iconSvg = `<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/>`;
     } else if (tag){
-      nfcBox.classList.add("pending");
-      nfcBox.innerHTML = `
-        <div class="left">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>
-          <div><div class="label">${t("info_nfc_pending")}</div><div class="value">${t("info_nfc_pending_desc")}</div></div>
-        </div>
-      `;
+      statusKey = "info_nfc_status_pending";
+      stateClass = "pending";
+      iconSvg = `<path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>`;
     } else {
-      nfcBox.classList.add("unverified");
-      nfcBox.innerHTML = `
-        <div class="left">
-          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>
-          <div><div class="label">${t("info_not_verified")}</div><div class="value">${t("info_no_nfc")}</div></div>
-        </div>
-      `;
+      statusKey = "info_nfc_status_none";
+      stateClass = "unverified";
+      iconSvg = `<path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/>`;
     }
+
+    nfcBox.classList.add(stateClass);
+    nfcBox.innerHTML = `
+      <div class="left">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7">${iconSvg}</svg>
+        <div><div class="label">${t("info_nfc_tag_label")}</div><div class="value">${t(statusKey)}</div></div>
+      </div>
+    `;
   }
 
   async function loadGameLog(miniatureId){
