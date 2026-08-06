@@ -115,11 +115,11 @@ const TRANSLATIONS = {
     collection_unattributed: "Unattributed",
 
     // ---- account.html ----
-    account_gate_eyebrow: "My Archive",
+    account_gate_eyebrow: "Account Settings",
     account_gate_title: "Log in to continue.",
     account_gate_desc: "You need to be signed in to view your dashboard.",
     account_gate_login: "Log In",
-    account_eyebrow: "My Archive",
+    account_eyebrow: "Account Settings",
     account_greeting_default: "Welcome back.",
     account_greeting_named: "Welcome back, ",
     account_lede: "Everything you've logged, at a glance.",
@@ -680,11 +680,11 @@ const TRANSLATIONS = {
     collection_unattributed: "Non attribué",
 
     // ---- account.html ----
-    account_gate_eyebrow: "Mon archive",
+    account_gate_eyebrow: "Paramètres du compte",
     account_gate_title: "Connectez-vous pour continuer.",
     account_gate_desc: "Vous devez être connecté pour voir votre tableau de bord.",
     account_gate_login: "Connexion",
-    account_eyebrow: "Mon archive",
+    account_eyebrow: "Paramètres du compte",
     account_greeting_default: "Bon retour.",
     account_greeting_named: "Bon retour, ",
     account_lede: "Tout ce que vous avez consigné, en un coup d'œil.",
