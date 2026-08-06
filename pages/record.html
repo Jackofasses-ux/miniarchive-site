@@ -121,6 +121,14 @@
   .info-box .label{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--mono); }
   .info-box .value{ font-family:'Cormorant Garamond', serif; font-size:1.2rem; font-weight:600; color: var(--gold-bright); margin-top:4px; }
 
+  .nfc-box-row{ display:flex; align-items:flex-start; gap:10px; margin-top:16px; }
+  .nfc-box-row .nfc-box{ margin-top:0; flex:1; }
+  .nfc-info-icon{
+    flex-shrink:0; width:26px; height:26px; border-radius:50%; border:1px solid var(--hairline);
+    color: var(--mono); text-decoration:none; display:flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono', monospace; font-size:0.75rem; margin-top:18px;
+  }
+  .nfc-info-icon:hover{ border-color: var(--gold); color: var(--gold-bright); }
   .nfc-box{
     margin-top: 16px; max-width: 480px;
     border:1px solid var(--hairline); background: var(--bg-raised);
@@ -534,7 +542,10 @@
       </div>
 
       <div class="info-grid" id="infoGrid"></div>
-      <div class="nfc-box" id="nfcBox"></div>
+      <div class="nfc-box-row">
+        <div class="nfc-box" id="nfcBox"></div>
+        <a href="nfc-info.html" class="nfc-info-icon" aria-label="What's this?" title="What's this?">?</a>
+      </div>
     </div>
 
     <div class="photo-viewer">
@@ -1137,6 +1148,7 @@
     setPhotoView("front");
     renderGallery(data.id);
     loadNfcStatus(data.id);
+    document.querySelector(".nfc-info-icon").href = `nfc-info.html?id=${data.id}`;
     loadEditHistory(data.id);
     loadPaintRecipe(data.id);
     loadGameLog(data.id);
@@ -1510,7 +1522,7 @@
     nfcBox.classList.add(stateClass);
     const statusText = stateClass === "verified" ? `✓ ${t(statusKey)}` : t(statusKey);
     const registerCta = (stateClass === "unverified" && isOwnerViewing)
-      ? `<a href="nfc-info.html?id=${miniatureId}" class="nfc-register-link">${t("info_nfc_register_cta")}</a>`
+      ? `<a href="nfc-order.html?id=${miniatureId}" class="nfc-register-link">${t("info_nfc_register_cta")}</a>`
       : "";
     nfcBox.innerHTML = `
       <div class="left">
