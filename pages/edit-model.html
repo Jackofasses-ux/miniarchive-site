@@ -366,7 +366,7 @@
 <div id="errorState" class="state-error" style="display:none;">
   <h1 data-i18n="em_error_title">Couldn't find that model.</h1>
   <p data-i18n="em_error_desc">It may not exist, or it isn't yours to edit.</p>
-  <div class="cta-row"><a class="btn-gold" href="collection.html?mine=true" data-i18n="em_error_back">Back to My Collection</a></div>
+  <div class="cta-row"><a class="btn-gold" href="archive.html?mine=true" data-i18n="em_error_back">Back to My Archive</a></div>
 </div>
 
 <main id="formWrap" style="display:none;">
@@ -764,7 +764,7 @@
 
 <footer>
   <div>© 2026 Mini Archive. Every miniature has a story.</div>
-  <div><a href="collection.html?mine=true">← Back to My Collection</a></div>
+  <div><a href="archive.html?mine=true">← Back to My Archive</a></div>
 </footer>
 
 <script>
@@ -816,7 +816,7 @@
     authArea.innerHTML = `
       <button type="button" class="user-toggle" id="userMenuBtn" aria-label="Account">${avatarHtml}</button>
       <div class="dropdown" id="userDropdown">
-        <a href="collection.html?mine=true">My Collection</a>
+        <a href="archive.html?mine=true">My Archive</a>
         <a href="edit-model.html">Add a Model</a>
         <a href="account.html">Account Settings</a>
         <button id="logoutBtn">Log out</button>
@@ -1104,7 +1104,7 @@
       }
 
       progressNote.textContent = "";
-      showTopSuccess(`Saved. This is still a private draft — <a href="collection.html?mine=true" style="color:var(--gold-bright);">view it in My Collection</a>, or publish it below when it's ready.`);
+      showTopSuccess(`Saved. This is still a private draft — <a href="archive.html?mine=true" style="color:var(--gold-bright);">view it in My Archive</a>, or publish it below when it's ready.`);
       history.replaceState({}, "", `edit-model.html?id=${modelId}`);
       applyStatusUI();
 
@@ -1235,7 +1235,7 @@
       const { error } = await supabaseClient.from("miniatures").delete().eq("id", modelId).eq("status", "in_progress");
       if (error) throw error;
 
-      window.location.href = "collection.html?mine=true";
+      window.location.href = "archive.html?mine=true";
     } catch (err){
       console.error("Delete draft failed:", err);
       showTopError(err.message || "Couldn't delete this draft. Check the console for details.");

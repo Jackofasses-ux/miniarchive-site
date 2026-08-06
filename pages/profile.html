@@ -159,7 +159,7 @@
 
 <div id="errorState" class="state-error" style="display:none;">
   <h1 data-i18n="profile_not_found">Profile not found.</h1>
-  <p><a href="collection.html" style="color:var(--gold-bright);" data-i18n="profile_back_to_collection">← Back to Collection</a></p>
+  <p><a href="archive.html" style="color:var(--gold-bright);" data-i18n="profile_back_to_collection">← Back to Archive</a></p>
 </div>
 
 <main id="profileWrap" style="display:none;">
@@ -183,7 +183,7 @@
   </div>
 
   <div class="section-head">
-    <div class="eyebrow" data-i18n="profile_owned_eyebrow">Owned Collection</div>
+    <div class="eyebrow" data-i18n="profile_owned_eyebrow">Owned Archive</div>
     <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
     <h2 data-i18n="profile_published_models">Published Models</h2>
   </div>
@@ -199,7 +199,7 @@
 
 <footer>
   <div>© 2026 Mini Archive. <span data-i18n="footer_tagline">Every miniature has a story.</span></div>
-  <div><a href="collection.html" data-i18n="footer_browse_collection">Browse Collection</a></div>
+  <div><a href="archive.html" data-i18n="footer_browse_collection">Browse Archive</a></div>
 </footer>
 
 <script>
@@ -340,7 +340,7 @@
     authArea.innerHTML = `
       <button type="button" class="user-toggle" id="userMenuBtn" aria-label="Account">${avatarHtml}</button>
       <div class="dropdown" id="userDropdown">
-        <a href="collection.html?mine=true">${t("nav_my_collection")}</a>
+        <a href="archive.html?mine=true">${t("nav_my_collection")}</a>
         <a href="edit-model.html">${t("nav_add_model")}</a>
         <a href="account.html">${t("nav_account_settings")}</a>
         <button id="logoutBtn">${t("nav_logout")}</button>

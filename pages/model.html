@@ -487,7 +487,7 @@
   </a>
   <nav>
     <ul id="navMenu">
-      <li><a href="collection.html" data-i18n="nav_collection">Collection</a></li>
+      <li><a href="archive.html" data-i18n="nav_collection">Archive</a></li>
       <li><a href="index.html#how" data-i18n="nav_how_it_works">How it works</a></li>
       <li><a href="index.html#provenance" data-i18n="nav_provenance">Provenance</a></li>
       <li><a href="index.html#about" data-i18n="nav_about">About</a></li>
@@ -602,7 +602,7 @@
 
 <footer>
   <div>© 2026 Mini Archive. <span data-i18n="footer_tagline">Every miniature has a story.</span></div>
-  <div><a href="collection.html" data-i18n="model_footer_back">← Back to Collection</a></div>
+  <div><a href="archive.html" data-i18n="model_footer_back">← Back to Archive</a></div>
 </footer>
 
 <div class="lightbox-overlay" id="lightboxOverlay">
@@ -1070,7 +1070,7 @@
       document.querySelector("main").innerHTML = `<div style="padding:80px 24px; text-align:center; color:var(--cream-dim);">
         <div class="eyebrow">Not Found</div>
         <h1 style="font-family:'Cormorant Garamond', serif; font-size:1.8rem; margin-top:12px;">This model doesn't exist, or isn't public.</h1>
-        <p style="margin-top:14px;"><a href="collection.html" style="color:var(--gold-bright);">← Back to Collection</a></p>
+        <p style="margin-top:14px;"><a href="archive.html" style="color:var(--gold-bright);">← Back to Archive</a></p>
       </div>`;
       return;
     }
@@ -1458,7 +1458,7 @@
     dropdown.className = "dropdown";
     dropdown.id = "userDropdown";
     dropdown.innerHTML = `
-      <a href="collection.html?mine=true">${t("nav_my_collection")}</a>
+      <a href="archive.html?mine=true">${t("nav_my_collection")}</a>
       <a href="edit-model.html">${t("nav_add_model")}</a>
       <a href="account.html">${t("nav_account_settings")}</a>
       <button id="accountLogoutBtn">${t("nav_logout")}</button>

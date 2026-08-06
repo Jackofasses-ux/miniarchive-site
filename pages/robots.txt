@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
 Allow: /index.html
-Allow: /collection.html
+Allow: /archive.html
 Allow: /model.html
 Allow: /profile.html
 
