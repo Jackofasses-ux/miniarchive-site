@@ -54,13 +54,13 @@
 
 <div class="box" id="loadingBox">
   <div class="spinner"></div>
-  <p data-i18n="nfc_loading">Looking up this model…</p>
+  <p data-i18n="nfc_loading">Looking up this record…</p>
 </div>
 
 <div class="box" id="errorBox" style="display:none;">
   <div class="error-icon">!</div>
   <h1 data-i18n="nfc_not_found_title">Tag not recognized</h1>
-  <p data-i18n="nfc_not_found_desc">This tag isn't linked to a model on Mini Archive yet.</p>
+  <p data-i18n="nfc_not_found_desc">This tag isn't linked to a record on Mini Archive yet.</p>
   <a class="btn" href="index.html" data-i18n="nfc_back_home">Back to Mini Archive</a>
 </div>
 
@@ -74,7 +74,7 @@
   <p data-i18n="nfc_owner_desc">What would you like to do?</p>
   <div class="choice-actions">
     <a class="primary" href="#" id="logGameLink" data-i18n="nfc_log_game">Log Game</a>
-    <a class="secondary" href="#" id="viewModelLink" data-i18n="nfc_view_model">View Model Info</a>
+    <a class="secondary" href="#" id="viewModelLink" data-i18n="nfc_view_model">View Record</a>
   </div>
 </div>
 
@@ -134,7 +134,7 @@
     const isOwner = session && session.user.id === data.owner_profile_id;
 
     if (!isOwner){
-      window.location.replace(`model.html?id=${data.id}`);
+      window.location.replace(`record.html?id=${data.id}`);
       return;
     }
 
@@ -153,7 +153,7 @@
       photoEl.style.display = "block";
     }
     document.getElementById("logGameLink").href = `log-game.html?id=${data.id}`;
-    document.getElementById("viewModelLink").href = `model.html?id=${data.id}`;
+    document.getElementById("viewModelLink").href = `record.html?id=${data.id}`;
     document.getElementById("ownerChoiceBox").style.display = "block";
   })();
 </script>

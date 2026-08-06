@@ -214,10 +214,10 @@
   function renderMiniCard(m){
     const frontPhoto = (m.photos || []).find(p => p.photo_type === "front") || (m.photos || [])[0];
     const editShortcut = (currentUserId && m.owner_profile_id === currentUserId)
-      ? `<a href="edit-model.html?id=${m.id}" onclick="event.stopPropagation()" class="card-edit-link" title="${t("edit_this_model_title")}">✎</a>`
+      ? `<a href="edit-record.html?id=${m.id}" onclick="event.stopPropagation()" class="card-edit-link" title="${t("edit_this_model_title")}">✎</a>`
       : "";
     return `
-      <div class="mini-card" onclick="window.location.href='model.html?id=${m.id}'">
+      <div class="mini-card" onclick="window.location.href='record.html?id=${m.id}'">
         <div class="thumb">
           <span class="id-tag">${m.archive_id}</span>
           ${editShortcut}
@@ -341,7 +341,7 @@
       <button type="button" class="user-toggle" id="userMenuBtn" aria-label="Account">${avatarHtml}</button>
       <div class="dropdown" id="userDropdown">
         <a href="archive.html?mine=true">${t("nav_my_collection")}</a>
-        <a href="edit-model.html">${t("nav_add_model")}</a>
+        <a href="edit-record.html">${t("nav_add_model")}</a>
         <a href="account.html">${t("nav_account_settings")}</a>
         <button id="logoutBtn">${t("nav_logout")}</button>
       </div>

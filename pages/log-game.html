@@ -109,7 +109,7 @@
 
   <div class="box" id="errorBox" style="display:none;">
     <h1 data-i18n="lg_error_title">Can't open this</h1>
-    <p id="errorText" data-i18n="lg_error_not_owner">You need to be logged in as this model's owner to log a game.</p>
+    <p id="errorText" data-i18n="lg_error_not_owner">You need to be logged in as this record's owner to log a game.</p>
   </div>
 
   <div id="formBox" style="display:none;">
@@ -208,15 +208,15 @@
       <div id="recentEntriesList"></div>
     </div>
 
-    <a class="btn-ghost" href="#" id="viewModelLink" target="_top" data-i18n="nfc_view_model">View Model Info</a>
+    <a class="btn-ghost" href="#" id="viewModelLink" target="_top" data-i18n="nfc_view_model">View Record</a>
   </div>
 
   <div class="box" id="successBox" style="display:none;">
     <div class="success-icon">✓</div>
     <h1 data-i18n="lg_saved_title">Logged</h1>
-    <p data-i18n="lg_saved_desc">That round is saved to this model's history.</p>
+    <p data-i18n="lg_saved_desc">That round is saved to this record's history.</p>
     <button type="button" class="btn-gold" id="logAnotherBtn" data-i18n="lg_log_another">Log Another Round</button>
-    <a class="btn-ghost" href="#" id="successViewModelLink" target="_top" data-i18n="nfc_view_model">View Model Info</a>
+    <a class="btn-ghost" href="#" id="successViewModelLink" target="_top" data-i18n="nfc_view_model">View Record</a>
   </div>
 
 </div>
@@ -688,8 +688,8 @@
         img.src = frontPhoto.image_url;
         img.style.display = "block";
       }
-      document.getElementById("viewModelLink").href = `model.html?id=${miniatureId}`;
-      document.getElementById("successViewModelLink").href = `model.html?id=${miniatureId}`;
+      document.getElementById("viewModelLink").href = `record.html?id=${miniatureId}`;
+      document.getElementById("successViewModelLink").href = `record.html?id=${miniatureId}`;
 
       clearTimeout(loadTimeout);
       document.getElementById("loadingBox").style.display = "none";

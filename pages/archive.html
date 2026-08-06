@@ -398,19 +398,19 @@
 
     if (filtered.length === 0){
       grid.innerHTML = isMineView
-        ? `<div class="empty-state"><span class="eyebrow">${t("collection_empty_mine_eyebrow")}</span>${t("collection_empty_mine_desc")}<a href="edit-model.html" style="color:var(--gold-bright);">${t("collection_empty_mine_link")}</a></div>`
+        ? `<div class="empty-state"><span class="eyebrow">${t("collection_empty_mine_eyebrow")}</span>${t("collection_empty_mine_desc")}<a href="edit-record.html" style="color:var(--gold-bright);">${t("collection_empty_mine_link")}</a></div>`
         : `<div class="empty-state"><span class="eyebrow">${t("collection_empty_search_eyebrow")}</span>${t("collection_empty_search_desc")}</div>`;
       return;
     }
 
     grid.innerHTML = filtered.map(m => {
       const isDraft = m.status === "in_progress";
-      const linkTarget = isDraft ? `edit-model.html?id=${m.id}` : `model.html?id=${m.id}`;
+      const linkTarget = isDraft ? `edit-record.html?id=${m.id}` : `record.html?id=${m.id}`;
       const tag = isDraft
         ? `<span class="status-tag wip">${t("collection_status_draft")}</span>`
         : `<span class="id-tag">${m.code}</span>`;
       const editShortcut = (currentUserId && m.ownerProfileId === currentUserId && !isDraft)
-        ? `<a href="edit-model.html?id=${m.id}" onclick="event.stopPropagation()" class="card-edit-link" title="${t("edit_this_model_title")}">✎</a>`
+        ? `<a href="edit-record.html?id=${m.id}" onclick="event.stopPropagation()" class="card-edit-link" title="${t("edit_this_model_title")}">✎</a>`
         : "";
       return `
         <div class="mini-card" onclick="window.location.href='${linkTarget}'">
@@ -467,7 +467,7 @@
       <button class="user-menu-btn" id="userMenuBtn">${label} <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></button>
       <div class="dropdown" id="userDropdown">
         <a href="archive.html?mine=true">${t("nav_my_collection")}</a>
-        <a href="edit-model.html">${t("nav_add_model")}</a>
+        <a href="edit-record.html">${t("nav_add_model")}</a>
         <a href="account.html">${t("nav_account_settings")}</a>
         <button id="logoutBtn">${t("nav_logout")}</button>
       </div>
