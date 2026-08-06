@@ -1,5 +1,5 @@
 // ---- Shared Game Log round-wizard logic ----
-// Used by both edit-model.html (the full model editor) and log-game.html
+// Used by both edit-record.html (the full model editor) and log-game.html
 // (the focused standalone/NFC entry point). Pages including this file must
 // define `currentRounds` (array) and `nextRoundLocalId` (number) themselves
 // before this loads, and must have a #glGameSystem input and a

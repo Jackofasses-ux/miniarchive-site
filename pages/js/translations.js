@@ -14,7 +14,7 @@ const TRANSLATIONS = {
     nav_login: "Log in",
     nav_start_archive: "Start an Archive",
     nav_my_collection: "My Archive",
-    nav_add_model: "Add a Model",
+    nav_add_model: "Add a Record",
     nav_account_settings: "Account Settings",
     nav_logout: "Log out",
 
@@ -57,7 +57,7 @@ const TRANSLATIONS = {
     // ---- index.html: how it works section ----
     section_2_label: "Section II",
     how_it_works_title: "How it Works",
-    how_1_title: "Log the model",
+    how_1_title: "Log the record",
     how_1_desc: "Name, painter, owner, and photos front to back. That's the whole minimum — everything else is optional detail.",
     how_2_title: "Add as much as you want",
     how_2_desc: "Paint recipes, build timeline, campaign history, awards. As thin or as detailed as the piece deserves.",
@@ -92,7 +92,7 @@ const TRANSLATIONS = {
     profile_models_painted: "Models Painted",
     profile_no_published: "No published models yet.",
     footer_browse_collection: "Browse Archive",
-    edit_this_model_title: "Edit this model",
+    edit_this_model_title: "Edit this record",
 
     // ---- archive.html ----
     collection_eyebrow: "The Archive",
@@ -104,10 +104,10 @@ const TRANSLATIONS = {
     collection_result_count_singular: " model",
     collection_result_count_plural: " models",
     collection_error_eyebrow: "Couldn't load the archive",
-    collection_error_desc: "Something went wrong fetching models. Check the console for details.",
+    collection_error_desc: "Something went wrong fetching records. Check the console for details.",
     collection_empty_mine_eyebrow: "No models yet",
     collection_empty_mine_desc: "You haven't logged anything yet. ",
-    collection_empty_mine_link: "Add your first model →",
+    collection_empty_mine_link: "Add your first record →",
     collection_empty_search_eyebrow: "No matches",
     collection_empty_search_desc: "Nothing fits that search yet. Try a different name or painter.",
     collection_status_draft: "Draft",
@@ -186,12 +186,12 @@ const TRANSLATIONS = {
     account_error_deactivate_generic: "Couldn't deactivate your account.",
     account_error_delete_generic: "Couldn't request account deletion.",
 
-    // ---- model.html: header/nav ----
-    model_edit_this: "Edit This Model",
+    // ---- record.html: header/nav ----
+    model_edit_this: "Edit This Record",
     model_back_to_collection: "← Back to Archive",
     model_eyebrow_prefix: "Miniature Profile · ",
 
-    // ---- model.html: photo viewer ----
+    // ---- record.html: photo viewer ----
     view_front: "Front",
     view_left: "Left",
     view_rear: "Rear",
@@ -201,7 +201,7 @@ const TRANSLATIONS = {
     view_label_rear: "REAR VIEW",
     view_label_right: "RIGHT VIEW",
 
-    // ---- model.html: sections ----
+    // ---- record.html: sections ----
     model_section_1: "Section I",
     model_section_2: "Section II",
     model_section_3: "Section III",
@@ -216,7 +216,7 @@ const TRANSLATIONS = {
     model_edit_history_desc: "Changes made to this record since it was published.",
     model_cert_title: "Certificate of Authenticity",
 
-    // ---- model.html: info grid labels ----
+    // ---- record.html: info grid labels ----
     info_manufacturer: "Manufacturer",
     info_material: "Material",
     info_scale: "Scale",
@@ -237,7 +237,7 @@ const TRANSLATIONS = {
     status_in_progress: "In Progress",
     status_completed: "Completed",
 
-    // ---- model.html: timeline ----
+    // ---- record.html: timeline ----
     timeline_first_brushstroke: "First Brushstroke",
     timeline_model_completed: "Model Completed",
     timeline_milestone: "◆ Milestone",
@@ -245,13 +245,13 @@ const TRANSLATIONS = {
     timeline_drag: "↔ DRAG",
     role_primer: "Primer",
 
-    // ---- model.html: paint recipe ----
+    // ---- record.html: paint recipe ----
     recipe_empty: "No paints logged for this model yet.",
     recipe_see_comparables: "See comparable paints ▸",
     comparable_none: "No known equivalents in the database yet for this paint.",
     comparable_searching: "Searching…",
 
-    // ---- model.html: edit history ----
+    // ---- record.html: edit history ----
     edit_history_none: "None",
     edit_history_load_error: "Couldn't load edit history.",
     edit_history_empty: "None — this record hasn't been edited since it was published.",
@@ -272,7 +272,7 @@ const TRANSLATIONS = {
     edit_field_photo_right: "Right Photo",
     edit_field_timeline_entry: "Timeline Entry",
     edit_field_timeline_photo: "Timeline Photo",
-    edit_category_model_info: "Model Info",
+    edit_category_model_info: "Record Info",
     edit_category_identity_photos: "Identity Photos",
     edit_category_timeline: "Creation Timeline",
     edit_view_original: "View original",
@@ -280,27 +280,27 @@ const TRANSLATIONS = {
     edit_view_new: "(none)",
     edit_view_removed: "(removed)",
 
-    // ---- model.html: certificate ----
+    // ---- record.html: certificate ----
     cert_state_verified: "Painter Verified",
     cert_state_awaiting: "Awaiting Verification",
     cert_state_rejected: "Verification Rejected",
     cert_field_model_name: "Model Name",
-    cert_field_unique_id: "Unique Model ID",
+    cert_field_unique_id: "Unique Record ID",
     cert_field_completion_date: "Completion Date",
 
-    // ---- model.html: footer ----
+    // ---- record.html: footer ----
     model_footer_back: "← Back to Archive",
 
-    // ---- edit-model.html: page head ----
-    em_add_eyebrow: "Add a Model",
+    // ---- edit-record.html: page head ----
+    em_add_eyebrow: "Add a Record",
     em_add_title: "Log a new miniature.",
     em_add_lede: "Add whatever you know now. Save it as a draft, or publish it straight to the archive if it's ready.",
-    em_error_title: "Couldn't find that model.",
+    em_error_title: "Couldn't find that record.",
     em_error_desc: "It may not exist, or it isn't yours to edit.",
     em_error_back: "Back to My Archive",
     em_status_draft: "Draft",
 
-    // ---- edit-model.html: basics fieldset ----
+    // ---- edit-record.html: basics fieldset ----
     em_legend_basics: "Basics",
     em_model_name: "Model Name",
     em_model_name_placeholder: "e.g. Captain Cassian",
@@ -325,7 +325,7 @@ const TRANSLATIONS = {
     em_description: "Description",
     em_description_placeholder: "A few lines about this piece…",
 
-    // ---- model.html: additional fixes ----
+    // ---- record.html: additional fixes ----
     model_no_description: "No description added yet.",
     model_history_campaigns: "Game History",
     model_history_achievements: "Achievements",
@@ -352,19 +352,19 @@ const TRANSLATIONS = {
     gl_full_history_title: "Full Game History",
 
     // ---- nfc.html ----
-    nfc_loading: "Looking up this model…",
+    nfc_loading: "Looking up this record…",
     nfc_not_found_title: "Tag not recognized",
-    nfc_not_found_desc: "This tag isn't linked to a model on Mini Archive yet.",
+    nfc_not_found_desc: "This tag isn't linked to a record on Mini Archive yet.",
     nfc_back_home: "Back to Mini Archive",
     nfc_owner_title: "Welcome back",
     nfc_owner_desc: "What would you like to do?",
     nfc_log_game: "Log Game",
-    nfc_view_model: "View Model Info",
+    nfc_view_model: "View Record",
 
     // ---- log-game.html ----
     lg_loading: "Loading…",
     lg_error_title: "Can't open this",
-    lg_error_not_owner: "You need to be logged in as this model's owner to log a game.",
+    lg_error_not_owner: "You need to be logged in as this record's owner to log a game.",
     lg_eyebrow: "Log Game",
     lg_date_label: "Date",
     lg_game_system_label: "Game System",
@@ -377,7 +377,7 @@ const TRANSLATIONS = {
     lg_notes_label: "Notes (optional)",
     lg_save_btn: "Save Entry",
     lg_saved_title: "Logged",
-    lg_saved_desc: "That round is saved to this model's history.",
+    lg_saved_desc: "That round is saved to this record's history.",
     lg_log_another: "Log Another Round",
     lg_recent_label: "Recent Entries",
     lg_edit_game_heading: "Edit Game",
@@ -401,7 +401,7 @@ const TRANSLATIONS = {
     category_completed: "Completed",
     category_other: "Other",
 
-    // ---- edit-model.html: Creation Timeline form ----
+    // ---- edit-record.html: Creation Timeline form ----
     em_te_what_did: "What did you do today?",
     em_te_date: "Date",
     em_te_category: "Category",
@@ -427,7 +427,7 @@ const TRANSLATIONS = {
     em_te_save_entry: "Save Entry",
     em_te_delete_entry: "Delete Entry",
 
-    // ---- edit-model.html: photos, timeline toggle, ownership, buttons ----
+    // ---- edit-record.html: photos, timeline toggle, ownership, buttons ----
     em_photos_legend: "Photos",
     em_photos_legend_hint: "— required to publish, optional for a draft",
     em_creation_timeline_legend: "Creation Timeline",
@@ -442,7 +442,7 @@ const TRANSLATIONS = {
     em_drop_or_click: "Drop or Click",
     em_photo_error: "All four angle photos are required to publish.",
     em_delete_draft_btn: "Delete Draft",
-    em_edit_confirm_text: "This model is published — the following changes will be recorded in its edit history. Continue?",
+    em_edit_confirm_text: "This record is published — the following changes will be recorded in its edit history. Continue?",
     em_publishing_btn: "Publishing…",
     em_saving_btn: "Saving…",
 
@@ -453,7 +453,7 @@ const TRANSLATIONS = {
     confirm_sub: "Welcome to Mini Archive — every miniature has a story, and yours starts now.",
     confirm_field_archive_name: "Archive Name",
     confirm_field_account: "Account",
-    confirm_cta_log_first: "Log Your First Model",
+    confirm_cta_log_first: "Log Your First Record",
     confirm_cta_browse: "Browse the Archive",
     confirm_error_title: "Couldn't confirm this link",
     confirm_error_default: "This confirmation link may have expired or already been used.",
@@ -523,7 +523,7 @@ const TRANSLATIONS = {
     start_pitch_title_1: "Give the hours you",
     start_pitch_title_2: "put in ",
     start_pitch_title_accent: "somewhere to live.",
-    start_pitch_lede: "Free to start, no card required. Log your first model in a few minutes — you can always add the fine detail later.",
+    start_pitch_lede: "Free to start, no card required. Log your first record in a few minutes — you can always add the fine detail later.",
     start_perk1_title: "Unlimited models, free forever",
     start_perk1_desc: "No trial, no expiry — the free tier stays free.",
     start_perk2_title: "Full profile per model",
@@ -556,7 +556,7 @@ const TRANSLATIONS = {
     start_login_link: "Log in",
     start_success_title: "Archive created",
     start_success_desc: "A confirmation email has been sent to ",
-    start_success_desc_suffix: ". Click the link inside to activate your account, then log in to start logging models.",
+    start_success_desc_suffix: ". Click the link inside to activate your account, then log in to start logging records.",
     start_success_no_email: "Didn't get it? ",
     start_success_resend: "Resend the confirmation email",
     start_error_generic: "Signup failed. Check the console for details.",
@@ -564,10 +564,10 @@ const TRANSLATIONS = {
     start_resend_error: "Couldn't resend the email.",
     start_resend_success: "Sent — check your inbox.",
     em_status_published: "Published",
-    em_edit_eyebrow: "Edit Model",
+    em_edit_eyebrow: "Edit Record",
     em_editing_title_prefix: "Editing “",
     em_editing_title_suffix: "”",
-    em_lede_published: "This model is published. Changes here update the live archive record.",
+    em_lede_published: "This record is published. Changes here update the live archive record.",
     em_lede_draft: "This is still a private draft. Save your progress any time, or publish when it's ready.",
   },
   fr: {
@@ -579,7 +579,7 @@ const TRANSLATIONS = {
     nav_login: "Connexion",
     nav_start_archive: "Créer une archive",
     nav_my_collection: "Mon archive",
-    nav_add_model: "Ajouter un modèle",
+    nav_add_model: "Ajouter une fiche",
     nav_account_settings: "Paramètres du compte",
     nav_logout: "Déconnexion",
 
@@ -622,7 +622,7 @@ const TRANSLATIONS = {
     // ---- index.html: how it works section ----
     section_2_label: "Section II",
     how_it_works_title: "Comment ça marche",
-    how_1_title: "Archivez le modèle",
+    how_1_title: "Archivez la fiche",
     how_1_desc: "Nom, peintre, propriétaire et photos de tous les angles. C'est le strict minimum — tout le reste est optionnel.",
     how_2_title: "Ajoutez autant que vous voulez",
     how_2_desc: "Recettes de peinture, chronologie de fabrication, historique de campagne, récompenses. Aussi simple ou détaillé que la pièce le mérite.",
@@ -657,7 +657,7 @@ const TRANSLATIONS = {
     profile_models_painted: "Modèles peints",
     profile_no_published: "Aucun modèle publié pour l'instant.",
     footer_browse_collection: "Parcourir l'archive",
-    edit_this_model_title: "Modifier ce modèle",
+    edit_this_model_title: "Modifier cette fiche",
 
     // ---- archive.html ----
     collection_eyebrow: "L'archive",
@@ -669,10 +669,10 @@ const TRANSLATIONS = {
     collection_result_count_singular: " modèle",
     collection_result_count_plural: " modèles",
     collection_error_eyebrow: "Impossible de charger l'archive",
-    collection_error_desc: "Une erreur est survenue lors du chargement des modèles. Consultez la console pour plus de détails.",
+    collection_error_desc: "Une erreur est survenue lors du chargement des fiches. Consultez la console pour plus de détails.",
     collection_empty_mine_eyebrow: "Aucun modèle pour l'instant",
     collection_empty_mine_desc: "Vous n'avez encore rien archivé. ",
-    collection_empty_mine_link: "Archivez votre premier modèle →",
+    collection_empty_mine_link: "Archivez votre première fiche →",
     collection_empty_search_eyebrow: "Aucun résultat",
     collection_empty_search_desc: "Rien ne correspond à cette recherche. Essayez un autre nom ou peintre.",
     collection_status_draft: "Brouillon",
@@ -751,12 +751,12 @@ const TRANSLATIONS = {
     account_error_deactivate_generic: "Impossible de désactiver votre compte.",
     account_error_delete_generic: "Impossible de demander la suppression du compte.",
 
-    // ---- model.html: header/nav ----
-    model_edit_this: "Modifier ce modèle",
+    // ---- record.html: header/nav ----
+    model_edit_this: "Modifier cette fiche",
     model_back_to_collection: "← Retour à l'archive",
     model_eyebrow_prefix: "Profil de la figurine · ",
 
-    // ---- model.html: photo viewer ----
+    // ---- record.html: photo viewer ----
     view_front: "Avant",
     view_left: "Gauche",
     view_rear: "Arrière",
@@ -766,7 +766,7 @@ const TRANSLATIONS = {
     view_label_rear: "VUE ARRIÈRE",
     view_label_right: "VUE DE DROITE",
 
-    // ---- model.html: sections ----
+    // ---- record.html: sections ----
     model_section_1: "Section I",
     model_section_2: "Section II",
     model_section_3: "Section III",
@@ -781,7 +781,7 @@ const TRANSLATIONS = {
     model_edit_history_desc: "Modifications apportées à cette fiche depuis sa publication.",
     model_cert_title: "Certificat d'authenticité",
 
-    // ---- model.html: info grid labels ----
+    // ---- record.html: info grid labels ----
     info_manufacturer: "Fabricant",
     info_material: "Matériau",
     info_scale: "Échelle",
@@ -802,7 +802,7 @@ const TRANSLATIONS = {
     status_in_progress: "En cours",
     status_completed: "Terminé",
 
-    // ---- model.html: timeline ----
+    // ---- record.html: timeline ----
     timeline_first_brushstroke: "Premier coup de pinceau",
     timeline_model_completed: "Modèle terminé",
     timeline_milestone: "◆ Étape marquante",
@@ -810,13 +810,13 @@ const TRANSLATIONS = {
     timeline_drag: "↔ GLISSER",
     role_primer: "Apprêt",
 
-    // ---- model.html: paint recipe ----
+    // ---- record.html: paint recipe ----
     recipe_empty: "Aucune peinture consignée pour ce modèle pour l'instant.",
     recipe_see_comparables: "Voir les peintures comparables ▸",
     comparable_none: "Aucun équivalent connu dans la base de données pour cette peinture.",
     comparable_searching: "Recherche…",
 
-    // ---- model.html: edit history ----
+    // ---- record.html: edit history ----
     edit_history_none: "Aucune",
     edit_history_load_error: "Impossible de charger l'historique des modifications.",
     edit_history_empty: "Aucun — cette fiche n'a pas été modifiée depuis sa publication.",
@@ -837,7 +837,7 @@ const TRANSLATIONS = {
     edit_field_photo_right: "Photo de droite",
     edit_field_timeline_entry: "Entrée de chronologie",
     edit_field_timeline_photo: "Photo de chronologie",
-    edit_category_model_info: "Infos du modèle",
+    edit_category_model_info: "Infos de la fiche",
     edit_category_identity_photos: "Photos d'identité",
     edit_category_timeline: "Chronologie de création",
     edit_view_original: "Voir l'originale",
@@ -845,27 +845,27 @@ const TRANSLATIONS = {
     edit_view_new: "(aucune)",
     edit_view_removed: "(supprimée)",
 
-    // ---- model.html: certificate ----
+    // ---- record.html: certificate ----
     cert_state_verified: "Peintre vérifié",
     cert_state_awaiting: "En attente de vérification",
     cert_state_rejected: "Vérification rejetée",
     cert_field_model_name: "Nom du modèle",
-    cert_field_unique_id: "ID unique du modèle",
+    cert_field_unique_id: "ID unique de la fiche",
     cert_field_completion_date: "Date d'achèvement",
 
-    // ---- model.html: footer ----
+    // ---- record.html: footer ----
     model_footer_back: "← Retour à l'archive",
 
-    // ---- edit-model.html: page head ----
-    em_add_eyebrow: "Ajouter un modèle",
+    // ---- edit-record.html: page head ----
+    em_add_eyebrow: "Ajouter une fiche",
     em_add_title: "Archivez une nouvelle figurine.",
     em_add_lede: "Ajoutez ce que vous savez déjà. Enregistrez comme brouillon, ou publiez directement dans l'archive si c'est prêt.",
-    em_error_title: "Modèle introuvable.",
+    em_error_title: "Fiche introuvable.",
     em_error_desc: "Il n'existe peut-être pas, ou il ne vous appartient pas de le modifier.",
     em_error_back: "Retour à mon archive",
     em_status_draft: "Brouillon",
 
-    // ---- edit-model.html: basics fieldset ----
+    // ---- edit-record.html: basics fieldset ----
     em_legend_basics: "Informations de base",
     em_model_name: "Nom du modèle",
     em_model_name_placeholder: "ex. Capitaine Cassian",
@@ -890,7 +890,7 @@ const TRANSLATIONS = {
     em_description: "Description",
     em_description_placeholder: "Quelques lignes sur cette pièce…",
 
-    // ---- model.html: additional fixes ----
+    // ---- record.html: additional fixes ----
     model_no_description: "Aucune description ajoutée pour l'instant.",
     model_history_campaigns: "Historique des parties",
     model_history_achievements: "Exploits",
@@ -917,19 +917,19 @@ const TRANSLATIONS = {
     gl_full_history_title: "Historique complet des parties",
 
     // ---- nfc.html ----
-    nfc_loading: "Recherche du modèle…",
+    nfc_loading: "Recherche de la fiche…",
     nfc_not_found_title: "Puce non reconnue",
-    nfc_not_found_desc: "Cette puce n'est pas encore liée à un modèle sur Mini Archive.",
+    nfc_not_found_desc: "Cette puce n'est pas encore liée à une fiche sur Mini Archive.",
     nfc_back_home: "Retour à Mini Archive",
     nfc_owner_title: "Bon retour",
     nfc_owner_desc: "Que voulez-vous faire?",
     nfc_log_game: "Consigner une partie",
-    nfc_view_model: "Voir la fiche du modèle",
+    nfc_view_model: "Voir la fiche",
 
     // ---- log-game.html ----
     lg_loading: "Chargement…",
     lg_error_title: "Impossible d'ouvrir ceci",
-    lg_error_not_owner: "Vous devez être connecté en tant que propriétaire de ce modèle pour consigner une partie.",
+    lg_error_not_owner: "Vous devez être connecté en tant que propriétaire de cette fiche pour consigner une partie.",
     lg_eyebrow: "Consigner une partie",
     lg_date_label: "Date",
     lg_game_system_label: "Système de jeu",
@@ -942,7 +942,7 @@ const TRANSLATIONS = {
     lg_notes_label: "Notes (optionnel)",
     lg_save_btn: "Enregistrer l'entrée",
     lg_saved_title: "Consigné",
-    lg_saved_desc: "Cette ronde est enregistrée dans l'historique de ce modèle.",
+    lg_saved_desc: "Cette ronde est enregistrée dans l'historique de cette fiche.",
     lg_log_another: "Consigner une autre ronde",
     lg_recent_label: "Entrées récentes",
     lg_edit_game_heading: "Modifier une partie",
@@ -966,7 +966,7 @@ const TRANSLATIONS = {
     category_completed: "Terminé",
     category_other: "Autre",
 
-    // ---- edit-model.html: Creation Timeline form ----
+    // ---- edit-record.html: Creation Timeline form ----
     em_te_what_did: "Qu'avez-vous fait aujourd'hui?",
     em_te_date: "Date",
     em_te_category: "Catégorie",
@@ -992,7 +992,7 @@ const TRANSLATIONS = {
     em_te_save_entry: "Enregistrer l'entrée",
     em_te_delete_entry: "Supprimer l'entrée",
 
-    // ---- edit-model.html: photos, timeline toggle, ownership, buttons ----
+    // ---- edit-record.html: photos, timeline toggle, ownership, buttons ----
     em_photos_legend: "Photos",
     em_photos_legend_hint: "— requises pour publier, optionnelles pour un brouillon",
     em_creation_timeline_legend: "Chronologie de création",
@@ -1007,7 +1007,7 @@ const TRANSLATIONS = {
     em_drop_or_click: "Glisser ou cliquer",
     em_photo_error: "Les quatre photos d'angle sont requises pour publier.",
     em_delete_draft_btn: "Supprimer le brouillon",
-    em_edit_confirm_text: "Ce modèle est publié — les changements suivants seront enregistrés dans son historique de modifications. Continuer?",
+    em_edit_confirm_text: "Cette fiche est publiée — les changements suivants seront enregistrés dans son historique de modifications. Continuer?",
     em_publishing_btn: "Publication…",
     em_saving_btn: "Enregistrement…",
 
@@ -1018,7 +1018,7 @@ const TRANSLATIONS = {
     confirm_sub: "Bienvenue sur Mini Archive — chaque figurine a une histoire, et la vôtre commence maintenant.",
     confirm_field_archive_name: "Nom d'archive",
     confirm_field_account: "Compte",
-    confirm_cta_log_first: "Archiver mon premier modèle",
+    confirm_cta_log_first: "Archiver ma première fiche",
     confirm_cta_browse: "Parcourir l'archive",
     confirm_error_title: "Impossible de confirmer ce lien",
     confirm_error_default: "Ce lien de confirmation a peut-être expiré ou a déjà été utilisé.",
@@ -1088,7 +1088,7 @@ const TRANSLATIONS = {
     start_pitch_title_1: "Donnez aux heures que vous",
     start_pitch_title_2: "y consacrez ",
     start_pitch_title_accent: "un endroit où vivre.",
-    start_pitch_lede: "Gratuit pour commencer, aucune carte requise. Archivez votre premier modèle en quelques minutes — vous pourrez toujours ajouter les détails plus tard.",
+    start_pitch_lede: "Gratuit pour commencer, aucune carte requise. Archivez votre première fiche en quelques minutes — vous pourrez toujours ajouter les détails plus tard.",
     start_perk1_title: "Modèles illimités, gratuit pour toujours",
     start_perk1_desc: "Pas d'essai, pas d'expiration — le forfait gratuit reste gratuit.",
     start_perk2_title: "Profil complet par modèle",
@@ -1121,7 +1121,7 @@ const TRANSLATIONS = {
     start_login_link: "Connexion",
     start_success_title: "Archive créée",
     start_success_desc: "Un courriel de confirmation a été envoyé à ",
-    start_success_desc_suffix: ". Cliquez sur le lien pour activer votre compte, puis connectez-vous pour commencer à archiver vos modèles.",
+    start_success_desc_suffix: ". Cliquez sur le lien pour activer votre compte, puis connectez-vous pour commencer à archiver vos fiches.",
     start_success_no_email: "Vous ne l'avez pas reçu? ",
     start_success_resend: "Renvoyer le courriel de confirmation",
     start_error_generic: "L'inscription a échoué. Consultez la console pour plus de détails.",
@@ -1129,10 +1129,10 @@ const TRANSLATIONS = {
     start_resend_error: "Impossible de renvoyer le courriel.",
     start_resend_success: "Envoyé — vérifiez votre boîte de réception.",
     em_status_published: "Publié",
-    em_edit_eyebrow: "Modifier le modèle",
+    em_edit_eyebrow: "Modifier la fiche",
     em_editing_title_prefix: "Modification de « ",
     em_editing_title_suffix: " »",
-    em_lede_published: "Ce modèle est publié. Les changements ici mettent à jour la fiche vivante de l'archive.",
+    em_lede_published: "Cette fiche est publiée. Les changements ici mettent à jour la fiche vivante de l'archive.",
     em_lede_draft: "Ceci est toujours un brouillon privé. Enregistrez votre progrès en tout temps, ou publiez quand c'est prêt.",
   },
 };
