@@ -492,10 +492,6 @@
       <li><a href="index.html#provenance" data-i18n="nav_provenance">Provenance</a></li>
       <li><a href="index.html#about" data-i18n="nav_about">About</a></li>
     </ul>
-    <div class="user-group" id="userMenu">
-      <a class="login-link" href="collection.html" data-i18n="model_back_to_collection">← Back to Collection</a>
-      <a class="btn-ghost" href="edit-model.html" id="editButton" style="display:none;" data-i18n="model_edit_this">Edit This Model</a>
-    </div>
   </nav>
   <div class="lang-dropdown">
     <button type="button" class="lang-dropdown-btn" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('open')">
@@ -521,6 +517,7 @@
       <div class="title-block">
         <h1 id="modelTitle"></h1>
         <p class="desc" id="modelDesc"></p>
+        <a class="btn-ghost" href="edit-model.html" id="editButton" style="display:none; margin-top:14px;" data-i18n="model_edit_this">Edit This Model</a>
       </div>
 
       <div class="info-grid" id="infoGrid"></div>
@@ -1854,27 +1851,16 @@
   const navToggle = document.getElementById("navToggle");
   const navMenu = document.getElementById("navMenu");
   const userToggle = document.getElementById("userToggle");
-  const userMenu = document.getElementById("userMenu");
 
   navToggle.addEventListener("click", (e) => {
     e.stopPropagation();
-    userMenu.classList.remove("open");
     navMenu.classList.toggle("open");
-  });
-  userToggle.addEventListener("click", (e) => {
-    e.stopPropagation();
-    navMenu.classList.remove("open");
-    userMenu.classList.toggle("open");
   });
   navMenu.querySelectorAll("a").forEach(link => {
     link.addEventListener("click", () => navMenu.classList.remove("open"));
   });
-  userMenu.querySelectorAll("a").forEach(link => {
-    link.addEventListener("click", () => userMenu.classList.remove("open"));
-  });
   document.addEventListener("click", (e) => {
     if (!navMenu.contains(e.target) && e.target !== navToggle) navMenu.classList.remove("open");
-    if (!userMenu.contains(e.target) && e.target !== userToggle) userMenu.classList.remove("open");
   });
 
   let logGameModalMiniatureId = null;
