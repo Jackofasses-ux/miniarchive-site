@@ -4,6 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Captain Cassian — Mini Archive</title>
+<link rel="icon" href="/images/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16.png">
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -511,13 +515,15 @@
 </header>
 
 <main>
-  <div class="eyebrow" id="eyebrowId">Miniature Profile · —</div>
+  <div class="eyebrow" id="eyebrowRow" style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+    <span id="eyebrowId">Miniature Profile · —</span>
+    <a class="btn-gold" href="edit-record.html" id="editButton" style="display:none; font-size:0.62rem; padding:7px 14px; text-transform:uppercase; letter-spacing:0.1em;" data-i18n="model_edit_this">Edit This Record</a>
+  </div>
   <div class="profile-grid">
     <div>
       <div class="title-block">
         <div class="title-row" style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
           <h1 id="modelTitle" style="margin:0;"></h1>
-          <a class="btn-gold" href="edit-record.html" id="editButton" style="display:none;" data-i18n="model_edit_this">Edit This Record</a>
         </div>
         <p class="desc" id="modelDesc"></p>
       </div>
