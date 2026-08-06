@@ -136,6 +136,11 @@
   .nfc-box.pending .value{ color: var(--gold); }
   .nfc-box.verified .value{ color: var(--green); }
   .nfc-box.verified svg{ stroke: var(--green); }
+  .nfc-register-link{
+    display:inline-block; margin-top:6px; font-family:'IBM Plex Mono', monospace; font-size:0.68rem;
+    letter-spacing:0.04em; color: var(--gold); text-decoration:none;
+  }
+  .nfc-register-link:hover{ color: var(--gold-bright); }
 
   /* Photo viewer */
   .photo-viewer{ border:1px solid var(--hairline); background: var(--bg-raised); }
@@ -1504,10 +1509,13 @@
 
     nfcBox.classList.add(stateClass);
     const statusText = stateClass === "verified" ? `✓ ${t(statusKey)}` : t(statusKey);
+    const registerCta = (stateClass === "unverified" && isOwnerViewing)
+      ? `<a href="nfc-info.html?id=${miniatureId}" class="nfc-register-link">${t("info_nfc_register_cta")}</a>`
+      : "";
     nfcBox.innerHTML = `
       <div class="left">
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>
-        <div><div class="label">${t("info_nfc_tag_label")}</div><div class="value">${statusText}</div></div>
+        <div><div class="label">${t("info_nfc_tag_label")}</div><div class="value">${statusText}</div>${registerCta}</div>
       </div>
     `;
   }

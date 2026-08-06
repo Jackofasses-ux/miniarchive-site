@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Request an NFC Tag — Mini Archive</title>
+<link rel="icon" href="/images/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16.png">
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/translations.js"></script>
+<script src="js/i18n.js"></script>
+<style>
+  :root{
+    --bg:#0c0b09; --bg-raised:#141210; --hairline:#2a2621;
+    --gold:#c9a24b; --gold-bright:#e0bd6b; --cream:#f2ede2; --cream-dim:#b9b2a3; --mono:#6b6357; --error:#c9605a;
+  }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background: var(--bg); color: var(--cream); font-family:'Jost', sans-serif; font-weight:300; line-height:1.6; }
+  header{
+    display:flex; align-items:center; padding:22px 56px; border-bottom:1px solid var(--hairline);
+    background: rgba(12,11,9,0.88); backdrop-filter: blur(8px); position:sticky; top:0;
+  }
+  .brand{ display:flex; align-items:center; gap:12px; text-decoration:none; color:inherit; }
+  .brand img{ height:32px; width:auto; }
+  .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
+  main{ max-width:480px; margin:0 auto; padding:80px 24px 100px; }
+  .eyebrow{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.22em; text-transform:uppercase; color: var(--gold); margin-bottom:14px; }
+  h1{ font-family:'Cormorant Garamond', serif; font-size:2rem; font-weight:600; margin:0 0 16px; }
+  .lede{ font-size:0.95rem; color: var(--cream-dim); margin-bottom:36px; }
+  .field{ margin-bottom:20px; }
+  .field label{ display:block; font-family:'IBM Plex Mono', monospace; font-size:0.66rem; letter-spacing:0.06em; text-transform:uppercase; color: var(--mono); margin-bottom:7px; }
+  .field input, .field select{ width:100%; background: var(--bg-raised); border:1px solid var(--hairline); color: var(--cream); padding:11px 13px; font-family:'Jost', sans-serif; font-size:0.92rem; }
+  .model-preview{ display:flex; align-items:center; gap:14px; border:1px solid var(--hairline); background: var(--bg-raised); padding:14px; margin-bottom:28px; }
+  .model-preview img{ width:48px; height:48px; border-radius:50%; object-fit:cover; }
+  .model-preview .name{ font-family:'Cormorant Garamond', serif; font-size:1.05rem; font-weight:600; }
+  .btn-gold{
+    display:block; width:100%; text-align:center; font-family:'IBM Plex Mono', monospace; font-size:0.75rem;
+    letter-spacing:0.1em; text-transform:uppercase; color:#0c0b09; background: var(--gold); border:1px solid var(--gold);
+    padding:14px; cursor:pointer; transition: background 0.25s ease;
+  }
+  .btn-gold:hover{ background: var(--gold-bright); }
+  .btn-gold:disabled{ opacity:0.5; cursor:default; }
+  .top-error{ display:none; border:1px solid var(--error); color: var(--error); background: rgba(201,96,90,0.08); padding:12px 14px; font-size:0.85rem; margin-bottom:18px; }
+  .box{ text-align:center; padding:60px 20px; }
+  .success-icon{ width:48px; height:48px; margin:0 auto 16px; border:1px solid var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; color: var(--gold); font-size:1.4rem; }
+  .spinner{ width:28px; height:28px; border:2px solid var(--hairline); border-top-color: var(--gold); border-radius:50%; margin:0 auto 16px; animation: spin 0.8s linear infinite; }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  a{ color: var(--gold-bright); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="brand" href="index.html">
+    <picture><source srcset="images/logo-mark.webp" type="image/webp"><img src="images/logo-mark-optimized.png" alt="Mini Archive"></picture>
+    <div class="brand-name">MINI ARCHIVE</div>
+  </a>
+</header>
+
+<main>
+
+  <div class="box" id="loadingBox">
+    <div class="spinner"></div>
+    <p style="color:var(--cream-dim);">Loading…</p>
+  </div>
+
+  <div class="box" id="loginRequiredBox" style="display:none;">
+    <h1>Log in to request a tag</h1>
+    <p class="lede">You'll need an account so we know who to follow up with.</p>
+    <a class="btn-gold" href="login.html" style="display:block; text-decoration:none;">Log In</a>
+  </div>
+
+  <div id="formBox" style="display:none;">
+    <div class="eyebrow">NFC Tags</div>
+    <h1>Request a Tag</h1>
+    <p class="lede">Tags are entering early access — this reserves your spot and lets us follow up when it's ready. No payment is being taken right now.</p>
+
+    <div class="model-preview" id="modelPreview" style="display:none;">
+      <img id="modelPhoto" alt="">
+      <div class="name" id="modelName"></div>
+    </div>
+
+    <div class="top-error" id="topError"></div>
+
+    <div class="field">
+      <label for="requestEmail">Email</label>
+      <input id="requestEmail" type="email" placeholder="you@example.com">
+    </div>
+
+    <button type="button" class="btn-gold" id="submitBtn">Submit Request</button>
+  </div>
+
+  <div class="box" id="successBox" style="display:none;">
+    <div class="success-icon">✓</div>
+    <h1>Request received</h1>
+    <p class="lede">We'll be in touch when tags are ready to ship. Thanks for your patience while this gets built out properly.</p>
+    <a href="index.html">← Back to Mini Archive</a>
+  </div>
+
+</main>
+
+<script>
+  const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let currentUserId = null;
+  const miniatureId = new URLSearchParams(window.location.search).get("id");
+
+  function showTopError(msg){
+    const el = document.getElementById("topError");
+    el.textContent = msg;
+    el.style.display = "block";
+  }
+
+  document.getElementById("submitBtn").addEventListener("click", async () => {
+    const email = document.getElementById("requestEmail").value.trim();
+    if (!email || !email.includes("@")){
+      showTopError("Enter a valid email.");
+      return;
+    }
+
+    const btn = document.getElementById("submitBtn");
+    btn.disabled = true;
+    btn.textContent = "Submitting…";
+
+    try {
+      const { error } = await supabaseClient.from("nfc_tag_requests").insert({
+        user_id: currentUserId,
+        miniature_id: miniatureId || null,
+        email,
+      });
+      if (error) throw error;
+
+      document.getElementById("formBox").style.display = "none";
+      document.getElementById("successBox").style.display = "block";
+    } catch (err){
+      console.error(err);
+      showTopError(err.message || "Something went wrong submitting this. Please try again.");
+    } finally {
+      btn.disabled = false;
+      btn.textContent = "Submit Request";
+    }
+  });
+
+  (async () => {
+    await initLanguage(supabaseClient);
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session){
+      document.getElementById("loadingBox").style.display = "none";
+      document.getElementById("loginRequiredBox").style.display = "block";
+      return;
+    }
+    currentUserId = session.user.id;
+    document.getElementById("requestEmail").value = session.user.email || "";
+
+    if (miniatureId){
+      const { data } = await supabaseClient
+        .from("miniatures")
+        .select("title, photos ( image_url, photo_type )")
+        .eq("id", miniatureId)
+        .maybeSingle();
+      if (data){
+        const frontPhoto = (data.photos || []).find(p => p.photo_type === "front");
+        if (frontPhoto){
+          document.getElementById("modelPhoto").src = frontPhoto.image_url;
+          document.getElementById("modelPreview").style.display = "flex";
+        }
+        document.getElementById("modelName").textContent = data.title || "";
+        if (data.title) document.getElementById("modelPreview").style.display = "flex";
+      }
+    }
+
+    document.getElementById("loadingBox").style.display = "none";
+    document.getElementById("formBox").style.display = "block";
+  })();
+</script>
+
+</body>
+</html>
