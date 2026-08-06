@@ -7,20 +7,20 @@
 const TRANSLATIONS = {
   en: {
     // ---- Shared: header/nav ----
-    nav_collection: "Collection",
+    nav_collection: "Archive",
     nav_how_it_works: "How it works",
     nav_provenance: "Provenance",
     nav_about: "About",
     nav_login: "Log in",
     nav_start_archive: "Start an Archive",
-    nav_my_collection: "My Collection",
+    nav_my_collection: "My Archive",
     nav_add_model: "Add a Model",
     nav_account_settings: "Account Settings",
     nav_logout: "Log out",
 
     // ---- Shared: footer ----
     footer_tagline: "Every miniature has a story.",
-    footer_browse: "Browse Collection",
+    footer_browse: "Browse Archive",
     footer_back_home: "← Back home",
 
     // ---- Shared: language toggle ----
@@ -31,7 +31,7 @@ const TRANSLATIONS = {
     hero_title_line1: "Every miniature",
     hero_title_accent: "has a story.",
     hero_lede: "Mini Archive keeps the record straight — who painted it, how long it took, every colour that went into it, and where it's been since. Not just photos. Provenance.",
-    hero_cta_view_collection: "View the Collection",
+    hero_cta_view_collection: "View the Archive",
     hero_cta_how_it_works: "How it works",
     featured_empty_prefix: "No public models yet — ",
     featured_empty_link: "be the first to log one →",
@@ -45,14 +45,14 @@ const TRANSLATIONS = {
     feature_track_label: "Track",
     feature_track_desc: "Log time and capture progress.",
     feature_organize_label: "Organize",
-    feature_organize_desc: "Curate collections and displays.",
+    feature_organize_desc: "Curate your archive and displays.",
     feature_preserve_label: "Preserve",
     feature_preserve_desc: "Your legacy. Always.",
 
     // ---- index.html: collection section ----
     section_1_label: "Section I",
-    section_from_collection: "From the Collection",
-    view_full_collection: "View Full Collection →",
+    section_from_collection: "From the Archive",
+    view_full_collection: "View Full Archive →",
 
     // ---- index.html: how it works section ----
     section_2_label: "Section II",
@@ -68,7 +68,7 @@ const TRANSLATIONS = {
     section_3_label: "Section III",
     provenance_title: "Provenance, When it Matters",
     provenance_p1: "For commissions and competitions, a photo isn't proof. Verified records pair a certificate with an NFC-tagged base, so ownership and authorship are never in question — even after the piece changes hands.",
-    provenance_p2: "Free to log a collection. Verification is for the pieces where it counts.",
+    provenance_p2: "Free to log an archive. Verification is for the pieces where it counts.",
     cert_title: "Certificate of Authenticity",
     cert_sub: "SCAN · VERIFY · MINI ARCHIVE",
 
@@ -80,30 +80,30 @@ const TRANSLATIONS = {
     // ---- profile.html ----
     profile_loading: "Loading profile…",
     profile_not_found: "Profile not found.",
-    profile_back_to_collection: "← Back to Collection",
+    profile_back_to_collection: "← Back to Archive",
     profile_tier_paid: "Paid Member",
     stat_models_published: "Models Published",
     stat_painting_hours: "Painting Hours",
     stat_member_since: "Member Since",
     stat_latest_model: "Latest Model",
-    profile_owned_eyebrow: "Owned Collection",
+    profile_owned_eyebrow: "Owned Archive",
     profile_published_models: "Published Models",
     profile_credited_eyebrow: "Credited Work",
     profile_models_painted: "Models Painted",
     profile_no_published: "No published models yet.",
-    footer_browse_collection: "Browse Collection",
+    footer_browse_collection: "Browse Archive",
     edit_this_model_title: "Edit this model",
 
-    // ---- collection.html ----
-    collection_eyebrow: "The Collection",
+    // ---- archive.html ----
+    collection_eyebrow: "The Archive",
     collection_title: "Every model, catalogued.",
-    collection_my_eyebrow: "My Collection",
+    collection_my_eyebrow: "My Archive",
     collection_my_title: "Your models, catalogued.",
     collection_search_placeholder: "Search by name or painter…",
     collection_back_home: "← Back home",
     collection_result_count_singular: " model",
     collection_result_count_plural: " models",
-    collection_error_eyebrow: "Couldn't load the collection",
+    collection_error_eyebrow: "Couldn't load the archive",
     collection_error_desc: "Something went wrong fetching models. Check the console for details.",
     collection_empty_mine_eyebrow: "No models yet",
     collection_empty_mine_desc: "You haven't logged anything yet. ",
@@ -134,7 +134,7 @@ const TRANSLATIONS = {
     account_change_photo: "Change Photo",
     account_photo_hint: "JPEG, PNG, or WebP. Uploads immediately.",
     account_archive_name: "Archive Name",
-    account_archive_name_hint: "Shown on your public profile URL and collection page.",
+    account_archive_name_hint: "Shown on your public profile URL and archive page.",
     account_display_name: "Display Name",
     account_bio: "Bio",
     account_bio_placeholder: "A few lines about you or your studio…",
@@ -188,7 +188,7 @@ const TRANSLATIONS = {
 
     // ---- model.html: header/nav ----
     model_edit_this: "Edit This Model",
-    model_back_to_collection: "← Back to Collection",
+    model_back_to_collection: "← Back to Archive",
     model_eyebrow_prefix: "Miniature Profile · ",
 
     // ---- model.html: photo viewer ----
@@ -289,7 +289,7 @@ const TRANSLATIONS = {
     cert_field_completion_date: "Completion Date",
 
     // ---- model.html: footer ----
-    model_footer_back: "← Back to Collection",
+    model_footer_back: "← Back to Archive",
 
     // ---- edit-model.html: page head ----
     em_add_eyebrow: "Add a Model",
@@ -297,7 +297,7 @@ const TRANSLATIONS = {
     em_add_lede: "Add whatever you know now. Save it as a draft, or publish it straight to the archive if it's ready.",
     em_error_title: "Couldn't find that model.",
     em_error_desc: "It may not exist, or it isn't yours to edit.",
-    em_error_back: "Back to My Collection",
+    em_error_back: "Back to My Archive",
     em_status_draft: "Draft",
 
     // ---- edit-model.html: basics fieldset ----
@@ -454,7 +454,7 @@ const TRANSLATIONS = {
     confirm_field_archive_name: "Archive Name",
     confirm_field_account: "Account",
     confirm_cta_log_first: "Log Your First Model",
-    confirm_cta_browse: "Browse the Collection",
+    confirm_cta_browse: "Browse the Archive",
     confirm_error_title: "Couldn't confirm this link",
     confirm_error_default: "This confirmation link may have expired or already been used.",
     confirm_error_expired: "This confirmation link may have expired or already been used. Try logging in — if your account was already confirmed, it'll just work.",
@@ -537,7 +537,7 @@ const TRANSLATIONS = {
     start_form_sub: "A couple of minutes, that's it.",
     start_archive_name_label: "Archive name",
     start_archive_name_placeholder: "e.g. Paint or Die Studios",
-    start_archive_name_hint: "This is the name shown on your public collection page.",
+    start_archive_name_hint: "This is the name shown on your public archive page.",
     start_archive_name_error: "Give your archive a name.",
     start_first_name_label: "First name",
     start_first_name_placeholder: "Jane",
@@ -572,20 +572,20 @@ const TRANSLATIONS = {
   },
   fr: {
     // ---- Shared: header/nav ----
-    nav_collection: "Collection",
+    nav_collection: "Archive",
     nav_how_it_works: "Comment ça marche",
     nav_provenance: "Provenance",
     nav_about: "À propos",
     nav_login: "Connexion",
     nav_start_archive: "Créer une archive",
-    nav_my_collection: "Ma collection",
+    nav_my_collection: "Mon archive",
     nav_add_model: "Ajouter un modèle",
     nav_account_settings: "Paramètres du compte",
     nav_logout: "Déconnexion",
 
     // ---- Shared: footer ----
     footer_tagline: "Chaque figurine a une histoire.",
-    footer_browse: "Parcourir la collection",
+    footer_browse: "Parcourir l'archive",
     footer_back_home: "← Retour à l'accueil",
 
     // ---- Shared: language toggle ----
@@ -596,7 +596,7 @@ const TRANSLATIONS = {
     hero_title_line1: "Chaque figurine",
     hero_title_accent: "a une histoire.",
     hero_lede: "Mini Archive garde les faits clairs — qui l'a peinte, combien de temps ça a pris, chaque couleur utilisée, et où elle est passée depuis. Pas juste des photos. De la provenance.",
-    hero_cta_view_collection: "Voir la collection",
+    hero_cta_view_collection: "Voir l'archive",
     hero_cta_how_it_works: "Comment ça marche",
     featured_empty_prefix: "Aucun modèle public pour l'instant — ",
     featured_empty_link: "soyez le premier à en archiver un →",
@@ -610,14 +610,14 @@ const TRANSLATIONS = {
     feature_track_label: "Suivre",
     feature_track_desc: "Enregistrez le temps et suivez la progression.",
     feature_organize_label: "Organiser",
-    feature_organize_desc: "Constituez collections et présentations.",
+    feature_organize_desc: "Constituez votre archive et vos présentations.",
     feature_preserve_label: "Préserver",
     feature_preserve_desc: "Votre héritage. Pour toujours.",
 
     // ---- index.html: collection section ----
     section_1_label: "Section I",
-    section_from_collection: "Aperçu de la collection",
-    view_full_collection: "Voir toute la collection →",
+    section_from_collection: "Aperçu de l'archive",
+    view_full_collection: "Voir toute l'archive →",
 
     // ---- index.html: how it works section ----
     section_2_label: "Section II",
@@ -633,7 +633,7 @@ const TRANSLATIONS = {
     section_3_label: "Section III",
     provenance_title: "La provenance, quand elle compte",
     provenance_p1: "Pour les commandes et les compétitions, une photo n'est pas une preuve. Les fiches vérifiées associent un certificat à une base munie d'une puce NFC, pour que la propriété et la paternité ne soient jamais mises en doute — même après que la pièce change de mains.",
-    provenance_p2: "Gratuit pour archiver une collection. La vérification est réservée aux pièces où elle compte vraiment.",
+    provenance_p2: "Gratuit pour archiver vos modèles. La vérification est réservée aux pièces où elle compte vraiment.",
     cert_title: "Certificat d'authenticité",
     cert_sub: "NUMÉRISER · VÉRIFIER · MINI ARCHIVE",
 
@@ -645,30 +645,30 @@ const TRANSLATIONS = {
     // ---- profile.html ----
     profile_loading: "Chargement du profil…",
     profile_not_found: "Profil introuvable.",
-    profile_back_to_collection: "← Retour à la collection",
+    profile_back_to_collection: "← Retour à l'archive",
     profile_tier_paid: "Membre payant",
     stat_models_published: "Modèles publiés",
     stat_painting_hours: "Heures de peinture",
     stat_member_since: "Membre depuis",
     stat_latest_model: "Dernier modèle",
-    profile_owned_eyebrow: "Collection possédée",
+    profile_owned_eyebrow: "Archive possédée",
     profile_published_models: "Modèles publiés",
     profile_credited_eyebrow: "Travail crédité",
     profile_models_painted: "Modèles peints",
     profile_no_published: "Aucun modèle publié pour l'instant.",
-    footer_browse_collection: "Parcourir la collection",
+    footer_browse_collection: "Parcourir l'archive",
     edit_this_model_title: "Modifier ce modèle",
 
-    // ---- collection.html ----
-    collection_eyebrow: "La collection",
+    // ---- archive.html ----
+    collection_eyebrow: "L'archive",
     collection_title: "Chaque modèle, catalogué.",
-    collection_my_eyebrow: "Ma collection",
+    collection_my_eyebrow: "Mon archive",
     collection_my_title: "Vos modèles, catalogués.",
     collection_search_placeholder: "Rechercher par nom ou peintre…",
     collection_back_home: "← Retour à l'accueil",
     collection_result_count_singular: " modèle",
     collection_result_count_plural: " modèles",
-    collection_error_eyebrow: "Impossible de charger la collection",
+    collection_error_eyebrow: "Impossible de charger l'archive",
     collection_error_desc: "Une erreur est survenue lors du chargement des modèles. Consultez la console pour plus de détails.",
     collection_empty_mine_eyebrow: "Aucun modèle pour l'instant",
     collection_empty_mine_desc: "Vous n'avez encore rien archivé. ",
@@ -699,7 +699,7 @@ const TRANSLATIONS = {
     account_change_photo: "Changer la photo",
     account_photo_hint: "JPEG, PNG ou WebP. Téléversement immédiat.",
     account_archive_name: "Nom d'archive",
-    account_archive_name_hint: "Affiché sur l'URL de votre profil public et sur la page de collection.",
+    account_archive_name_hint: "Affiché sur l'URL de votre profil public et sur la page d'archive.",
     account_display_name: "Nom d'affichage",
     account_bio: "Bio",
     account_bio_placeholder: "Quelques lignes sur vous ou votre studio…",
@@ -753,7 +753,7 @@ const TRANSLATIONS = {
 
     // ---- model.html: header/nav ----
     model_edit_this: "Modifier ce modèle",
-    model_back_to_collection: "← Retour à la collection",
+    model_back_to_collection: "← Retour à l'archive",
     model_eyebrow_prefix: "Profil de la figurine · ",
 
     // ---- model.html: photo viewer ----
@@ -854,7 +854,7 @@ const TRANSLATIONS = {
     cert_field_completion_date: "Date d'achèvement",
 
     // ---- model.html: footer ----
-    model_footer_back: "← Retour à la collection",
+    model_footer_back: "← Retour à l'archive",
 
     // ---- edit-model.html: page head ----
     em_add_eyebrow: "Ajouter un modèle",
@@ -862,7 +862,7 @@ const TRANSLATIONS = {
     em_add_lede: "Ajoutez ce que vous savez déjà. Enregistrez comme brouillon, ou publiez directement dans l'archive si c'est prêt.",
     em_error_title: "Modèle introuvable.",
     em_error_desc: "Il n'existe peut-être pas, ou il ne vous appartient pas de le modifier.",
-    em_error_back: "Retour à ma collection",
+    em_error_back: "Retour à mon archive",
     em_status_draft: "Brouillon",
 
     // ---- edit-model.html: basics fieldset ----
@@ -1019,7 +1019,7 @@ const TRANSLATIONS = {
     confirm_field_archive_name: "Nom d'archive",
     confirm_field_account: "Compte",
     confirm_cta_log_first: "Archiver mon premier modèle",
-    confirm_cta_browse: "Parcourir la collection",
+    confirm_cta_browse: "Parcourir l'archive",
     confirm_error_title: "Impossible de confirmer ce lien",
     confirm_error_default: "Ce lien de confirmation a peut-être expiré ou a déjà été utilisé.",
     confirm_error_expired: "Ce lien de confirmation a peut-être expiré ou a déjà été utilisé. Essayez de vous connecter — si votre compte était déjà confirmé, ça fonctionnera simplement.",
@@ -1102,7 +1102,7 @@ const TRANSLATIONS = {
     start_form_sub: "Quelques minutes, c'est tout.",
     start_archive_name_label: "Nom d'archive",
     start_archive_name_placeholder: "ex. Paint or Die Studios",
-    start_archive_name_hint: "C'est le nom affiché sur votre page de collection publique.",
+    start_archive_name_hint: "C'est le nom affiché sur votre page d'archive publique.",
     start_archive_name_error: "Donnez un nom à votre archive.",
     start_first_name_label: "Prénom",
     start_first_name_placeholder: "Jeanne",
