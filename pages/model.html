@@ -515,9 +515,11 @@
   <div class="profile-grid">
     <div>
       <div class="title-block">
-        <h1 id="modelTitle"></h1>
+        <div class="title-row" style="display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+          <h1 id="modelTitle" style="margin:0;"></h1>
+          <a class="btn-gold" href="edit-model.html" id="editButton" style="display:none;" data-i18n="model_edit_this">Edit This Model</a>
+        </div>
         <p class="desc" id="modelDesc"></p>
-        <a class="btn-ghost" href="edit-model.html" id="editButton" style="display:none; margin-top:14px;" data-i18n="model_edit_this">Edit This Model</a>
       </div>
 
       <div class="info-grid" id="infoGrid"></div>
