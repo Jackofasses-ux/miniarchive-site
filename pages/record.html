@@ -121,12 +121,10 @@
   .info-box .label{ font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--mono); }
   .info-box .value{ font-family:'Cormorant Garamond', serif; font-size:1.2rem; font-weight:600; color: var(--gold-bright); margin-top:4px; }
 
-  .nfc-box-row{ display:flex; align-items:flex-start; gap:10px; margin-top:16px; }
-  .nfc-box-row .nfc-box{ margin-top:0; flex:1; }
   .nfc-info-icon{
     flex-shrink:0; width:26px; height:26px; border-radius:50%; border:1px solid var(--hairline);
     color: var(--mono); text-decoration:none; display:flex; align-items:center; justify-content:center;
-    font-family:'IBM Plex Mono', monospace; font-size:0.75rem; margin-top:18px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.75rem;
   }
   .nfc-info-icon:hover{ border-color: var(--gold); color: var(--gold-bright); }
   .nfc-box{
@@ -542,10 +540,7 @@
       </div>
 
       <div class="info-grid" id="infoGrid"></div>
-      <div class="nfc-box-row">
-        <div class="nfc-box" id="nfcBox"></div>
-        <a href="nfc-info.html" class="nfc-info-icon" aria-label="What's this?" title="What's this?">?</a>
-      </div>
+      <div class="nfc-box" id="nfcBox"></div>
     </div>
 
     <div class="photo-viewer">
@@ -1148,7 +1143,6 @@
     setPhotoView("front");
     renderGallery(data.id);
     loadNfcStatus(data.id);
-    document.querySelector(".nfc-info-icon").href = `nfc-info.html?id=${data.id}`;
     loadEditHistory(data.id);
     loadPaintRecipe(data.id);
     loadGameLog(data.id);
@@ -1529,6 +1523,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6"><path d="M4 12a8 8 0 0 1 16 0"/><path d="M7 12a5 5 0 0 1 10 0"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/></svg>
         <div><div class="label">${t("info_nfc_tag_label")}</div><div class="value">${statusText}</div>${registerCta}</div>
       </div>
+      <a href="nfc-info.html?id=${miniatureId}" class="nfc-info-icon" aria-label="What's this?" title="What's this?">?</a>
     `;
   }
 
