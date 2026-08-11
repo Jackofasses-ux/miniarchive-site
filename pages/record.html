@@ -440,6 +440,21 @@
   .comparable-row .swatch{ width:22px; height:22px; border:1px solid var(--hairline); flex-shrink:0; }
   .comparable-row .name{ font-family:'Cormorant Garamond', serif; font-size:1rem; font-weight:600; }
   .comparable-row .meta{ margin-top:2px; font-family:'IBM Plex Mono', monospace; font-size:0.64rem; color: var(--mono); }
+  .comparable-row .match-pct{
+    margin-left:auto; flex-shrink:0; font-family:'IBM Plex Mono', monospace; font-size:0.72rem;
+    font-weight:600; padding:3px 8px; border:1px solid var(--hairline); white-space:nowrap;
+  }
+  .comparable-row .match-pct.strong{ color: var(--gold); border-color: var(--gold); }
+  .comparable-row .match-pct.medium{ color: var(--cream); }
+  .comparable-row .match-pct.weak{ color: var(--cream-dim); }
+  .comparable-legend{
+    display:flex; align-items:center; gap:6px; margin-bottom:10px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.62rem; color: var(--cream-dim);
+  }
+  .comparable-legend .info-icon{
+    display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px;
+    border:1px solid var(--cream-dim); border-radius:50%; font-size:0.6rem; cursor:help; flex-shrink:0;
+  }
 
   .gallery-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 30px; }
   .gallery-item{ border:1px solid var(--hairline); background: var(--bg-raised); overflow:hidden; cursor: zoom-in; position:relative; }
@@ -1213,21 +1228,27 @@
     comparablesEl.innerHTML = `<p style="color:var(--cream-dim); padding:14px 0;">${t("comparable_searching")}</p>`;
     const matches = await fetchComparablePaints(paintId);
 
-    const html = matches.length ? matches.map(m => {
-      const closeness = m.deltaE <= 5 ? t("comparable_extremely_close")
-        : m.deltaE <= 10 ? t("comparable_very_close")
-        : t("comparable_close");
-      const tag = m.matchType === "Official" ? ` · ${t("comparable_official")}` : ` · ${closeness}`;
-      return `
+    const html = matches.length ? `
+      <div class="comparable-legend">
+        <span class="info-icon" title="${t("comparable_legend_tooltip")}">?</span>
+        <span>${t("comparable_legend_label")}</span>
+      </div>
+      ${matches.map(m => {
+        const pct = matchPercent(m.deltaE);
+        const strength = pct >= 85 ? "strong" : pct >= 60 ? "medium" : "weak";
+        const officialTag = m.matchType === "Official" ? ` · ${t("comparable_official")}` : "";
+        return `
       <div class="comparable-row">
         <div class="swatch" style="background:${m.hex_color || "#333"};"></div>
         <div>
           <div class="name">${m.name}</div>
-          <div class="meta">${m.brand} — ${m.range}${tag}</div>
+          <div class="meta">${m.brand} — ${m.range}${officialTag}</div>
         </div>
+        <div class="match-pct ${strength}" title="${t("comparable_pct_tooltip")}">${pct}%</div>
       </div>
     `;
-    }).join("") : `<p style="color:var(--cream-dim); padding:14px 0;">${t("comparable_none")}</p>`;
+      }).join("")}
+    ` : `<p style="color:var(--cream-dim); padding:14px 0;">${t("comparable_none")}</p>`;
 
     comparablesCache[paintId] = html;
     comparablesEl.innerHTML = html;
@@ -1321,8 +1342,16 @@
     return "opaque"; // base, layer, and unclassified (mostly Warpaints/Fanatic/P3) all opaque colors
   }
 
-  const COMPARABLE_MAX_DELTA_E = 12; // beyond this, colors read as genuinely different
-  const COMPARABLE_MAX_RESULTS = 8;
+  const COMPARABLE_MAX_DELTA_E = 10; // beyond this, colors read as genuinely different (BrushForge's own "noticeable difference" line)
+  const COMPARABLE_MAX_RESULTS = 5;
+
+  // Turns raw ΔE into an intuitive 0-100 score: 0 ΔE = 100%, right at the
+  // cutoff = 0%. Non-linear so the top end (the matches people actually
+  // care about) spreads out more than the bottom end.
+  function matchPercent(deltaE){
+    const linear = Math.max(0, 1 - deltaE / COMPARABLE_MAX_DELTA_E);
+    return Math.round(100 * Math.pow(linear, 0.7));
+  }
 
   let allPaintsPromise = null;
   function getAllPaintsWithHex(){
