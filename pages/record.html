@@ -1213,60 +1213,160 @@
     comparablesEl.innerHTML = `<p style="color:var(--cream-dim); padding:14px 0;">${t("comparable_searching")}</p>`;
     const matches = await fetchComparablePaints(paintId);
 
-    const html = matches.length ? matches.map(m => `
+    const html = matches.length ? matches.map(m => {
+      const closeness = m.deltaE <= 5 ? t("comparable_extremely_close")
+        : m.deltaE <= 10 ? t("comparable_very_close")
+        : t("comparable_close");
+      const tag = m.matchType === "Official" ? ` · ${t("comparable_official")}` : ` · ${closeness}`;
+      return `
       <div class="comparable-row">
         <div class="swatch" style="background:${m.hex_color || "#333"};"></div>
         <div>
           <div class="name">${m.name}</div>
-          <div class="meta">${m.brand} — ${m.range}${m.matchType ? ` · ${m.matchType}` : ""}</div>
+          <div class="meta">${m.brand} — ${m.range}${tag}</div>
         </div>
       </div>
-    `).join("") : `<p style="color:var(--cream-dim); padding:14px 0;">${t("comparable_none")}</p>`;
+    `;
+    }).join("") : `<p style="color:var(--cream-dim); padding:14px 0;">${t("comparable_none")}</p>`;
 
     comparablesCache[paintId] = html;
     comparablesEl.innerHTML = html;
   };
 
-  async function fetchComparablePaints(paintId){
-    // Direct outgoing matches (this paint IS the source of a conversion)
-    const { data: directOut } = await supabaseClient
-      .from("paint_conversions")
-      .select("confidence, match_type, target:target_paint_id ( id, brand, range, name, hex_color )")
-      .eq("source_paint_id", paintId);
+  // ---- Real color-distance matching (CIEDE2000) -----------------------
+  // The old version only ever showed paints that happened to have a row in
+  // paint_conversions — a curated table that's nowhere near complete (most
+  // paints have zero rows). This computes actual perceptual color distance
+  // from hex_color so "comparable paints" works for any paint with a hex
+  // value, and ranks by how close the colors really look, not by whichever
+  // conversion rows happen to exist.
 
-    // Direct incoming matches (this paint is the TARGET — find its source)
-    const { data: directIn } = await supabaseClient
-      .from("paint_conversions")
-      .select("confidence, match_type, source:source_paint_id ( id, brand, range, name, hex_color )")
-      .eq("target_paint_id", paintId);
+  function hexToRgb(hex){
+    const clean = (hex || "").replace("#", "");
+    if (clean.length !== 6) return null;
+    return {
+      r: parseInt(clean.slice(0, 2), 16),
+      g: parseInt(clean.slice(2, 4), 16),
+      b: parseInt(clean.slice(4, 6), 16),
+    };
+  }
 
-    const results = new Map();
-    (directOut || []).forEach(row => {
-      if (row.target) results.set(row.target.id, { ...row.target, confidence: row.confidence, matchType: row.match_type });
+  function rgbToLab({ r, g, b }){
+    // sRGB -> linear
+    let [rl, gl, bl] = [r, g, b].map(v => {
+      v /= 255;
+      return v > 0.04045 ? Math.pow((v + 0.055) / 1.055, 2.4) : v / 12.92;
     });
+    // linear sRGB -> XYZ (D65)
+    let x = rl * 0.4124564 + gl * 0.3575761 + bl * 0.1804375;
+    let y = rl * 0.2126729 + gl * 0.7151522 + bl * 0.0721750;
+    let z = rl * 0.0193339 + gl * 0.1191920 + bl * 0.9503041;
+    // normalize by D65 white point
+    x /= 0.95047; y /= 1.00000; z /= 1.08883;
+    const f = v => v > 0.008856 ? Math.cbrt(v) : (7.787 * v) + 16 / 116;
+    const [fx, fy, fz] = [x, y, z].map(f);
+    return { l: (116 * fy) - 16, a: 500 * (fx - fy), b: 200 * (fy - fz) };
+  }
 
-    const hubIds = (directIn || []).filter(row => row.source).map(row => {
-      results.set(row.source.id, { ...row.source, confidence: row.confidence, matchType: row.match_type });
-      return row.source.id;
-    });
+  // Standard CIEDE2000 implementation.
+  function deltaE2000(lab1, lab2){
+    const rad = d => d * Math.PI / 180;
+    const { l: L1, a: a1, b: b1 } = lab1;
+    const { l: L2, a: a2, b: b2 } = lab2;
+    const avgLp = (L1 + L2) / 2;
+    const C1 = Math.hypot(a1, b1), C2 = Math.hypot(a2, b2);
+    const avgC = (C1 + C2) / 2;
+    const G = 0.5 * (1 - Math.sqrt(Math.pow(avgC, 7) / (Math.pow(avgC, 7) + Math.pow(25, 7))));
+    const a1p = a1 * (1 + G), a2p = a2 * (1 + G);
+    const C1p = Math.hypot(a1p, b1), C2p = Math.hypot(a2p, b2);
+    const avgCp = (C1p + C2p) / 2;
+    const h1p = (Math.atan2(b1, a1p) * 180 / Math.PI + 360) % 360;
+    const h2p = (Math.atan2(b2, a2p) * 180 / Math.PI + 360) % 360;
+    let deltahp;
+    if (C1p * C2p === 0) deltahp = 0;
+    else if (Math.abs(h1p - h2p) <= 180) deltahp = h2p - h1p;
+    else deltahp = h2p <= h1p ? h2p - h1p + 360 : h2p - h1p - 360;
+    const deltaLp = L2 - L1;
+    const deltaCp = C2p - C1p;
+    const deltaHp = 2 * Math.sqrt(C1p * C2p) * Math.sin(rad(deltahp) / 2);
+    const avgHp = (C1p * C2p === 0) ? h1p + h2p
+      : (Math.abs(h1p - h2p) <= 180 ? (h1p + h2p) / 2
+        : (h1p + h2p < 360 ? (h1p + h2p + 360) / 2 : (h1p + h2p - 360) / 2));
+    const T = 1 - 0.17 * Math.cos(rad(avgHp - 30)) + 0.24 * Math.cos(rad(2 * avgHp))
+      + 0.32 * Math.cos(rad(3 * avgHp + 6)) - 0.20 * Math.cos(rad(4 * avgHp - 63));
+    const deltaTheta = 30 * Math.exp(-Math.pow((avgHp - 275) / 25, 2));
+    const Rc = 2 * Math.sqrt(Math.pow(avgCp, 7) / (Math.pow(avgCp, 7) + Math.pow(25, 7)));
+    const Sl = 1 + (0.015 * Math.pow(avgLp - 50, 2)) / Math.sqrt(20 + Math.pow(avgLp - 50, 2));
+    const Sc = 1 + 0.045 * avgCp;
+    const Sh = 1 + 0.015 * avgCp * T;
+    const Rt = -Math.sin(rad(2 * deltaTheta)) * Rc;
+    return Math.sqrt(
+      Math.pow(deltaLp / Sl, 2) +
+      Math.pow(deltaCp / Sc, 2) +
+      Math.pow(deltaHp / Sh, 2) +
+      Rt * (deltaCp / Sc) * (deltaHp / Sh)
+    );
+  }
 
-    // One more hop: siblings that share the same source (e.g. clicking a
-    // Vallejo paint should also surface the Army Painter equivalent, via
-    // their shared Citadel source), even though there's no direct row
-    // between the two non-Citadel paints themselves.
-    if (hubIds.length){
-      const { data: siblings } = await supabaseClient
-        .from("paint_conversions")
-        .select("confidence, match_type, target:target_paint_id ( id, brand, range, name, hex_color )")
-        .in("source_paint_id", hubIds);
-      (siblings || []).forEach(row => {
-        if (row.target && row.target.id !== paintId) {
-          results.set(row.target.id, { ...row.target, confidence: row.confidence, matchType: row.match_type });
-        }
-      });
+  function labFromHex(hex){
+    const rgb = hexToRgb(hex);
+    return rgb ? rgbToLab(rgb) : null;
+  }
+
+  // Behavior families, matching how BrushForge (our data source tonight)
+  // groups paints: an opaque color should never be "comparable" to a wash
+  // or a metallic just because the flat hex happens to be close.
+  function paintFamily(category){
+    if (category === "contrast" || category === "shade" || category === "metallic" || category === "dry") return category;
+    return "opaque"; // base, layer, and unclassified (mostly Warpaints/Fanatic/P3) all opaque colors
+  }
+
+  const COMPARABLE_MAX_DELTA_E = 12; // beyond this, colors read as genuinely different
+  const COMPARABLE_MAX_RESULTS = 8;
+
+  let allPaintsPromise = null;
+  function getAllPaintsWithHex(){
+    if (!allPaintsPromise){
+      allPaintsPromise = supabaseClient
+        .from("paints")
+        .select("id, brand, range, name, hex_color, category")
+        .not("hex_color", "is", null)
+        .then(({ data }) => data || []);
     }
+    return allPaintsPromise;
+  }
 
-    return Array.from(results.values());
+  async function fetchComparablePaints(paintId){
+    const allPaints = await getAllPaintsWithHex();
+    const selected = allPaints.find(p => p.id === paintId);
+    if (!selected || !selected.hex_color) return [];
+
+    const selectedLab = labFromHex(selected.hex_color);
+    const selectedFamily = paintFamily(selected.category);
+    if (!selectedLab) return [];
+
+    // Curated cross-references get an "Official" tag layered on top when present.
+    const { data: officialRows } = await supabaseClient
+      .from("paint_conversions")
+      .select("source_paint_id, target_paint_id, match_type")
+      .eq("match_type", "Official")
+      .or(`source_paint_id.eq.${paintId},target_paint_id.eq.${paintId}`);
+    const officialIds = new Set(
+      (officialRows || []).map(r => r.source_paint_id === paintId ? r.target_paint_id : r.source_paint_id)
+    );
+
+    const ranked = allPaints
+      .filter(p => p.id !== paintId && paintFamily(p.category) === selectedFamily)
+      .map(p => {
+        const lab = labFromHex(p.hex_color);
+        if (!lab) return null;
+        return { ...p, deltaE: deltaE2000(selectedLab, lab), matchType: officialIds.has(p.id) ? "Official" : null };
+      })
+      .filter(p => p && p.deltaE <= COMPARABLE_MAX_DELTA_E)
+      .sort((a, b) => a.deltaE - b.deltaE)
+      .slice(0, COMPARABLE_MAX_RESULTS);
+
+    return ranked;
   }
 
   async function loadTimeline(miniatureId){
