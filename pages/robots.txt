@@ -3,7 +3,7 @@ Allow: /
 Allow: /index.html
 Allow: /archive.html
 Allow: /record.html
-Allow: /profile.html
+Allow: /account.html
 
 Disallow: /login.html
 Disallow: /start.html
