@@ -54,7 +54,7 @@
 
   header{
     position:sticky; top:0; z-index:50;
-    display:flex; align-items:center;
+    display:flex; align-items:center; gap:32px;
     padding:22px 56px; background: rgba(12,11,9,0.88); backdrop-filter: blur(8px);
     border-bottom:1px solid var(--hairline);
   }
@@ -454,6 +454,10 @@
   .comparable-legend .info-icon{
     display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px;
     border:1px solid var(--cream-dim); border-radius:50%; font-size:0.6rem; cursor:help; flex-shrink:0;
+  }
+  .comparable-row .official-mark{ color: var(--gold); cursor:help; margin-left:2px; }
+  .comparable-official-note{
+    margin-top:8px; font-family:'IBM Plex Mono', monospace; font-size:0.6rem; color: var(--cream-dim);
   }
 
   .gallery-grid{ display:grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 30px; }
@@ -1228,6 +1232,7 @@
     comparablesEl.innerHTML = `<p style="color:var(--cream-dim); padding:14px 0;">${t("comparable_searching")}</p>`;
     const matches = await fetchComparablePaints(paintId);
 
+    const hasOfficial = matches.some(m => m.matchType === "Official");
     const html = matches.length ? `
       <div class="comparable-legend">
         <span class="info-icon" title="${t("comparable_legend_tooltip")}">?</span>
@@ -1236,18 +1241,20 @@
       ${matches.map(m => {
         const pct = matchPercent(m.deltaE);
         const strength = pct >= 85 ? "strong" : pct >= 60 ? "medium" : "weak";
-        const officialTag = m.matchType === "Official" ? ` · ${t("comparable_official")}` : "";
+        const officialMark = m.matchType === "Official"
+          ? `<span class="official-mark" title="${t("comparable_official_tooltip")}">*</span>` : "";
         return `
       <div class="comparable-row">
         <div class="swatch" style="background:${m.hex_color || "#333"};"></div>
         <div>
-          <div class="name">${m.name}</div>
-          <div class="meta">${m.brand} — ${m.range}${officialTag}</div>
+          <div class="name">${m.name}${officialMark}</div>
+          <div class="meta">${m.brand} — ${m.range}</div>
         </div>
         <div class="match-pct ${strength}" title="${t("comparable_pct_tooltip")}">${pct}%</div>
       </div>
     `;
       }).join("")}
+      ${hasOfficial ? `<div class="comparable-official-note">* ${t("comparable_official_note")}</div>` : ""}
     ` : `<p style="color:var(--cream-dim); padding:14px 0;">${t("comparable_none")}</p>`;
 
     comparablesCache[paintId] = html;
