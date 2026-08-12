@@ -250,10 +250,11 @@ const TRANSLATIONS = {
     recipe_see_comparables: "See comparable paints ▸",
     comparable_none: "No known equivalents in the database yet for this paint.",
     comparable_searching: "Searching…",
-    comparable_official: "official equivalent",
-    comparable_legend_label: "Match % is based on real color science, not just names",
-    comparable_legend_tooltip: "Calculated with CIEDE2000, the same color-distance formula used by professional color-matching tools. It compares how a human eye actually perceives the two colors — not just their raw hex codes. 100% means the colors are essentially identical; matches below about 60% are noticeably different but still in the same family of paint (base, wash, metallic, etc).",
-    comparable_pct_tooltip: "How visually close this paint's color is to the selected one, based on CIEDE2000 color distance. Higher is closer.",
+    comparable_legend_label: "Match % is calculated from color data gathered across manufacturer charts and paint databases",
+    comparable_legend_tooltip: "Calculated with CIEDE2000, a standard color-distance formula that compares how a human eye actually perceives two colors, not just their hex codes. 100% means essentially identical; matches below about 60% are noticeably different but still the same type of paint (base, wash, metallic, etc).",
+    comparable_pct_tooltip: "How visually close this paint's color is to the selected one. Higher is closer.",
+    comparable_official_tooltip: "Manufacturer-confirmed equivalent",
+    comparable_official_note: "manufacturer-confirmed equivalent",
 
     // ---- model.html: edit history ----
     edit_history_none: "None",
@@ -819,10 +820,11 @@ const TRANSLATIONS = {
     recipe_see_comparables: "Voir les peintures comparables ▸",
     comparable_none: "Aucun équivalent connu dans la base de données pour cette peinture.",
     comparable_searching: "Recherche…",
-    comparable_official: "équivalent officiel",
-    comparable_legend_label: "Le % de correspondance repose sur une vraie science des couleurs, pas seulement les noms",
-    comparable_legend_tooltip: "Calculé avec CIEDE2000, la même formule de distance colorimétrique utilisée par les outils professionnels. Elle compare la perception réelle des deux couleurs par l'œil humain — pas seulement leurs codes hexadécimaux bruts. 100 % signifie que les couleurs sont pratiquement identiques ; en dessous d'environ 60 %, la différence est perceptible mais reste dans la même famille de peinture (base, glacis, métallique, etc.).",
-    comparable_pct_tooltip: "À quel point la couleur de cette peinture est visuellement proche de celle sélectionnée, selon la distance colorimétrique CIEDE2000. Plus c'est élevé, plus c'est proche.",
+    comparable_legend_label: "Le % de correspondance est calculé à partir de données colorimétriques provenant de tableaux de fabricants et de bases de données de peinture",
+    comparable_legend_tooltip: "Calculé avec CIEDE2000, une formule standard de distance colorimétrique qui compare la perception réelle de deux couleurs par l'œil humain, pas seulement leurs codes hexadécimaux. 100 % signifie pratiquement identique ; en dessous d'environ 60 %, la différence est perceptible mais il s'agit toujours du même type de peinture (base, glacis, métallique, etc.).",
+    comparable_pct_tooltip: "À quel point la couleur de cette peinture est visuellement proche de celle sélectionnée. Plus c'est élevé, plus c'est proche.",
+    comparable_official_tooltip: "Équivalent confirmé par le fabricant",
+    comparable_official_note: "équivalent confirmé par le fabricant",
 
     // ---- model.html: edit history ----
     edit_history_none: "Aucune",
