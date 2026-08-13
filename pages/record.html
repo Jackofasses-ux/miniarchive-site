@@ -438,9 +438,11 @@
   .comparable-row{ display:flex; align-items:center; gap:14px; padding: 10px 0; border-top:1px solid var(--hairline); }
   .comparable-row:first-child{ border-top:none; padding-top:0; }
   .comparable-row .swatch{ width:22px; height:22px; border:1px solid var(--hairline); flex-shrink:0; }
-  .comparable-row .swatch-pair{ display:flex; flex-shrink:0; }
-  .comparable-row .swatch-pair .half{ width:16px; height:28px; border:1px solid var(--hairline); }
-  .comparable-row .swatch-pair .half:first-child{ border-right:none; }
+  .comparable-row .swatch-pair{
+    display:flex; flex-shrink:0; background: var(--cream); padding:5px;
+    border:1px solid var(--hairline); border-radius:2px;
+  }
+  .comparable-row .swatch-pair .half{ width:16px; height:26px; }
   .comparable-row .name{ font-family:'Cormorant Garamond', serif; font-size:1rem; font-weight:600; }
   .comparable-row .meta{ margin-top:2px; font-family:'IBM Plex Mono', monospace; font-size:0.64rem; color: var(--mono); }
   .comparable-row .match-pct{
