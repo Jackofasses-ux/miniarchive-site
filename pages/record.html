@@ -452,8 +452,8 @@
     font-family:'IBM Plex Mono', monospace; font-size:0.62rem; color: var(--cream-dim);
   }
   .comparable-legend .info-icon{
-    display:inline-flex; align-items:center; justify-content:center; width:14px; height:14px;
-    border:1px solid var(--cream-dim); border-radius:50%; font-size:0.6rem; cursor:help; flex-shrink:0;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size:0.85rem; color: var(--cream-dim); cursor:help; flex-shrink:0;
   }
   .comparable-row .official-mark{ color: var(--gold); cursor:help; margin-left:2px; }
   .comparable-official-note{
@@ -1241,7 +1241,7 @@
     const brushforgeLink = selected ? brushforgeUrl(selected) : null;
     const html = matches.length ? `
       <div class="comparable-legend">
-        <span class="info-icon" title="${t("comparable_legend_tooltip")}">?</span>
+        <span class="info-icon" title="${t("comparable_legend_tooltip")}">ⓘ</span>
         <span>${t("comparable_legend_label")}</span>
       </div>
       ${matches.map(m => {
