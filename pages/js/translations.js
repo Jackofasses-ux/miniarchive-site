@@ -255,6 +255,7 @@ const TRANSLATIONS = {
     comparable_pct_tooltip: "How visually close this paint's color is to the selected one. Higher is closer.",
     comparable_official_tooltip: "Manufacturer-confirmed equivalent",
     comparable_official_note: "manufacturer-confirmed equivalent",
+    comparable_see_more: "See more comparables on BrushForge",
 
     // ---- model.html: edit history ----
     edit_history_none: "None",
@@ -825,6 +826,7 @@ const TRANSLATIONS = {
     comparable_pct_tooltip: "À quel point la couleur de cette peinture est visuellement proche de celle sélectionnée. Plus c'est élevé, plus c'est proche.",
     comparable_official_tooltip: "Équivalent confirmé par le fabricant",
     comparable_official_note: "équivalent confirmé par le fabricant",
+    comparable_see_more: "Voir plus de comparables sur BrushForge",
 
     // ---- model.html: edit history ----
     edit_history_none: "Aucune",
