@@ -1420,11 +1420,10 @@
     // Best match per brand+range combo. Grouping by range (not just brand)
     // means a second Citadel color can still show up if it's from a
     // different range (e.g. Contrast vs Colour) — that's fine, it's a
-    // genuinely different product. No exclusion by distance: every group
-    // always contributes its closest paint, even a distant one, so the
-    // card is never empty just because nothing happens to be close. The
-    // match % naturally reads low/0% for anything past the "different
-    // color" line, which is honest signal rather than a hidden result.
+    // genuinely different product. Matches at or past COMPARABLE_MAX_DELTA_E
+    // are dropped entirely rather than shown at 0% — a listed "equivalent"
+    // that isn't actually close is noise, not a helpful result, even if it
+    // means some paints simply have no comparable shown at all.
     const bestPerGroup = new Map();
     allPaints
       .filter(p => p.id !== paintId && paintFamily(p.category) === selectedFamily)
@@ -1432,6 +1431,7 @@
         const lab = labFromHex(p.hex_color);
         if (!lab) return;
         const deltaE = deltaE2000(selectedLab, lab);
+        if (deltaE >= COMPARABLE_MAX_DELTA_E) return;
         const key = `${p.brand}|${p.range}`;
         const existing = bestPerGroup.get(key);
         if (!existing || deltaE < existing.deltaE) {
