@@ -2,6 +2,9 @@ name = "miniarchive-site"
 compatibility_date = "2026-08-14"
 main = "index.js"
 
+[observability]
+enabled = true
+
 [assets]
 directory = "./pages"
 binding = "ASSETS"
