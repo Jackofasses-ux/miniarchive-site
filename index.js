@@ -8,29 +8,9 @@ export default {
     if (url.pathname === "/sitemap.xml") {
       return generateSitemap();
     }
-    if (url.pathname === "/sitemap-debug") {
-      return debugSitemap();
-    }
     return env.ASSETS.fetch(request);
   },
 };
-
-async function debugSitemap() {
-  try {
-    const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/miniatures?select=id,updated_at&visibility=eq.public&status=eq.completed`,
-      { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
-    );
-    const text = await res.text();
-    return new Response(`STATUS: ${res.status}\nOK: ${res.ok}\nBODY: ${text}`, {
-      headers: { "Content-Type": "text/plain" },
-    });
-  } catch (err) {
-    return new Response(`FETCH THREW: ${err.message}\n${err.stack}`, {
-      headers: { "Content-Type": "text/plain" },
-    });
-  }
-}
 
 async function generateSitemap() {
   const res = await fetch(
@@ -38,23 +18,28 @@ async function generateSitemap() {
     { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
   );
   const records = res.ok ? await res.json() : [];
+
   const staticUrls = [
     { loc: `${BASE_URL}/`, changefreq: "weekly", priority: "1.0" },
     { loc: `${BASE_URL}/archive.html`, changefreq: "daily", priority: "0.9" },
   ];
+
   const recordUrls = records.map(r => ({
     loc: `${BASE_URL}/record.html?id=${r.id}`,
     lastmod: (r.updated_at || "").slice(0, 10),
     changefreq: "monthly",
     priority: "0.7",
   }));
+
   const urlXml = [...staticUrls, ...recordUrls].map(u => `  <url>
     <loc>${u.loc}</loc>
     ${u.lastmod ? `<lastmod>${u.lastmod}</lastmod>` : ""}
     <changefreq>${u.changefreq}</changefreq>
     <priority>${u.priority}</priority>
   </url>`).join("\n");
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlXml}\n</urlset>`;
+
   return new Response(xml, {
     headers: { "Content-Type": "application/xml", "Cache-Control": "public, max-age=3600" },
   });
