@@ -3,4 +3,4 @@ pages_build_output_dir = "pages"
 
 [[kv_namespaces]]
 binding = "SITEMAP_CACHE"
-id = "<NAMESPACE_ID>"
+id = "sitemap-cache"
