@@ -1,6 +1,7 @@
 name = "miniarchive-site"
-pages_build_output_dir = "pages"
+compatibility_date = "2026-08-14"
+main = "index.js"
 
-[[kv_namespaces]]
-binding = "SITEMAP_CACHE"
-id = "6049f4c3f68442a0aaf8997586c4a08f"
+[assets]
+directory = "./pages"
+binding = "ASSETS"
