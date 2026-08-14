@@ -14,7 +14,7 @@ export default {
 
 async function generateSitemap() {
   const res = await fetch(
-    `${SUPABASE_URL}/rest/v1/miniatures?select=id,updated_at&visibility=eq.public&status=eq.completed`,
+    `${SUPABASE_URL}/rest/v1/miniatures?select=archive_id,updated_at&visibility=eq.public&status=eq.completed`,
     { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
   );
   const records = res.ok ? await res.json() : [];
@@ -25,7 +25,7 @@ async function generateSitemap() {
   ];
 
   const recordUrls = records.map(r => ({
-    loc: `${BASE_URL}/record.html?id=${r.id}`,
+    loc: `${BASE_URL}/record.html?id=${r.archive_id}`,
     lastmod: (r.updated_at || "").slice(0, 10),
     changefreq: "monthly",
     priority: "0.7",
