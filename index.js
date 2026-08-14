@@ -8,9 +8,29 @@ export default {
     if (url.pathname === "/sitemap.xml") {
       return generateSitemap();
     }
+    if (url.pathname === "/sitemap-debug") {
+      return debugSitemap();
+    }
     return env.ASSETS.fetch(request);
   },
 };
+
+async function debugSitemap() {
+  try {
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/miniatures?select=id,updated_at&visibility=eq.public&status=eq.completed`,
+      { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } }
+    );
+    const text = await res.text();
+    return new Response(`STATUS: ${res.status}\nOK: ${res.ok}\nBODY: ${text}`, {
+      headers: { "Content-Type": "text/plain" },
+    });
+  } catch (err) {
+    return new Response(`FETCH THREW: ${err.message}\n${err.stack}`, {
+      headers: { "Content-Type": "text/plain" },
+    });
+  }
+}
 
 async function generateSitemap() {
   const res = await fetch(
