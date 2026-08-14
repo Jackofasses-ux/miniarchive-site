@@ -1107,7 +1107,7 @@
         owner:profiles!owner_profile_id ( username, display_name ),
         painter_profile:profiles!painter_profile_id ( username )
       `)
-      .eq("id", id)
+      .eq("archive_id", id)
       .maybeSingle();
 
     if (error || !data){
