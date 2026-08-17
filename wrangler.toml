@@ -1,10 +1,12 @@
 name = "miniarchive-site"
 compatibility_date = "2026-08-14"
 main = "index.js"
-
 [observability]
 enabled = true
-
 [assets]
 directory = "./pages"
 binding = "ASSETS"
+
+[[kv_namespaces]]
+binding = "SITEMAP_CACHE"
+id = "6049f4c3f68442a0aaf8997586c4a08f"
