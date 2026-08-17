@@ -7,7 +7,7 @@
 const TRANSLATIONS = {
   en: {
     // ---- Shared: header/nav ----
-    nav_collection: "Collection",
+    nav_collection: "Archive",
     nav_how_it_works: "How it works",
     nav_provenance: "Provenance",
     nav_about: "About",
@@ -27,11 +27,11 @@ const TRANSLATIONS = {
     lang_toggle_label: "Language",
 
     // ---- index.html ----
-    hero_eyebrow: "A Living Record of Painted Miniatures",
+    hero_eyebrow: "A LIVING RECORD OF PAINTED MINIATURES",
     hero_title_line1: "Every miniature",
     hero_title_accent: "has a story.",
     hero_lede: "Mini Archive keeps the record straight — who painted it, how long it took, every colour that went into it, and where it's been since. Not just photos. Provenance.",
-    hero_cta_view_collection: "View the Collection",
+    hero_cta_view_collection: "View the Archive",
     hero_cta_how_it_works: "How it works",
     featured_empty_prefix: "No public models yet — ",
     featured_empty_link: "be the first to log one →",
@@ -51,13 +51,13 @@ const TRANSLATIONS = {
 
     // ---- index.html: collection section ----
     section_1_label: "Section I",
-    section_from_collection: "From the Collection",
-    view_full_collection: "View Full Collection →",
+    section_from_collection: "From the Archive",
+    view_full_collection: "View Full Archive →",
 
     // ---- index.html: how it works section ----
     section_2_label: "Section II",
     how_it_works_title: "How it Works",
-    how_1_title: "Log the model",
+    how_1_title: "Log the record",
     how_1_desc: "Name, painter, owner, and photos front to back. That's the whole minimum — everything else is optional detail.",
     how_2_title: "Add as much as you want",
     how_2_desc: "Paint recipes, build timeline, campaign history, awards. As thin or as detailed as the piece deserves.",
@@ -68,7 +68,7 @@ const TRANSLATIONS = {
     section_3_label: "Section III",
     provenance_title: "Provenance, When it Matters",
     provenance_p1: "For commissions and competitions, a photo isn't proof. Verified records pair a certificate with an NFC-tagged base, so ownership and authorship are never in question — even after the piece changes hands.",
-    provenance_p2: "Free to log a collection. Verification is for the pieces where it counts.",
+    provenance_p2: "Free to log an archive. Verification is for the pieces where it counts.",
     cert_title: "Certificate of Authenticity",
     cert_sub: "SCAN · VERIFY · MINI ARCHIVE",
 
@@ -80,22 +80,22 @@ const TRANSLATIONS = {
     // ---- profile.html ----
     profile_loading: "Loading profile…",
     profile_not_found: "Profile not found.",
-    profile_back_to_collection: "← Back to Collection",
+    profile_back_to_collection: "← Back to Archive",
     profile_tier_paid: "Paid Member",
     stat_models_published: "Models Published",
     stat_painting_hours: "Painting Hours",
     stat_member_since: "Member Since",
     stat_latest_model: "Latest Model",
-    profile_owned_eyebrow: "Owned Collection",
+    profile_owned_eyebrow: "Owned Archive",
     profile_published_models: "Published Models",
     profile_credited_eyebrow: "Credited Work",
     profile_models_painted: "Models Painted",
     profile_no_published: "No published models yet.",
-    footer_browse_collection: "Browse Collection",
+    footer_browse_collection: "Browse Archive",
     edit_this_model_title: "Edit this model",
 
     // ---- collection.html ----
-    collection_eyebrow: "The Collection",
+    collection_eyebrow: "The Archive",
     collection_title: "Every model, catalogued.",
     collection_my_eyebrow: "My Collection",
     collection_my_title: "Your models, catalogued.",
@@ -115,11 +115,11 @@ const TRANSLATIONS = {
     collection_unattributed: "Unattributed",
 
     // ---- account.html ----
-    account_gate_eyebrow: "My Archive",
+    account_gate_eyebrow: "Account Settings",
     account_gate_title: "Log in to continue.",
     account_gate_desc: "You need to be signed in to view your dashboard.",
     account_gate_login: "Log In",
-    account_eyebrow: "My Archive",
+    account_eyebrow: "Account Settings",
     account_greeting_default: "Welcome back.",
     account_greeting_named: "Welcome back, ",
     account_lede: "Everything you've logged, at a glance.",
@@ -134,7 +134,7 @@ const TRANSLATIONS = {
     account_change_photo: "Change Photo",
     account_photo_hint: "JPEG, PNG, or WebP. Uploads immediately.",
     account_archive_name: "Archive Name",
-    account_archive_name_hint: "Shown on your public profile URL and collection page.",
+    account_archive_name_hint: "Shown on your public profile URL and archive page.",
     account_display_name: "Display Name",
     account_bio: "Bio",
     account_bio_placeholder: "A few lines about you or your studio…",
@@ -187,7 +187,7 @@ const TRANSLATIONS = {
     account_error_delete_generic: "Couldn't request account deletion.",
 
     // ---- model.html: header/nav ----
-    model_edit_this: "Edit This Model",
+    model_edit_this: "Edit This Record",
     model_back_to_collection: "← Back to Collection",
     model_eyebrow_prefix: "Miniature Profile · ",
 
@@ -296,15 +296,15 @@ const TRANSLATIONS = {
     cert_field_completion_date: "Completion Date",
 
     // ---- model.html: footer ----
-    model_footer_back: "← Back to Collection",
+    model_footer_back: "← Back to Archive",
 
     // ---- edit-model.html: page head ----
     em_add_eyebrow: "Add a Model",
     em_add_title: "Log a new miniature.",
     em_add_lede: "Add whatever you know now. Save it as a draft, or publish it straight to the archive if it's ready.",
-    em_error_title: "Couldn't find that model.",
+    em_error_title: "Couldn't find that record.",
     em_error_desc: "It may not exist, or it isn't yours to edit.",
-    em_error_back: "Back to My Collection",
+    em_error_back: "Back to My Archive",
     em_status_draft: "Draft",
 
     // ---- edit-model.html: basics fieldset ----
@@ -366,12 +366,12 @@ const TRANSLATIONS = {
     nfc_owner_title: "Welcome back",
     nfc_owner_desc: "What would you like to do?",
     nfc_log_game: "Log Game",
-    nfc_view_model: "View Model Info",
+    nfc_view_model: "View Record",
 
     // ---- log-game.html ----
     lg_loading: "Loading…",
     lg_error_title: "Can't open this",
-    lg_error_not_owner: "You need to be logged in as this model's owner to log a game.",
+    lg_error_not_owner: "You need to be logged in as this record's owner to log a game.",
     lg_eyebrow: "Log Game",
     lg_date_label: "Date",
     lg_game_system_label: "Game System",
@@ -384,7 +384,7 @@ const TRANSLATIONS = {
     lg_notes_label: "Notes (optional)",
     lg_save_btn: "Save Entry",
     lg_saved_title: "Logged",
-    lg_saved_desc: "That round is saved to this model's history.",
+    lg_saved_desc: "That round is saved to this record's history.",
     lg_log_another: "Log Another Round",
     lg_recent_label: "Recent Entries",
     lg_edit_game_heading: "Edit Game",
@@ -449,7 +449,7 @@ const TRANSLATIONS = {
     em_drop_or_click: "Drop or Click",
     em_photo_error: "All four angle photos are required to publish.",
     em_delete_draft_btn: "Delete Draft",
-    em_edit_confirm_text: "This model is published — the following changes will be recorded in its edit history. Continue?",
+    em_edit_confirm_text: "This record is published — the following changes will be recorded in its edit history. Continue?",
     em_publishing_btn: "Publishing…",
     em_saving_btn: "Saving…",
 
@@ -544,7 +544,7 @@ const TRANSLATIONS = {
     start_form_sub: "A couple of minutes, that's it.",
     start_archive_name_label: "Archive name",
     start_archive_name_placeholder: "e.g. Paint or Die Studios",
-    start_archive_name_hint: "This is the name shown on your public collection page.",
+    start_archive_name_hint: "This is the name shown on your public archive page.",
     start_archive_name_error: "Give your archive a name.",
     start_first_name_label: "First name",
     start_first_name_placeholder: "Jane",
@@ -563,7 +563,7 @@ const TRANSLATIONS = {
     start_login_link: "Log in",
     start_success_title: "Archive created",
     start_success_desc: "A confirmation email has been sent to ",
-    start_success_desc_suffix: ". Click the link inside to activate your account, then log in to start logging models.",
+    start_success_desc_suffix: ". Click the link inside to activate your account, then log in to start logging records.",
     start_success_no_email: "Didn't get it? ",
     start_success_resend: "Resend the confirmation email",
     start_error_generic: "Signup failed. Check the console for details.",
