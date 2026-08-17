@@ -2,15 +2,15 @@ User-agent: *
 Allow: /
 Allow: /index.html
 Allow: /archive.html
-Allow: /record.html
-Allow: /account.html
+Allow: /model.html
+Allow: /profile.html
 
 Disallow: /login.html
 Disallow: /start.html
 Disallow: /confirm.html
 Disallow: /reset-password.html
 Disallow: /account.html
-Disallow: /edit-record.html
+Disallow: /edit-model.html
 Disallow: /nfc.html
 Disallow: /log-game.html
 
