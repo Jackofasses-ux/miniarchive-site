@@ -44,8 +44,8 @@ const TRANSLATIONS = {
     feature_document_desc: "Record recipes, techniques & notes.",
     feature_track_label: "Track",
     feature_track_desc: "Log time and capture progress.",
-    feature_organize_label: "Organize",
-    feature_organize_desc: "Curate collections and displays.",
+    feature_organize_label: "Browse",
+    feature_organize_desc: "Search by name or painter, filter to your own.",
     feature_preserve_label: "Preserve",
     feature_preserve_desc: "Your legacy. Always.",
 
@@ -616,8 +616,8 @@ const TRANSLATIONS = {
     feature_document_desc: "Notez recettes, techniques et remarques.",
     feature_track_label: "Suivre",
     feature_track_desc: "Enregistrez le temps et suivez la progression.",
-    feature_organize_label: "Organiser",
-    feature_organize_desc: "Constituez collections et présentations.",
+    feature_organize_label: "Parcourir",
+    feature_organize_desc: "Recherchez par nom ou peintre, filtrez les vôtres.",
     feature_preserve_label: "Préserver",
     feature_preserve_desc: "Votre héritage. Pour toujours.",
 
