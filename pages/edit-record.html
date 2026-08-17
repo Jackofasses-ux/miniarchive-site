@@ -786,6 +786,7 @@
 
   let currentSession = null;
   let modelId = null; // null = creating a brand new draft
+  let currentArchiveId = null; // set once loaded, for building public record.html links
   let currentStatus = null; // 'in_progress' | 'completed' | null (new)
   let selectedPainterProfileId = null; // set when a registered painter is picked from autocomplete
 
@@ -1178,7 +1179,7 @@
       if (publishErr) throw publishErr;
 
       progressNote.textContent = "";
-      showTopSuccess(`Published! This model is now <b>${archiveId}</b>. <a href="record.html?id=${modelId}" style="color:var(--gold-bright);">View its archive page →</a>`);
+      showTopSuccess(`Published! This model is now <b>${archiveId}</b>. <a href="record.html?id=${archiveId}" style="color:var(--gold-bright);">View its archive page →</a>`);
       currentStatus = "completed";
       applyStatusUI();
 
@@ -1390,7 +1391,7 @@
         renderGameLogEntriesList();
       }
 
-      showTopSuccess(`Saved. <a href="record.html?id=${modelId}" style="color:var(--gold-bright);">View its archive page →</a>`);
+      showTopSuccess(`Saved. <a href="record.html?id=${currentArchiveId}" style="color:var(--gold-bright);">View its archive page →</a>`);
     } catch (err){
       console.error("Save failed:", err);
       showTopError(err.message || "Something went wrong saving your changes.");
@@ -2516,7 +2517,7 @@
     const { data, error } = await supabaseClient
       .from("miniatures")
       .select(`
-        id, title, painter_name, painter_profile_id, manufacturer, material, scale, base_size, hours_worked,
+        id, archive_id, title, painter_name, painter_profile_id, manufacturer, material, scale, base_size, hours_worked,
         started_at, completed_at, description, owner_visible, status, owner_profile_id,
         photos ( image_url, photo_type )
       `)
@@ -2530,6 +2531,7 @@
       return;
     }
 
+    currentArchiveId = data.archive_id;
     currentStatus = data.status;
 
     if (currentStatus === "completed"){

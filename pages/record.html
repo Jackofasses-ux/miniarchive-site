@@ -1127,7 +1127,7 @@
 
     if (isOwnerViewing){
       const editBtn = document.getElementById("editButton");
-      editBtn.href = `edit-record.html?id=${data.id}`;
+      editBtn.href = `edit-record.html?id=${data.archive_id}`;
       editBtn.style.display = "inline-block";
     }
 
@@ -1734,7 +1734,7 @@
     const entryIds = entries.map(e => e.id);
     const { data: tallies } = await supabaseClient
       .from("game_log_tallies")
-      .select("game_log_entry_id, tally_type, count, target_miniature_id, target_name:target_miniature_id(title), target_name_freetext, notes")
+      .select("game_log_entry_id, tally_type, count, target_miniature_id, target_name:target_miniature_id(title, archive_id), target_name_freetext, notes")
       .in("game_log_entry_id", entryIds);
 
     const talliesByEntry = {};
@@ -1876,7 +1876,7 @@
         if (linkedName || plainName || row.notes){
           grouped[row.tally_type].named.push({
             name: linkedName || plainName,
-            url: row.target_miniature_id ? `record.html?id=${row.target_miniature_id}` : null,
+            url: row.target_name?.archive_id ? `record.html?id=${row.target_name.archive_id}` : null,
             notes: row.notes,
           });
         }
