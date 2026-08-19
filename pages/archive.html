@@ -64,6 +64,30 @@
   nav ul li a::after{ content:''; position:absolute; left:0; bottom:0; width:0; height:1px; background: var(--gold-bright); transition:width .35s ease; }
   nav ul li a:hover{ color: var(--cream); }
   nav ul li a:hover::after{ width:100%; }
+
+  .nav-more{ position:relative; }
+  .nav-more-btn{
+    display:flex; align-items:center; gap:5px;
+    font-family:'Jost', sans-serif; font-size:0.85rem; letter-spacing:0.04em; font-weight:300;
+    color: var(--cream-dim); background:none; border:none; cursor:pointer; padding:0 0 4px;
+    transition: color .2s ease;
+  }
+  .nav-more-btn:hover{ color: var(--cream); }
+  .nav-more-btn.has-active{ color: var(--gold-bright); }
+  .nav-more-btn svg{ width:9px; height:9px; transition: transform .2s ease; }
+  .nav-more-btn.open svg{ transform: rotate(180deg); }
+  .nav-more-menu{
+    position:absolute; top:calc(100% + 14px); left:0; min-width:160px;
+    background: var(--bg-raised); border:1px solid var(--hairline); display:none; flex-direction:column; z-index:70;
+  }
+  .nav-more-menu.open{ display:flex; }
+  .nav-more-menu a{
+    padding:12px 16px; font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.05em;
+    color: var(--cream-dim); border-bottom:1px solid var(--hairline);
+  }
+  .nav-more-menu a:last-child{ border-bottom:none; }
+  .nav-more-menu a:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
+  .nav-more-menu a.active{ color: var(--gold); }
   nav{ display:flex; align-items:center; gap:40px; }
   .user-group{ display:flex; align-items:center; gap:20px; }
   .user-toggle-wrap{ position:relative; }
@@ -228,6 +252,14 @@
     nav ul li{ border-top:1px solid var(--hairline); }
     nav ul li:first-child{ border-top:none; }
     nav ul li a{ display:block; padding:14px 0; }
+    .nav-more{ padding: 4px 0; }
+    .nav-more-btn{ width:100%; justify-content:space-between; padding:10px 0; }
+    .nav-more-menu{
+      display:none; position:static !important; border:none; background:none;
+      padding-left:14px; margin-top:4px;
+    }
+    .nav-more-menu.open{ display:flex; }
+    .nav-more-menu a{ border-bottom:none; padding:10px 0; }
     header > .lang-dropdown{ margin-left:auto; }
     .lang-dropdown-btn{ padding:6px 9px; font-size:0.62rem; }
     .user-group{
@@ -239,6 +271,8 @@
     .user-group #authArea{ display:flex; flex-direction:column; gap:10px; align-items:stretch; }
     .user-group #authArea .login-link{ padding:6px 0; }
     .user-group #authArea .btn-gold{ text-align:center; }
+    /* Once the account panel is open, its contents should just be visible —
+       no second tap on a nested toggle to reveal the same-level options. */
     .user-group .user-menu-btn{
       pointer-events:none; display:flex; justify-content:space-between; width:100%;
       padding-bottom:10px; border-bottom:1px solid var(--hairline); font-weight:600;
@@ -273,7 +307,16 @@
       <li><a class="active" href="archive.html" data-i18n="nav_collection">Archive</a></li>
       <li><a href="index.html#how" data-i18n="nav_how_it_works">How it works</a></li>
       <li><a href="index.html#provenance" data-i18n="nav_provenance">Provenance</a></li>
-      <li><a href="index.html#about" data-i18n="nav_about">About</a></li>
+      <li class="nav-more">
+        <button type="button" class="nav-more-btn" id="navMoreBtn" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_more">More</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="nav-more-menu" id="navMoreMenu">
+          <a href="features.html" data-i18n="nav_features">Features</a>
+          <a href="about.html" data-i18n="nav_about">About</a>
+        </div>
+      </li>
     </ul>
     <div class="user-group" id="userMenu">
       <div id="authArea">
@@ -407,12 +450,12 @@
 
     grid.innerHTML = filtered.map(m => {
       const isDraft = m.status === "in_progress";
-      const linkTarget = isDraft ? `edit-record.html?id=${m.id}` : `record.html?id=${m.code}`;
+      const linkTarget = isDraft ? `edit-record.html?id=${m.id}` : `record.html?id=${m.archive_id}`;
       const tag = isDraft
         ? `<span class="status-tag wip">${t("collection_status_draft")}</span>`
         : `<span class="id-tag">${m.code}</span>`;
       const editShortcut = (currentUserId && m.ownerProfileId === currentUserId && !isDraft)
-        ? `<a href="edit-record.html?id=${m.code}" onclick="event.stopPropagation()" class="card-edit-link" title="${t("edit_this_model_title")}">✎</a>`
+        ? `<a href="edit-record.html?id=${m.archive_id}" onclick="event.stopPropagation()" class="card-edit-link" title="${t("edit_this_model_title")}">✎</a>`
         : "";
       return `
         <div class="mini-card" onclick="window.location.href='${linkTarget}'">
@@ -492,6 +535,8 @@
   const navMenu = document.getElementById("navMenu");
   const userToggle = document.getElementById("userToggle");
   const userMenu = document.getElementById("userMenu");
+  const navMoreBtn = document.getElementById("navMoreBtn");
+  const navMoreMenu = document.getElementById("navMoreMenu");
 
   navToggle.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -505,6 +550,12 @@
     const dropdown = document.getElementById("userDropdown");
     if (dropdown) dropdown.classList.toggle("open");
   });
+  navMoreBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = navMoreMenu.classList.toggle("open");
+    navMoreBtn.classList.toggle("open", isOpen);
+    navMoreBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  });
   navMenu.querySelectorAll("a").forEach(link => {
     link.addEventListener("click", () => navMenu.classList.remove("open"));
   });
@@ -514,6 +565,11 @@
   document.addEventListener("click", (e) => {
     if (!navMenu.contains(e.target) && e.target !== navToggle) navMenu.classList.remove("open");
     if (!userMenu.contains(e.target) && e.target !== userToggle) userMenu.classList.remove("open");
+    if (!navMoreBtn.contains(e.target) && !navMoreMenu.contains(e.target)){
+      navMoreMenu.classList.remove("open");
+      navMoreBtn.classList.remove("open");
+      navMoreBtn.setAttribute("aria-expanded", "false");
+    }
   });
 </script>
 
