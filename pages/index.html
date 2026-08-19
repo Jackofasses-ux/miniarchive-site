@@ -141,6 +141,30 @@
   nav ul li a:hover{ color: var(--cream); }
   nav ul li a:hover::after{ width: 100%; }
 
+  .nav-more{ position:relative; }
+  .nav-more-btn{
+    display:flex; align-items:center; gap:5px;
+    font-family:'Jost', sans-serif; font-size:0.85rem; letter-spacing:0.04em; font-weight:300;
+    color: var(--cream-dim); background:none; border:none; cursor:pointer; padding:0 0 4px;
+    transition: color .2s ease;
+  }
+  .nav-more-btn:hover{ color: var(--cream); }
+  .nav-more-btn.has-active{ color: var(--gold-bright); }
+  .nav-more-btn svg{ width:9px; height:9px; transition: transform .2s ease; }
+  .nav-more-btn.open svg{ transform: rotate(180deg); }
+  .nav-more-menu{
+    position:absolute; top:calc(100% + 14px); left:0; min-width:160px;
+    background: var(--bg-raised); border:1px solid var(--hairline); display:none; flex-direction:column; z-index:70;
+  }
+  .nav-more-menu.open{ display:flex; }
+  .nav-more-menu a{
+    padding:12px 16px; font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.05em;
+    color: var(--cream-dim); border-bottom:1px solid var(--hairline);
+  }
+  .nav-more-menu a:last-child{ border-bottom:none; }
+  .nav-more-menu a:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
+  .nav-more-menu a.active{ color: var(--gold); }
+
   .btn-gold{
     font-family:'IBM Plex Mono', monospace;
     font-size: 0.72rem;
@@ -486,6 +510,14 @@
     nav ul li{ border-top:1px solid var(--hairline); }
     nav ul li:first-child{ border-top:none; }
     nav ul li a{ display:block; padding:14px 0; }
+    .nav-more{ padding: 4px 0; }
+    .nav-more-btn{ width:100%; justify-content:space-between; padding:10px 0; }
+    .nav-more-menu{
+      display:none; position:static !important; border:none; background:none;
+      padding-left:14px; margin-top:4px;
+    }
+    .nav-more-menu.open{ display:flex; }
+    .nav-more-menu a{ border-bottom:none; padding:10px 0; }
     header > .lang-dropdown{ margin-left:auto; }
     .lang-dropdown-btn{ padding:6px 9px; font-size:0.62rem; }
     .user-group{
@@ -538,7 +570,16 @@
       <li><a href="archive.html" data-i18n="nav_collection">Archive</a></li>
       <li><a href="#how" data-i18n="nav_how_it_works">How it works</a></li>
       <li><a href="#provenance" data-i18n="nav_provenance">Provenance</a></li>
-      <li><a href="#about" data-i18n="nav_about">About</a></li>
+      <li class="nav-more">
+        <button type="button" class="nav-more-btn" id="navMoreBtn" aria-haspopup="true" aria-expanded="false">
+          <span data-i18n="nav_more">More</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <div class="nav-more-menu" id="navMoreMenu">
+          <a href="features.html" data-i18n="nav_features">Features</a>
+          <a href="about.html" data-i18n="nav_about">About</a>
+        </div>
+      </li>
     </ul>
     <div class="user-group" id="userMenu">
       <div id="authArea">
@@ -685,7 +726,7 @@
   </div>
 </section>
 
-<section class="cta-band" id="about">
+<section class="cta-band">
   <div class="eyebrow" data-i18n="cta_eyebrow">START YOUR ARCHIVE</div>
   <h2 data-i18n="cta_title">Give the hours you put in somewhere to live.</h2>
   <p data-i18n="cta_desc">Free to start. No credit card, no catch — just a proper record of the work.</p>
@@ -850,6 +891,8 @@
   const navMenu = document.getElementById("navMenu");
   const userToggle = document.getElementById("userToggle");
   const userMenu = document.getElementById("userMenu");
+  const navMoreBtn = document.getElementById("navMoreBtn");
+  const navMoreMenu = document.getElementById("navMoreMenu");
 
   navToggle.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -863,6 +906,12 @@
     const dropdown = document.getElementById("userDropdown");
     if (dropdown) dropdown.classList.toggle("open");
   });
+  navMoreBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const isOpen = navMoreMenu.classList.toggle("open");
+    navMoreBtn.classList.toggle("open", isOpen);
+    navMoreBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  });
   navMenu.querySelectorAll("a").forEach(link => {
     link.addEventListener("click", () => navMenu.classList.remove("open"));
   });
@@ -872,6 +921,11 @@
   document.addEventListener("click", (e) => {
     if (!navMenu.contains(e.target) && e.target !== navToggle) navMenu.classList.remove("open");
     if (!userMenu.contains(e.target) && e.target !== userToggle) userMenu.classList.remove("open");
+    if (!navMoreBtn.contains(e.target) && !navMoreMenu.contains(e.target)){
+      navMoreMenu.classList.remove("open");
+      navMoreBtn.classList.remove("open");
+      navMoreBtn.setAttribute("aria-expanded", "false");
+    }
   });
 </script>
 

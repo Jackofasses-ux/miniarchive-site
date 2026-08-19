@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Features — Mini Archive</title>
-<meta name="description" content="Everything Mini Archive does — photograph, document paint recipes, track progress, and give every miniature a permanent, verifiable record of its life.">
-<link rel="canonical" href="https://www.miniarchive.net/features.html">
+<title>About — Mini Archive</title>
+<meta name="description" content="Mini Archive exists to preserve the history, craftsmanship, and provenance of physical miniatures — a permanent digital identity for every miniature, for its entire lifetime.">
+<link rel="canonical" href="https://www.miniarchive.net/about.html">
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Mini Archive">
-<meta property="og:title" content="Features — Mini Archive">
-<meta property="og:description" content="Everything Mini Archive does — photograph, document paint recipes, track progress, and give every miniature a permanent, verifiable record of its life.">
-<meta property="og:url" content="https://www.miniarchive.net/features.html">
+<meta property="og:title" content="About — Mini Archive">
+<meta property="og:description" content="Mini Archive exists to preserve the history, craftsmanship, and provenance of physical miniatures — a permanent digital identity for every miniature, for its entire lifetime.">
+<meta property="og:url" content="https://www.miniarchive.net/about.html">
 <meta property="og:image" content="https://www.miniarchive.net/images/hero-brand-tight.png">
 
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Features — Mini Archive">
-<meta name="twitter:description" content="Everything Mini Archive does — photograph, document paint recipes, track progress, and give every miniature a permanent, verifiable record of its life.">
+<meta name="twitter:title" content="About — Mini Archive">
+<meta name="twitter:description" content="Mini Archive exists to preserve the history, craftsmanship, and provenance of physical miniatures — a permanent digital identity for every miniature, for its entire lifetime.">
 <meta name="twitter:image" content="https://www.miniarchive.net/images/hero-brand-tight.png">
 
 <link rel="icon" href="/images/favicon.ico" sizes="any">
@@ -145,27 +145,30 @@
   .dropdown a:last-child, .dropdown button:last-child{ border-bottom:none; }
   .dropdown a:hover, .dropdown button:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
 
-  /* ---------- Page intro ---------- */
-  .page-head{ padding: 90px 56px 20px; max-width:900px; margin:0 auto; text-align:center; }
-  .page-head h1{ font-family:'Cormorant Garamond', serif; font-weight:500; font-size: clamp(2.4rem, 5vw, 3.4rem); }
-  .page-head .lede{ margin-top:22px; color: var(--cream-dim); font-size:1.05rem; max-width:620px; margin-left:auto; margin-right:auto; }
+  /* ---------- Vision intro ---------- */
+  .page-head{ padding: 90px 56px 20px; max-width:760px; margin:0 auto; }
+  .page-head h1{ font-family:'Cormorant Garamond', serif; font-weight:500; font-size: clamp(2.2rem, 5vw, 3.1rem); }
+  .page-head .vision-text{ margin-top:26px; }
+  .page-head .vision-text p{ color: var(--cream-dim); font-size:1.05rem; margin-top:16px; }
+  .page-head .vision-text p:first-child{ margin-top:0; }
+  .page-head .vision-text strong{ color: var(--cream); font-weight:500; }
 
-  /* ---------- Feature sections ---------- */
-  .feature-list{ max-width:820px; margin: 60px auto 0; padding: 0 56px 120px; }
-  .feature-block{ padding: 46px 0; border-top:1px solid var(--hairline); }
-  .feature-block:first-child{ border-top:none; }
-  .feature-block .f-eyebrow{
-    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.18em; text-transform:uppercase;
-    color: var(--gold); display:flex; align-items:center; gap:10px;
+  /* ---------- Principles ---------- */
+  .principles{ max-width:760px; margin: 30px auto 0; padding: 0 56px 100px; }
+  .principle{ padding: 40px 0; border-top:1px solid var(--hairline); }
+  .principle:first-child{ border-top:none; }
+  .principle .p-num{
+    font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.14em; color: var(--gold);
   }
-  .feature-block .f-eyebrow .status-tag{
-    font-size:0.62rem; letter-spacing:0.1em; color: var(--cream-dim); border:1px solid var(--hairline);
-    padding:2px 8px; text-transform:uppercase;
+  .principle h2{ font-family:'Cormorant Garamond', serif; font-size:1.7rem; font-weight:600; margin-top:8px; }
+  .principle p{ margin-top:14px; color: var(--cream-dim); font-size:0.97rem; }
+
+  /* ---------- Trademark disclaimer ---------- */
+  .disclaimer{
+    max-width:760px; margin: 0 auto 100px; padding: 0 56px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; line-height:1.7; color: var(--mono);
+    border-top:1px solid var(--hairline); padding-top:24px;
   }
-  .feature-block h2{ font-family:'Cormorant Garamond', serif; font-size:1.9rem; font-weight:600; margin-top:10px; }
-  .feature-block .f-sub{ margin-top:6px; color: var(--cream-dim); font-size:1rem; font-style:italic; }
-  .feature-block p{ margin-top:18px; color: var(--cream-dim); font-size:0.97rem; max-width:640px; }
-  .feature-block p.f-caveat{ margin-top:12px; color: var(--mono); font-size:0.88rem; font-style:italic; }
 
   /* ---------- CTA band ---------- */
   .cta-band{ text-align:center; padding:90px 56px; border-top:1px solid var(--hairline); }
@@ -228,7 +231,7 @@
       background:none; border:none; padding:0; box-shadow:none; min-width:0;
     }
     .user-group .dropdown a, .user-group .dropdown button{ padding:10px 0; text-align:left; }
-    .page-head, .feature-list, .cta-band{ padding-left:24px; padding-right:24px; }
+    .page-head, .principles, .disclaimer, .cta-band{ padding-left:24px; padding-right:24px; }
     footer{ flex-direction:column; gap:14px; text-align:center; padding:24px; }
   }
 
@@ -256,8 +259,8 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </button>
         <div class="nav-more-menu" id="navMoreMenu">
-          <a class="active" href="features.html" data-i18n="nav_features">Features</a>
-          <a href="about.html" data-i18n="nav_about">About</a>
+          <a href="features.html" data-i18n="nav_features">Features</a>
+          <a class="active" href="about.html" data-i18n="nav_about">About</a>
         </div>
       </li>
     </ul>
@@ -286,69 +289,81 @@
 </header>
 
 <div class="page-head">
-  <div class="eyebrow" data-i18n="features_eyebrow">What Mini Archive Does</div>
+  <div class="eyebrow" data-i18n="about_eyebrow">Vision</div>
   <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
-  <h1 data-i18n="features_title">Everything, in one place.</h1>
-  <p class="lede" data-i18n="features_lede">A model's life doesn't end when the paint dries. Mini Archive gives every miniature a permanent record — how it was made, who made it, who owns it, and everything that happens to it afterward. Not a photo folder. A history.</p>
+  <h1 data-i18n="about_title">Every miniature deserves a permanent record.</h1>
+  <div class="vision-text">
+    <p data-i18n="about_vision_p1">Mini Archive exists to preserve the history, craftsmanship, and provenance of physical miniatures.</p>
+    <p data-i18n="about_vision_p2">Every miniature tells a story. That story should not disappear because a social media account was deleted, a website went offline, a collector passed away, or ownership simply changed hands. Mini Archive gives every miniature a permanent digital identity that can accompany it for its entire lifetime.</p>
+    <p data-i18n="about_vision_p3">Our goal is not to replace social media. Our goal is to preserve what social media cannot.</p>
+  </div>
 </div>
 
-<div class="feature-list">
+<div class="principles">
 
-  <div class="feature-block">
-    <div class="f-eyebrow" data-i18n="feat_photo_eyebrow">Photograph</div>
-    <h2 data-i18n="feat_photo_title">Showcase your finished work.</h2>
-    <p data-i18n="feat_photo_desc">Front, back, left, right — document the piece the way it actually looked, at the stage it actually looked that way. A single photo is enough to start a draft; four angles are what it takes to publish.</p>
+  <div class="principle">
+    <div class="p-num">01</div>
+    <h2 data-i18n="principle_1_title">The Miniature Comes First</h2>
+    <p data-i18n="principle_1_desc">The miniature is the primary entity in every record. Artists, owners, collections, competitions, and campaigns all revolve around the miniature — not the other way around. A miniature can outlive its painter, its owner, or even the game system it was built for, and its history deserves to remain intact regardless.</p>
   </div>
 
-  <div class="feature-block">
-    <div class="f-eyebrow" data-i18n="feat_doc_eyebrow">Document</div>
-    <h2 data-i18n="feat_doc_title">Record recipes, techniques & notes.</h2>
-    <p data-i18n="feat_doc_desc">Compile the exact paint recipe that went into a model — colour by colour, layer by layer — so it's never lost to memory. Add technique notes, what worked, what you'd do differently next time. As thin or as detailed as the piece deserves.</p>
-    <p data-i18n="feat_doc_desc2">Every paint you log also surfaces the nearest match from popular brands — useful if you're missing a paint and need a substitute.</p>
-    <p class="f-caveat" data-i18n="feat_doc_caveat">Actively being refined — new brands are being added, with more planned, and the matching logic keeps getting sharper.</p>
+  <div class="principle">
+    <div class="p-num">02</div>
+    <h2 data-i18n="principle_2_title">Every Miniature Deserves a Permanent Identity</h2>
+    <p data-i18n="principle_2_desc">Every archived miniature receives a unique, permanent Archive ID. Ownership may change. Names may change. Paint schemes may change. The Archive ID does not.</p>
   </div>
 
-  <div class="feature-block">
-    <div class="f-eyebrow" data-i18n="feat_track_eyebrow">Track</div>
-    <h2 data-i18n="feat_track_title">Log time and capture progress.</h2>
-    <p data-i18n="feat_track_desc">Mark a model in progress or complete, log hours worked, and build a timeline as the piece moves from primer to finished. The record grows with the work instead of only existing after it's done.</p>
+  <div class="principle">
+    <div class="p-num">03</div>
+    <h2 data-i18n="principle_3_title">Preserve History</h2>
+    <p data-i18n="principle_3_desc">Mini Archive exists to document a miniature's full journey — its creation, its painting and progress photos, its paint recipe, competition entries and awards, campaign history, ownership transfers, restoration, publication, and eventual retirement. History on Mini Archive is additive: nothing meaningful is erased.</p>
   </div>
 
-  <div class="feature-block">
-    <div class="f-eyebrow" data-i18n="feat_browse_eyebrow">Browse</div>
-    <h2 data-i18n="feat_browse_title">Search by name or painter, filter to your own.</h2>
-    <p data-i18n="feat_browse_desc">Find any model by name or painter, or switch to a filtered view of just your own collection.</p>
+  <div class="principle">
+    <div class="p-num">04</div>
+    <h2 data-i18n="principle_4_title">Technology Is Not the Product</h2>
+    <p data-i18n="principle_4_desc">QR codes, NFC tags, RFID, and certificates are simply methods of accessing an Archive Record — they are not Mini Archive itself. Mini Archive is the permanent record those methods point to.</p>
   </div>
 
-  <div class="feature-block">
-    <div class="f-eyebrow" data-i18n="feat_owning_eyebrow">Owning It</div>
-    <h2 data-i18n="feat_owning_title">Painter and owner aren't always the same person.</h2>
-    <p data-i18n="feat_owning_desc">Every model records who painted it and who currently owns it as two separate facts — useful for commissions and gifts, where those are often different people.</p>
-    <p class="f-caveat" data-i18n="feat_owning_caveat">Transferring ownership to another account is planned, not yet available.</p>
+  <div class="principle">
+    <div class="p-num">05</div>
+    <h2 data-i18n="principle_5_title">Platform Agnostic</h2>
+    <p data-i18n="principle_5_desc">Mini Archive is not tied to any single manufacturer or game system. Warhammer, Dungeons & Dragons, Marvel Crisis Protocol, Battletech, historical miniatures, scale models, busts, dioramas, and 3D-printed models are all equally welcome. Every physical miniature deserves a history, regardless of where it came from.</p>
   </div>
 
-  <div class="feature-block">
-    <div class="f-eyebrow" data-i18n="feat_proving_eyebrow">Proving It <span class="status-tag" data-i18n="status_coming_soon">Coming Soon</span></div>
-    <h2 data-i18n="feat_proving_title">Independent proof of ownership and provenance.</h2>
-    <p data-i18n="feat_proving_desc">A photo can be copied or faked — a verified record can't. Proving It is about giving a model independent, verifiable proof of who owns it and where it came from, not just a self-reported description.</p>
-    <p data-i18n="feat_proving_desc2">Mini Archive is developing NFC tag support as the first step — a small, physical way to connect a real miniature to its permanent digital record with a tap. Details and availability coming soon.</p>
-    <p class="f-caveat" data-i18n="feat_proving_caveat">The long-term vision: NFC verification eventually helping reunite lost or stolen miniatures with their owners, and scanning a model becoming as natural a habit in this hobby as photographing a finished piece.</p>
+  <div class="principle">
+    <div class="p-num">06</div>
+    <h2 data-i18n="principle_6_title">Authenticity Through Transparency</h2>
+    <p data-i18n="principle_6_desc">Mini Archive is built to make a miniature's history easier to verify, not harder. Verification is grounded in documented evidence rather than unsupported claims. Trust is earned through transparency.</p>
   </div>
 
-  <div class="feature-block">
-    <div class="f-eyebrow" data-i18n="feat_life_eyebrow">Its Life After</div>
-    <h2 data-i18n="feat_life_title">Every game played becomes part of the record.</h2>
-    <p data-i18n="feat_life_desc">Log matches and track basic results — wins, losses, kills — as part of a model's ongoing history. A finished model isn't a closed chapter; the games it's played in become part of its story too.</p>
-    <p class="f-caveat" data-i18n="feat_life_caveat">Actively being refined, with more gaming systems, game types, and campaign/tournament depth planned.</p>
+  <div class="principle">
+    <div class="p-num">07</div>
+    <h2 data-i18n="principle_7_title">Ownership Is Temporary</h2>
+    <p data-i18n="principle_7_desc">Owners change. Collectors change. Collections change. The Archive Record belongs to the miniature itself, and each change of ownership is simply another event recorded in its lifetime.</p>
   </div>
 
-  <div class="feature-block">
-    <div class="f-eyebrow" data-i18n="feat_preserve_eyebrow">Preserve — Your Legacy, Always</div>
-    <h2 data-i18n="feat_preserve_title">Every record lives in the archive permanently.</h2>
-    <p data-i18n="feat_preserve_desc">Published models stay in the archive for good — even if an account is deleted, the model's record remains. Only the identifying details of who owned it get removed. The piece itself, and its history, stay part of the archive.</p>
+  <div class="principle">
+    <div class="p-num">08</div>
+    <h2 data-i18n="principle_8_title">Built for Decades</h2>
+    <p data-i18n="principle_8_desc">Mini Archive is designed with longevity in mind. Archive Records are meant to remain accessible long after any individual social media trend, technology, or platform has come and gone. The goal is preservation measured in decades, not product cycles.</p>
+  </div>
+
+  <div class="principle">
+    <div class="p-num">09</div>
+    <h2 data-i18n="principle_9_title">Community Before Commerce</h2>
+    <p data-i18n="principle_9_desc">Mini Archive exists to benefit the miniature hobby. Monetization exists to support the platform, not to define it — every business decision is made to strengthen the archive rather than compromise its purpose.</p>
+  </div>
+
+  <div class="principle">
+    <div class="p-num">10</div>
+    <h2 data-i18n="principle_10_title">Every Miniature Has a Story</h2>
+    <p data-i18n="principle_10_desc">Whether it's a first painted miniature or a competition-winning masterpiece, every miniature deserves the opportunity to have its story preserved. No miniature is too small, and no artist is too unknown, to have a place in Mini Archive.</p>
   </div>
 
 </div>
+
+<div class="disclaimer" data-i18n="about_disclaimer">Warhammer and associated marks are trademarks of Games Workshop Limited. Dungeons &amp; Dragons is a trademark of Wizards of the Coast. Marvel Crisis Protocol is a trademark of Marvel Entertainment and Atomic Mass Games. BattleTech is a trademark of Catalyst Game Labs. Mini Archive is an independent platform and is not affiliated with, sponsored by, or endorsed by any of the companies or products named above.</div>
 
 <div class="cta-band">
   <div class="eyebrow" data-i18n="features_cta_eyebrow">START YOUR ARCHIVE</div>
