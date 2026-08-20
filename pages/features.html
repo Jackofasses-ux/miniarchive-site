@@ -253,10 +253,10 @@
       <li><a href="index.html#how" data-i18n="nav_how_it_works">How it works</a></li>
       <li><a href="index.html#provenance" data-i18n="nav_provenance">Provenance</a></li>
       <li class="nav-more">
-        <button type="button" class="nav-more-btn has-active" id="navMoreBtn" aria-haspopup="true" aria-expanded="false">
+        <a href="#" class="nav-more-btn has-active" id="navMoreBtn" role="button" aria-haspopup="true" aria-expanded="false">
           <span data-i18n="nav_more">More</span>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
+        </a>
         <div class="nav-more-menu" id="navMoreMenu">
           <a class="active" href="features.html" data-i18n="nav_features">Features</a>
           <a href="about.html" data-i18n="nav_about">About</a>
@@ -271,10 +271,10 @@
     </div>
   </nav>
   <div class="lang-dropdown">
-    <button type="button" class="lang-dropdown-btn" onclick="event.stopPropagation(); this.nextElementSibling.classList.toggle('open')">
+    <a href="#" class="lang-dropdown-btn" role="button" onclick="event.preventDefault(); event.stopPropagation(); this.nextElementSibling.classList.toggle('open')">
       <span class="lang-dropdown-label">EN</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
-    </button>
+    </a>
     <div class="lang-dropdown-menu">
       <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">🇬🇧 English</button>
       <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">🇫🇷 Français</button>
@@ -445,6 +445,7 @@
     if (dropdown) dropdown.classList.toggle("open");
   });
   navMoreBtn.addEventListener("click", (e) => {
+    e.preventDefault();
     e.stopPropagation();
     const isOpen = navMoreMenu.classList.toggle("open");
     navMoreBtn.classList.toggle("open", isOpen);
