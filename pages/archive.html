@@ -3,45 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mini Archive — Miniature Painting Tracker & Archive</title>
-<meta name="description" content="Log your miniature painting progress, document paint recipes, and give every finished piece a permanent, searchable record of its story.">
-<link rel="canonical" href="https://www.miniarchive.net/">
-
-<!-- Open Graph (Discord, Facebook, Reddit, etc.) -->
-<meta property="og:type" content="website">
-<meta property="og:site_name" content="Mini Archive">
-<meta property="og:title" content="Mini Archive — Miniature Painting Tracker & Archive">
-<meta property="og:description" content="Log your miniature painting progress, document paint recipes, and give every finished piece a permanent, searchable record of its story.">
-<meta property="og:url" content="https://www.miniarchive.net/">
-<meta property="og:image" content="https://www.miniarchive.net/images/hero-brand-tight.png">
-
-<!-- Twitter/X Card -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Mini Archive — Miniature Painting Tracker & Archive">
-<meta name="twitter:description" content="Log your miniature painting progress, document paint recipes, and give every finished piece a permanent, searchable record of its story.">
-<meta name="twitter:image" content="https://www.miniarchive.net/images/hero-brand-tight.png">
-
-<!-- Favicon -->
+<title>Archive — Mini Archive</title>
 <link rel="icon" href="/images/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16.png">
 <link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
-
-<!-- Structured data -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": "Mini Archive",
-  "url": "https://www.miniarchive.net/",
-  "description": "A living record for painted miniatures — provenance, paint recipes, game history, and more.",
-  "publisher": {
-    "@type": "Organization",
-    "name": "Paint or Die Studios"
-  }
-}
-</script>
-
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -59,49 +25,30 @@
     --cream-dim: #a89f8c;
     --mono: #8a8072;
   }
-
   *{ margin:0; padding:0; box-sizing:border-box; }
-
-  html{ scroll-behavior: smooth; }
-
   body{
-    background: var(--bg);
-    color: var(--cream);
-    font-family: 'Jost', sans-serif;
-    font-weight: 300;
-    line-height: 1.6;
-    overflow-x: hidden;
+    background: var(--bg); color: var(--cream);
+    font-family:'Jost', sans-serif; font-weight:300; line-height:1.6;
   }
+  a{ color:inherit; text-decoration:none; }
 
   @media (prefers-reduced-motion: reduce){
-    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+    *{ animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   }
-
-  a{ color: inherit; text-decoration: none; }
 
   .eyebrow{
-    font-family: 'IBM Plex Mono', monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--gold);
+    font-family:'IBM Plex Mono', monospace;
+    font-size:0.72rem; letter-spacing:0.22em;
+    text-transform:uppercase; color: var(--gold);
   }
+  .rule-row{ display:flex; align-items:center; gap:14px; margin:18px 0 28px; }
+  .rule-row .line{ height:1px; background: var(--hairline); flex:1; }
+  .rule-row .diamond{ width:6px; height:6px; background: var(--gold); transform:rotate(45deg); flex-shrink:0; }
 
-  .rule-row{
-    display:flex; align-items:center; gap: 14px;
-    margin: 18px 0 28px;
-  }
-  .rule-row .line{ height:1px; background: var(--hairline); flex: 1; }
-  .rule-row .diamond{
-    width: 6px; height: 6px; background: var(--gold);
-    transform: rotate(45deg); flex-shrink: 0;
-  }
-
-  /* ---------- Header ---------- */
   header{
-    position: sticky; top:0; z-index: 50;
+    position: sticky; top:0; z-index:50;
     display:flex; align-items:center; gap:28px;
-    padding: 22px 56px;
+    padding:22px 56px;
     background: rgba(12,11,9,0.88);
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--hairline);
@@ -110,36 +57,13 @@
   .brand{ display:flex; align-items:center; gap:12px; }
   .brand-mark{ display:flex; align-items:center; }
   .brand-mark img{ height:32px; width:auto; }
-  .brand-name{
-    font-family:'Cormorant Garamond', serif;
-    font-size: 1.35rem;
-    letter-spacing: 0.06em;
-    font-weight: 600;
-  }
-  nav{ display:flex; align-items:center; gap:40px; }
-  nav ul{ display:flex; align-items:center; gap: 34px; list-style:none; }
-  .user-group{ display:flex; align-items:center; gap:20px; }
-  .user-toggle-wrap{ position:relative; }
-  .user-toggle-wrap img{ width:36px !important; height:36px !important; }
-  .nav-toggle, .user-toggle{
-    display:none; background:none; border:none; cursor:pointer; padding:6px;
-    color: var(--cream); align-items:center; justify-content:center;
-  }
-  .nav-toggle svg, .user-toggle svg{ width:24px; height:24px; }
-  nav ul li a{
-    font-size: 0.85rem;
-    letter-spacing: 0.04em;
-    color: var(--cream-dim);
-    position: relative;
-    padding-bottom: 4px;
-  }
-  nav ul li a::after{
-    content:''; position:absolute; left:0; bottom:0;
-    width:0; height:1px; background: var(--gold-bright);
-    transition: width 0.35s ease;
-  }
+  .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
+  nav ul{ display:flex; align-items:center; gap:34px; list-style:none; }
+  nav ul li a{ font-size:0.85rem; color: var(--cream-dim); position:relative; padding-bottom:4px; }
+  nav ul li a.active{ color: var(--gold-bright); }
+  nav ul li a::after{ content:''; position:absolute; left:0; bottom:0; width:0; height:1px; background: var(--gold-bright); transition:width .35s ease; }
   nav ul li a:hover{ color: var(--cream); }
-  nav ul li a:hover::after{ width: 100%; }
+  nav ul li a:hover::after{ width:100%; }
 
   .nav-more{ position:relative; }
   .nav-more-btn{
@@ -165,20 +89,23 @@
   .nav-more-menu a:last-child{ border-bottom:none; }
   .nav-more-menu a:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
   .nav-more-menu a.active{ color: var(--gold); }
-
+  nav{ display:flex; align-items:center; gap:40px; }
+  .user-group{ display:flex; align-items:center; gap:20px; }
+  .user-toggle-wrap{ position:relative; }
+  .user-toggle-wrap img{ width:36px !important; height:36px !important; }
+  .nav-toggle, .user-toggle{
+    display:none; background:none; border:none; cursor:pointer; padding:6px;
+    color: var(--cream); align-items:center; justify-content:center;
+  }
+  .nav-toggle svg, .user-toggle svg{ width:24px; height:24px; }
   .btn-gold{
-    font-family:'IBM Plex Mono', monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: #0c0b09;
-    background: var(--gold);
-    padding: 11px 22px;
-    border: 1px solid var(--gold);
-    transition: background 0.25s ease, color 0.25s ease;
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
+    color:#0c0b09; background: var(--gold); padding:11px 22px; border:1px solid var(--gold);
+    transition: background .25s ease;
   }
   .btn-gold:hover{ background: var(--gold-bright); }
-
+  .login-link{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); transition: color .2s ease; }
+  .login-link:hover{ color: var(--gold-bright); }
   .lang-dropdown{ position:relative; }
   .lang-dropdown-btn{
     display:flex; align-items:center; gap:6px;
@@ -201,19 +128,9 @@
   .lang-dropdown-menu button:last-child{ border-bottom:none; }
   .lang-dropdown-menu button:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
   .lang-dropdown-menu button.active{ color: var(--gold); }
-
-  .login-link{
-    font-family:'IBM Plex Mono', monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--cream-dim);
-    transition: color 0.2s ease;
-  }
-  .login-link:hover{ color: var(--gold-bright); }
   #authArea{ display:flex; align-items:center; gap:20px; position:relative; }
   .user-menu-btn{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); border:1px solid var(--gold); padding:11px 20px; cursor:pointer; display:flex; align-items:center; gap:8px; transition: background 0.25s ease; }
-  @media (min-width: 901px){ #userMenuBtn{ display:none; } }
+  @media (min-width: 801px){ #userMenuBtn{ display:none; } }
   .user-menu-btn:hover{ background: var(--gold-bright); color:#0c0b09; }
   .user-menu-btn svg{ stroke:#0c0b09; }
   .user-menu-btn svg{ width:10px; height:10px; }
@@ -232,273 +149,98 @@
   .logout-link{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; color: var(--cream-dim); cursor:pointer; background:none; border:none; padding:0; }
   .logout-link:hover{ color: var(--gold-bright); }
 
-  .btn-ghost{
-    font-family:'IBM Plex Mono', monospace;
-    font-size: 0.72rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--cream);
-    padding: 11px 22px;
-    border: 1px solid var(--hairline);
-    background: transparent;
-    cursor: pointer;
-    transition: border-color 0.25s ease, color 0.25s ease;
-  }
-  .btn-ghost:hover{ border-color: var(--gold); color: var(--gold-bright); }
+  .page-head{ padding: 70px 56px 20px; max-width:1280px; margin:0 auto; }
+  .page-head h1{ font-family:'Cormorant Garamond', serif; font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight:500; }
 
-  /* ---------- Hero ---------- */
-  .hero{
-    padding: 0;
-    position: relative;
-    overflow: hidden;
-    background:
-      radial-gradient(ellipse 1000px 650px at 15% 15%, rgba(67,66,65,0.9), transparent 58%),
-      radial-gradient(ellipse 1100px 800px at 68% 40%, rgba(63,62,61,0.85), transparent 58%),
-      radial-gradient(ellipse 900px 700px at 92% 80%, rgba(57,56,55,0.8), transparent 55%),
-      radial-gradient(ellipse 1200px 600px at 50% 105%, rgba(49,48,47,0.9), transparent 58%),
-      var(--bg);
+  .controls{
+    max-width:1280px; margin: 0 auto; padding: 0 56px 20px;
+    display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap;
   }
-  .hero::after{
-    content:"";
-    position:absolute; inset:0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    opacity: 0.14;
-    mix-blend-mode: overlay;
-    pointer-events: none;
+  .search-box{
+    flex:1; min-width:240px; max-width:420px;
+    display:flex; align-items:center; gap:10px;
+    border:1px solid var(--hairline); background: var(--bg-raised);
+    padding: 12px 16px;
   }
-  .hero-inner{
-    padding: 100px 56px 70px;
-    max-width: 1500px;
-    margin: 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 70px;
-    position: relative;
+  .search-box svg{ width:15px; height:15px; stroke: var(--mono); flex-shrink:0; }
+  .search-box input{
+    background:transparent; border:none; outline:none; color: var(--cream);
+    font-family:'Jost', sans-serif; font-size:0.92rem; width:100%;
   }
-  .hero-text, .hero-image{ position: relative; z-index: 1; }
-  .hero-text{ max-width: 620px; flex-shrink: 0; }
-  .hero-image{ flex-shrink: 1; min-width: 0; }
-  .hero-image img{ width: 100%; max-width: 624px; height: auto; display: block; }
-  .hero h1{
-    font-family:'Cormorant Garamond', serif;
-    font-weight: 500;
-    font-size: clamp(3rem, 7vw, 5.4rem);
-    line-height: 1.02;
-    letter-spacing: 0.005em;
+  .search-box input::placeholder{ color: var(--mono); }
+
+  .filters{ display:flex; gap:10px; flex-wrap:wrap; }
+  .filter-btn{
+    font-family:'IBM Plex Mono', monospace; font-size:0.7rem; letter-spacing:0.08em; text-transform:uppercase;
+    color: var(--cream-dim); border:1px solid var(--hairline); padding:9px 16px; background:transparent;
+    cursor:pointer; transition: all .2s ease;
   }
-  .hero h1 .accent{
-    font-style: italic;
-    font-weight: 400;
-    color: var(--gold);
-    display: inline-block;
-    background: linear-gradient(90deg, var(--gold-bright) 0%, var(--gold) 40%, var(--gold) 100%);
-    background-size: 200% 100%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: highlight-sweep 2.4s ease-out 0.3s 1;
-  }
-  @keyframes highlight-sweep{
-    from{ background-position: 100% 0; }
-    to{ background-position: 0% 0; }
+  .filter-btn:hover{ border-color: var(--gold); color: var(--cream); }
+  .filter-btn.active{ background: var(--gold); border-color: var(--gold); color:#0c0b09; }
+
+  .result-count{
+    max-width:1280px; margin: 0 auto; padding: 0 56px 10px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color: var(--mono); letter-spacing:0.05em;
   }
 
-  .hero p.lede{
-    margin-top: 28px;
-    max-width: 520px;
-    color: var(--cream-dim);
-    font-size: 1.05rem;
-    font-weight: 300;
-  }
-
-  .hero-actions{ display:flex; gap:16px; margin-top: 44px; }
-
-  /* ---------- Ticker strip ---------- */
-  .feature-grid{
-    border-top: 1px solid var(--hairline);
-    border-bottom: 1px solid var(--hairline);
-    padding: 40px 56px;
-    display:flex;
-    gap: 44px;
-    flex-wrap: wrap;
-  }
-  .feature-item{ display:flex; align-items:center; gap:14px; flex:1; min-width:190px; }
-  .feature-icon-badge img{
-    width:34px; height:34px; object-fit:contain; flex-shrink:0;
-    filter: drop-shadow(0 0 5px rgba(201,162,75,0.3));
-  }
-  .feature-icon-badge svg{ width:32px; height:32px; flex-shrink:0; }
-  .feature-label{
-    font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.12em; text-transform:uppercase;
-    color: var(--gold-bright); font-weight:600;
-  }
-  .feature-desc{ margin-top:5px; font-size:0.85rem; color: var(--cream-dim); line-height:1.45; }
-  .ticker span b{ color: var(--gold); font-weight: 500; }
-
-  /* ---------- Section shell ---------- */
-  section.block{
-    padding: 100px 56px;
-    max-width: 1280px;
-    margin: 0 auto;
-  }
-  .section-head h2{
-    font-family:'Cormorant Garamond', serif;
-    font-weight: 500;
-    font-size: 2.4rem;
-  }
-
-  /* ---------- Collection preview ---------- */
-  .grid-3{
-    display:grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 26px;
-    margin-top: 46px;
+  .grid{
+    max-width:1280px; margin: 0 auto; padding: 10px 56px 100px;
+    display:grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
   }
   .mini-card{
-    border: 1px solid var(--hairline);
-    background: var(--bg-raised);
-    overflow: hidden;
-    transition: border-color 0.3s ease, transform 0.3s ease;
+    border:1px solid var(--hairline); background: var(--bg-raised); overflow:hidden;
+    transition: border-color .3s ease, transform .3s ease; cursor:pointer;
   }
   .mini-card:hover{ border-color: var(--gold); transform: translateY(-4px); }
   .mini-card .thumb{
-    height: 230px;
+    height: 190px; position:relative;
     background: linear-gradient(160deg, #23201a, #131110);
-    position: relative;
     display:flex; align-items:center; justify-content:center;
   }
-  .mini-card .thumb .placeholder-icon{
-    width: 34px; height:34px; opacity:0.35;
-  }
+  .mini-card .thumb .placeholder-icon{ width:30px; height:30px; opacity:0.3; }
   .mini-card .thumb .id-tag{
-    position:absolute; top:12px; left:12px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 0.08em;
-    color: var(--gold);
-    border: 1px solid rgba(201,162,75,0.4);
-    padding: 3px 8px;
+    position:absolute; top:10px; left:10px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.62rem; letter-spacing:0.06em;
+    color: var(--gold); border:1px solid rgba(201,162,75,0.4); padding:3px 7px;
   }
+  .mini-card .thumb .status-tag{
+    position:absolute; top:10px; right:10px;
+    font-family:'IBM Plex Mono', monospace; font-size:0.6rem; letter-spacing:0.06em; text-transform:uppercase;
+    padding:3px 7px; border:1px solid var(--hairline); color: var(--cream-dim);
+  }
+  .status-tag.finished{ color:#8fae7a; border-color: rgba(143,174,122,0.4); }
   .mini-card .thumb .card-edit-link{
-    position:absolute; bottom:12px; right:12px; z-index:5;
+    position:absolute; bottom:10px; right:10px; z-index:5;
     width:28px; height:28px; display:flex; align-items:center; justify-content:center;
     background: rgba(12,11,9,0.75); border:1px solid var(--hairline); color: var(--cream-dim);
     font-size:0.85rem; text-decoration:none; transition: border-color .2s ease, color .2s ease;
   }
   .mini-card .thumb .card-edit-link:hover{ border-color: var(--gold); color: var(--gold-bright); }
-  .mini-card .info{ padding: 20px 22px 24px; }
-  .mini-card .info .name{
-    font-family:'Cormorant Garamond', serif;
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: var(--cream);
-  }
+  .status-tag.wip{ color: var(--gold-bright); border-color: rgba(201,162,75,0.4); }
+  .status-tag.queued{ color: var(--mono); }
+
+  .mini-card .info{ padding:16px 18px 20px; }
+  .mini-card .info .name{ font-family:'Cormorant Garamond', serif; font-size:1.15rem; font-weight:600; }
   .mini-card .info .meta{
-    margin-top: 6px;
-    font-family:'IBM Plex Mono', monospace;
-    font-size: 0.68rem;
-    letter-spacing: 0.06em;
-    color: var(--mono);
-    text-transform: uppercase;
+    margin-top:5px; font-family:'IBM Plex Mono', monospace; font-size:0.64rem;
+    letter-spacing:0.05em; color: var(--mono); text-transform:uppercase;
   }
 
-  .view-all-row{
-    margin-top: 40px;
-    display:flex; justify-content:center;
+  .empty-state{
+    grid-column: 1 / -1; text-align:center; padding: 70px 20px;
+    color: var(--cream-dim);
   }
+  .empty-state .eyebrow{ display:block; margin-bottom: 10px; }
 
-  /* ---------- How it works ---------- */
-  .how-grid{
-    display:grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 44px;
-    margin-top: 50px;
-  }
-  .how-item .num{
-    font-family:'IBM Plex Mono', monospace;
-    font-size: 0.75rem;
-    color: var(--gold);
-    letter-spacing: 0.1em;
-  }
-  .how-item h3{
-    font-family:'Cormorant Garamond', serif;
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin: 10px 0 10px;
-  }
-  .how-item p{ color: var(--cream-dim); font-size: 0.92rem; }
-
-  /* ---------- Provenance / certificate teaser ---------- */
-  .cert-teaser{
-    display:grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 70px;
-    align-items: center;
-  }
-  .cert-teaser .copy p{ color: var(--cream-dim); margin-top: 18px; font-size: 0.98rem; max-width: 460px;}
-  .cert-box{
-    border: 1px solid var(--hairline);
-    background: radial-gradient(circle at 30% 20%, #1b170f, #0c0b09 70%);
-    padding: 44px;
-    text-align:center;
-    position: relative;
-  }
-  .cert-box::before, .cert-box::after{
-    content:''; position:absolute; width:22px; height:22px;
-    border-top: 1px solid var(--gold); border-left: 1px solid var(--gold);
-  }
-  .cert-box::before{ top:14px; left:14px; }
-  .cert-box::after{ bottom:14px; right:14px; border-top:none; border-left:none; border-bottom:1px solid var(--gold); border-right:1px solid var(--gold); }
-  .cert-box .shield{
-    width:46px; height:46px; margin: 0 auto 18px;
-    border: 1px solid var(--gold); border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-  }
-  .cert-box .shield svg{ width:20px; height:20px; fill: var(--gold); }
-  .cert-box .cert-title{
-    font-family:'Cormorant Garamond', serif;
-    font-size: 1.4rem;
-    font-weight: 600;
-  }
-  .cert-box .cert-sub{
-    font-family:'IBM Plex Mono', monospace;
-    font-size: 0.68rem;
-    color: var(--mono);
-    letter-spacing: 0.1em;
-    margin-top: 8px;
-  }
-
-  /* ---------- CTA band ---------- */
-  .cta-band{
-    text-align:center;
-    padding: 90px 56px;
-    border-top: 1px solid var(--hairline);
-  }
-  .cta-band h2{
-    font-family:'Cormorant Garamond', serif;
-    font-size: 2.6rem;
-    font-weight: 500;
-  }
-  .cta-band p{ color: var(--cream-dim); margin-top: 16px; }
-  .cta-band .hero-actions{ justify-content:center; margin-top: 34px; }
-
-  /* ---------- Footer ---------- */
   footer{
-    border-top: 1px solid var(--hairline);
-    padding: 32px 56px;
+    border-top:1px solid var(--hairline); padding:32px 56px;
     display:flex; align-items:center; justify-content:space-between;
-    font-family:'IBM Plex Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--mono);
-    letter-spacing: 0.05em;
+    font-family:'IBM Plex Mono', monospace; font-size:0.7rem; color: var(--mono);
   }
-  footer a:hover{ color: var(--gold); }
-  footer .foot-links{ display:flex; gap: 26px; }
 
-  /* ---------- Responsive ---------- */
-  @media (max-width: 900px){
-    header{ padding: 14px 20px; backdrop-filter: none; background: rgba(12,11,9,0.97); gap:12px; }
+  @media (max-width: 1100px){ .grid{ grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 800px){
+    header{ padding:14px 20px; backdrop-filter: none; background: rgba(12,11,9,0.97); gap:12px; }
     .brand{ gap:8px; }
     .brand-name{ font-size: 1rem; }
     .nav-toggle, .user-toggle{ display:flex; }
@@ -531,6 +273,8 @@
     .user-group #authArea{ display:flex; flex-direction:column; gap:10px; align-items:stretch; }
     .user-group #authArea .login-link{ padding:6px 0; }
     .user-group #authArea .btn-gold{ text-align:center; }
+    /* Once the account panel is open, its contents should just be visible —
+       no second tap on a nested toggle to reveal the same-level options. */
     .user-group .user-menu-btn{
       pointer-events:none; display:flex; justify-content:space-between; width:100%;
       padding-bottom:10px; border-bottom:1px solid var(--hairline); font-weight:600;
@@ -541,20 +285,13 @@
       background:none; border:none; padding:0; box-shadow:none; min-width:0;
     }
     .user-group .dropdown a, .user-group .dropdown button{ padding:10px 0; text-align:left; }
-    .hero-inner{ padding: 80px 24px 70px; flex-direction: column; text-align: left; justify-content: center; align-items: center; }
-    .hero-image{ margin-top: 30px; }
-    .hero-image img{ max-width: 260px; }
-    .feature-grid{ padding: 24px; gap: 28px; }
-    section.block{ padding: 70px 24px; }
-    .grid-3, .how-grid{ grid-template-columns: 1fr; }
-    .cert-teaser{ grid-template-columns: 1fr; gap: 40px; }
-    footer{ flex-direction: column; gap: 16px; text-align:center; }
+    .page-head, .controls, .result-count, .grid{ padding-left:24px; padding-right:24px; }
+    .grid{ grid-template-columns: repeat(2, 1fr); }
+    footer{ flex-direction:column; gap:14px; text-align:center; padding:24px; }
   }
+  @media (max-width: 500px){ .grid{ grid-template-columns: 1fr; } }
 
-  :focus-visible{
-    outline: 1px solid var(--gold-bright);
-    outline-offset: 3px;
-  }
+  :focus-visible{ outline:1px solid var(--gold-bright); outline-offset:3px; }
 </style>
 </head>
 <body>
@@ -569,9 +306,9 @@
   </a>
   <nav>
     <ul id="navMenu">
-      <li><a href="archive.html" data-i18n="nav_collection">Archive</a></li>
-      <li><a href="#how" data-i18n="nav_how_it_works">How it works</a></li>
-      <li><a href="#provenance" data-i18n="nav_provenance">Provenance</a></li>
+      <li><a class="active" href="archive.html" data-i18n="nav_collection">Archive</a></li>
+      <li><a href="index.html#how" data-i18n="nav_how_it_works">How it works</a></li>
+      <li><a href="index.html#provenance" data-i18n="nav_provenance">Provenance</a></li>
       <li class="nav-more">
         <a href="#" class="nav-more-btn" id="navMoreBtn" role="button" aria-haspopup="true" aria-expanded="false">
           <span data-i18n="nav_more">More</span>
@@ -607,246 +344,153 @@
   </div>
 </header>
 
-<section class="hero">
-  <div class="hero-inner">
-    <div class="hero-text">
-      <div class="eyebrow" data-i18n="hero_eyebrow">A LIVING RECORD OF PAINTED MINIATURES</div>
-      <h1><span data-i18n="hero_title_line1">Every miniature</span><br><span class="accent" data-i18n="hero_title_accent">has a story.</span></h1>
-      <p class="lede" data-i18n="hero_lede">Mini Archive keeps the record straight — who painted it, how long it took, every colour that went into it, and where it's been since. Not just photos. Provenance.</p>
-      <div class="hero-actions">
-        <a class="btn-gold" href="archive.html" data-i18n="hero_cta_view_collection">View the Archive</a>
-        <a class="btn-ghost" href="#how" data-i18n="hero_cta_how_it_works">How it works</a>
-      </div>
-    </div>
-    <div class="hero-image">
-      <picture>
-      <source media="(max-width: 640px)" srcset="images/hero-brand-mobile.webp" type="image/webp">
-      <source srcset="images/hero-brand-tight.webp" type="image/webp">
-      <img src="images/hero-brand-tight.png" alt="Mini Archive" width="1024" height="765">
-    </picture>
-    </div>
-  </div>
-</section>
+<div class="page-head">
+  <div class="eyebrow" data-i18n="collection_eyebrow">The Archive</div>
+  <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
+  <h1 data-i18n="collection_title">Every model, catalogued.</h1>
+</div>
 
-<div class="feature-grid">
-  <div class="feature-item">
-    <div class="feature-icon-badge"><img src="images/icon-photograph.png" alt="" loading="lazy"></div>
-    <div>
-      <div class="feature-label" data-i18n="feature_photograph_label">Photograph</div>
-      <div class="feature-desc" data-i18n="feature_photograph_desc">Showcase your finished work.</div>
-    </div>
-  </div>
-  <div class="feature-item">
-    <div class="feature-icon-badge"><img src="images/icon-document.png" alt="" loading="lazy"></div>
-    <div>
-      <div class="feature-label" data-i18n="feature_document_label">Document</div>
-      <div class="feature-desc" data-i18n="feature_document_desc">Record recipes, techniques & notes.</div>
-    </div>
-  </div>
-  <div class="feature-item">
-    <div class="feature-icon-badge"><img src="images/icon-track.png" alt="" loading="lazy"></div>
-    <div>
-      <div class="feature-label" data-i18n="feature_track_label">Track</div>
-      <div class="feature-desc" data-i18n="feature_track_desc">Log time and capture progress.</div>
-    </div>
-  </div>
-  <div class="feature-item">
-    <div class="feature-icon-badge"><svg viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1.4"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg></div>
-    <div>
-      <div class="feature-label" data-i18n="feature_organize_label">Browse</div>
-      <div class="feature-desc" data-i18n="feature_organize_desc">Search by name or painter, filter to your own.</div>
-    </div>
-  </div>
-  <div class="feature-item">
-    <div class="feature-icon-badge"><img src="images/icon-preserve.png" alt="" loading="lazy"></div>
-    <div>
-      <div class="feature-label" data-i18n="feature_preserve_label">Preserve</div>
-      <div class="feature-desc" data-i18n="feature_preserve_desc">Your legacy. Always.</div>
-    </div>
+<div class="controls">
+  <div class="search-box">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+    <input id="searchInput" type="text" placeholder="Search by name or painter…" autocomplete="off" data-i18n-placeholder="collection_search_placeholder">
   </div>
 </div>
 
-<section class="block" id="archive">
-  <div class="section-head">
-    <div class="eyebrow" data-i18n="section_1_label">Section I</div>
-    <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
-    <h2 data-i18n="section_from_collection">From the Archive</h2>
-  </div>
+<div class="result-count" id="resultCount"></div>
 
-  <div class="grid-3" id="featuredGrid">
-    <div style="grid-column: 1 / -1; text-align:center; color:var(--cream-dim); padding: 20px 0; font-family:'IBM Plex Mono', monospace; font-size:0.8rem;" data-i18n="featured_loading">Loading recent models…</div>
-  </div>
-
-  <div class="view-all-row">
-    <a class="btn-ghost" href="archive.html" data-i18n="view_full_collection">View Full Archive →</a>
-  </div>
-</section>
-
-<section class="block" id="how">
-  <div class="section-head">
-    <div class="eyebrow" data-i18n="section_2_label">Section II</div>
-    <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
-    <h2 data-i18n="how_it_works_title">How it Works</h2>
-  </div>
-  <div class="how-grid">
-    <div class="how-item">
-      <div class="num">01</div>
-      <h3 data-i18n="how_1_title">Log the record</h3>
-      <p data-i18n="how_1_desc">Name, painter, owner, and photos front to back. That's the whole minimum — everything else is optional detail.</p>
-    </div>
-    <div class="how-item">
-      <div class="num">02</div>
-      <h3 data-i18n="how_2_title">Add as much as you want</h3>
-      <p data-i18n="how_2_desc">Paint recipes, build timeline, campaign history, awards. As thin or as detailed as the piece deserves.</p>
-    </div>
-    <div class="how-item">
-      <div class="num">03</div>
-      <h3 data-i18n="how_3_title">Keep it forever</h3>
-      <p data-i18n="how_3_desc">Every record lives in the archive permanently — a history of the hobby, not just a folder of photos.</p>
-    </div>
-  </div>
-</section>
-
-<section class="block" id="provenance">
-  <div class="section-head">
-    <div class="eyebrow" data-i18n="section_3_label">Section III</div>
-    <div class="rule-row"><div class="line"></div><div class="diamond"></div><div class="line"></div></div>
-    <h2 data-i18n="provenance_title">Provenance, When it Matters</h2>
-  </div>
-  <div class="cert-teaser">
-    <div class="copy">
-      <p data-i18n="provenance_p1">For commissions and competitions, a photo isn't proof. Verified records pair a certificate with an NFC-tagged base, so ownership and authorship are never in question — even after the piece changes hands.</p>
-      <p data-i18n="provenance_p2">Free to log an archive. Verification is for the pieces where it counts.</p>
-    </div>
-    <div class="cert-box">
-      <div class="shield">
-        <svg viewBox="0 0 24 24"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>
-      </div>
-      <div class="cert-title" data-i18n="cert_title">Certificate of Authenticity</div>
-      <div class="cert-sub" data-i18n="cert_sub">SCAN · VERIFY · MINI ARCHIVE</div>
-    </div>
-  </div>
-</section>
-
-<section class="cta-band">
-  <div class="eyebrow" data-i18n="cta_eyebrow">START YOUR ARCHIVE</div>
-  <h2 data-i18n="cta_title">Give the hours you put in somewhere to live.</h2>
-  <p data-i18n="cta_desc">Free to start. No credit card, no catch — just a proper record of the work.</p>
-  <div class="hero-actions">
-    <a class="btn-gold" href="start.html" data-i18n="nav_start_archive">Start an Archive</a>
-  </div>
-</section>
+<div class="grid" id="grid"></div>
 
 <footer>
   <div>© 2026 Mini Archive. <span data-i18n="footer_tagline">Every miniature has a story.</span></div>
-  <div class="foot-links">
-    <a href="#archive" data-i18n="nav_collection">Archive</a>
-    <a href="#how" data-i18n="nav_how_it_works">How it works</a>
-    <a href="#provenance" data-i18n="nav_provenance">Provenance</a>
-  </div>
+  <div><a href="index.html" data-i18n="collection_back_home">← Back home</a></div>
 </footer>
 
 <script>
-  // Confirmation emails redirect here with an access token in the URL.
-  // Supabase's client picks that up automatically and establishes a session.
-  // If we stashed pending profile details at signup, this is where we
-  // actually create the profiles row now that auth.uid() is valid.
   const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  async function loadFeaturedModels(){
-    const featuredGrid = document.getElementById("featuredGrid");
+  const grid = document.getElementById("grid");
+  const searchInput = document.getElementById("searchInput");
+  const resultCount = document.getElementById("resultCount");
+  let ALL_MINIS = [];
+  let isMineView = false;
+  let currentUserId = null;
+
+  const shieldIcon = `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>`;
+
+  async function loadMinis(){
+    isMineView = new URLSearchParams(window.location.search).get("mine") === "true";
     const { data: { session } } = await supabaseClient.auth.getSession();
-    const currentUserId = session?.user?.id || null;
+    currentUserId = session?.user?.id || null;
 
-    const { data, error } = await supabaseClient
-      .from("miniatures")
-      .select(`
-        id, archive_id, title, manufacturer, status, hours_worked, owner_profile_id,
-        photos ( image_url, photo_type )
-      `)
-      .eq("visibility", "public")
-      .eq("status", "completed")
-      .order("created_at", { ascending: false })
-      .limit(3);
-
-    if (error || !data || !data.length){
-      featuredGrid.innerHTML = `<div style="grid-column: 1 / -1; text-align:center; color:var(--cream-dim); padding: 20px 0;">${t("featured_empty_prefix")}<a href="edit-record.html" style="color:var(--gold-bright);">${t("featured_empty_link")}</a></div>`;
+    if (isMineView && !session){
+      window.location.href = "login.html";
       return;
     }
 
-    const shieldIcon = `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>`;
+    let query = supabaseClient
+      .from("miniatures")
+      .select(`
+        id, archive_id, title, manufacturer, status, hours_worked, owner_profile_id, painter_name,
+        photos ( image_url, photo_type ),
+        profiles:owner_profile_id ( username, display_name )
+      `)
+      .order("created_at", { ascending: false });
 
-    featuredGrid.innerHTML = data.map(m => {
-      const frontPhoto = (m.photos || []).find(p => p.photo_type === "front") || (m.photos || [])[0];
-      const metaRight = m.hours_worked ? `${m.hours_worked.toFixed(1)} hrs` : "";
-      const editShortcut = (currentUserId && m.owner_profile_id === currentUserId)
-        ? `<a href="edit-record.html?id=${m.id}" onclick="event.stopPropagation()" class="card-edit-link" title="Edit this model">✎</a>`
+    if (isMineView){
+      query = query.eq("owner_profile_id", session.user.id);
+      document.querySelector(".page-head h1").textContent = t("collection_my_title");
+      document.querySelector(".eyebrow").textContent = t("collection_my_eyebrow");
+    } else {
+      query = query.eq("visibility", "public").eq("status", "completed");
+    }
+
+    const { data, error } = await query;
+
+    if (error){
+      console.error("Failed to load miniatures:", error);
+      grid.innerHTML = `<div class="empty-state"><span class="eyebrow">${t("collection_error_eyebrow")}</span>${t("collection_error_desc")}</div>`;
+      return;
+    }
+
+    ALL_MINIS = (data || []).map(m => {
+      const frontPhoto = (m.photos || []).find(p => p.photo_type === "front");
+      const anyPhoto = frontPhoto || (m.photos || [])[0];
+      const painterLabel = m.painter_name || t("collection_unattributed");
+      return {
+        id: m.id,
+        code: m.archive_id,
+        name: m.title,
+        manufacturer: m.manufacturer || "—",
+        painter: painterLabel,
+        hours: m.hours_worked || 0,
+        status: m.status,
+        ownerProfileId: m.owner_profile_id,
+        thumbUrl: anyPhoto?.image_url || null,
+      };
+    });
+
+    render();
+  }
+
+  function render(){
+    const query = searchInput.value.trim().toLowerCase();
+    const filtered = ALL_MINIS.filter(m => {
+      return !query || m.name.toLowerCase().includes(query) || m.painter.toLowerCase().includes(query);
+    });
+
+    resultCount.textContent = `${filtered.length}${filtered.length === 1 ? t("collection_result_count_singular") : t("collection_result_count_plural")}`;
+
+    if (filtered.length === 0){
+      grid.innerHTML = isMineView
+        ? `<div class="empty-state"><span class="eyebrow">${t("collection_empty_mine_eyebrow")}</span>${t("collection_empty_mine_desc")}<a href="edit-record.html" style="color:var(--gold-bright);">${t("collection_empty_mine_link")}</a></div>`
+        : `<div class="empty-state"><span class="eyebrow">${t("collection_empty_search_eyebrow")}</span>${t("collection_empty_search_desc")}</div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map(m => {
+      const isDraft = m.status === "in_progress";
+      const linkTarget = isDraft ? `edit-record.html?id=${m.id}` : `record.html?id=${m.code}`;
+      const tag = isDraft
+        ? `<span class="status-tag wip">${t("collection_status_draft")}</span>`
+        : `<span class="id-tag">${m.code}</span>`;
+      const editShortcut = (currentUserId && m.ownerProfileId === currentUserId && !isDraft)
+        ? `<a href="edit-record.html?id=${m.code}" onclick="event.stopPropagation()" class="card-edit-link" title="${t("edit_this_model_title")}">✎</a>`
         : "";
       return `
-        <div class="mini-card" onclick="window.location.href='record.html?id=${m.archive_id}'">
+        <div class="mini-card" onclick="window.location.href='${linkTarget}'">
           <div class="thumb">
-            <span class="id-tag">${m.archive_id}</span>
+            ${tag}
             ${editShortcut}
-            ${frontPhoto ? `<img src="${frontPhoto.image_url}" alt="${m.title}" style="width:100%;height:100%;object-fit:cover;">` : shieldIcon}
+            ${m.thumbUrl ? `<img src="${m.thumbUrl}" alt="${m.name}" style="width:100%;height:100%;object-fit:cover;">` : shieldIcon}
           </div>
           <div class="info">
-            <div class="name">${m.title}</div>
-            <div class="meta">${m.manufacturer || "—"}${metaRight ? " · " + metaRight : ""}</div>
+            <div class="name">${m.name}</div>
+            <div class="meta">${isDraft ? t("collection_workbench") : `${m.manufacturer} · ${m.painter}`}</div>
           </div>
         </div>
       `;
     }).join("");
   }
 
-  loadFeaturedModels();
+  searchInput.addEventListener("input", render);
+
+  loadMinis();
   initLanguage(supabaseClient);
 
   function onLanguageChanged(){
-    loadFeaturedModels();
+    loadMinis();
     supabaseClient.auth.getSession().then(({ data: { session } }) => {
       if (session) renderLoggedInNav(session);
     });
   }
 
+  // ---- Auth nav state ----
   (async () => {
     const { data: { session } } = await supabaseClient.auth.getSession();
-
-    if (session){
-      renderLoggedInNav(session);
-    }
-
-    if (!session) return;
-
-    const pendingRaw = localStorage.getItem("pendingProfile");
-    if (!pendingRaw) return;
-
-    const pending = JSON.parse(pendingRaw);
-
-    // Don't try to insert again if a profile already exists for this user.
-    const { data: existing } = await supabaseClient
-      .from("profiles")
-      .select("id")
-      .eq("id", session.user.id)
-      .maybeSingle();
-
-    if (!existing){
-      const { error } = await supabaseClient.from("profiles").insert({
-        id: session.user.id,
-        username: pending.username,
-        display_name: pending.display_name,
-      });
-      if (error){
-        console.error("Profile creation after confirmation failed:", error);
-      } else {
-        renderLoggedInNav(session);
-      }
-    }
-
-    localStorage.removeItem("pendingProfile");
-    // Clean the access token out of the URL bar.
-    window.history.replaceState({}, document.title, window.location.pathname);
+    if (session) renderLoggedInNav(session);
   })();
 
   async function renderLoggedInNav(session){
