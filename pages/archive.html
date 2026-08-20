@@ -452,12 +452,12 @@
 
     grid.innerHTML = filtered.map(m => {
       const isDraft = m.status === "in_progress";
-      const linkTarget = isDraft ? `edit-record.html?id=${m.id}` : `record.html?id=${m.archive_id}`;
+      const linkTarget = isDraft ? `edit-record.html?id=${m.id}` : `record.html?id=${m.code}`;
       const tag = isDraft
         ? `<span class="status-tag wip">${t("collection_status_draft")}</span>`
         : `<span class="id-tag">${m.code}</span>`;
       const editShortcut = (currentUserId && m.ownerProfileId === currentUserId && !isDraft)
-        ? `<a href="edit-record.html?id=${m.archive_id}" onclick="event.stopPropagation()" class="card-edit-link" title="${t("edit_this_model_title")}">✎</a>`
+        ? `<a href="edit-record.html?id=${m.code}" onclick="event.stopPropagation()" class="card-edit-link" title="${t("edit_this_model_title")}">✎</a>`
         : "";
       return `
         <div class="mini-card" onclick="window.location.href='${linkTarget}'">
