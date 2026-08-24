@@ -215,8 +215,8 @@
     transition: color 0.2s ease;
   }
   .login-link:hover{ color: var(--gold-bright); }
-  #authArea{ display:flex; align-items:center; gap:20px; position:relative; }
-  #authArea .btn-gold, #authArea .login-link{ line-height:1.6; }
+  #authArea{ display:table; border-spacing:20px 0; position:relative; }
+  #authArea > *{ display:table-cell; vertical-align:middle; }
   .user-menu-btn{ font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase; color:#0c0b09; background: var(--gold); border:1px solid var(--gold); padding:11px 20px; cursor:pointer; display:flex; align-items:center; gap:8px; transition: background 0.25s ease; }
   @media (min-width: 901px){ #userMenuBtn{ display:none; } }
   .user-menu-btn:hover{ background: var(--gold-bright); color:#0c0b09; }
