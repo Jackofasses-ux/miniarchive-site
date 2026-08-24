@@ -58,12 +58,15 @@
   .brand-mark{ display:flex; align-items:center; }
   .brand-mark img{ height:32px; width:auto; }
   .brand-name{ font-family:'Cormorant Garamond', serif; font-size:1.35rem; letter-spacing:0.06em; font-weight:600; }
-  nav ul{ display:flex; align-items:center; gap:34px; list-style:none; }
-  nav ul li a{ display:flex; align-items:center; height:20px; font-size:0.85rem; color: var(--cream-dim); position:relative; padding-bottom:4px; }
+  #navMenuOuter{ display:table; border-spacing:40px 0; list-style:none; }
+  #navMenuOuter > li{ display:table-cell; vertical-align:middle; }
+  .nav-main-list{ display:table; border-spacing:34px 0; list-style:none; }
+  .nav-main-list > li{ display:table-cell; vertical-align:middle; }
+  .nav-main-list li a{ display:flex; align-items:center; height:20px; font-size:0.85rem; color: var(--cream-dim); position:relative; padding-bottom:4px; }
   nav ul li a.active{ color: var(--gold-bright); }
-  nav ul li a::after{ content:''; position:absolute; left:0; bottom:0; width:0; height:1px; background: var(--gold-bright); transition:width .35s ease; }
-  nav ul li a:hover{ color: var(--cream); }
-  nav ul li a:hover::after{ width:100%; }
+  .nav-main-list li a::after{ content:''; position:absolute; left:0; bottom:0; width:0; height:1px; background: var(--gold-bright); transition:width .35s ease; }
+  .nav-main-list li a:hover{ color: var(--cream); }
+  .nav-main-list li a:hover::after{ width:100%; }
 
   .nav-more{ position:relative; }
   .nav-more-btn{
@@ -89,7 +92,7 @@
   .nav-more-menu a:last-child{ border-bottom:none; }
   .nav-more-menu a:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
   .nav-more-menu a.active{ color: var(--gold); }
-  nav{ display:flex; align-items:center; gap:40px; }
+  nav{ display:block; }
   .user-group{ display:flex; align-items:center; gap:20px; }
   .user-toggle-wrap{ position:relative; }
   .user-toggle-wrap img{ width:36px !important; height:36px !important; }
@@ -246,15 +249,17 @@
     .brand-name{ font-size: 1rem; }
     .nav-toggle, .user-toggle{ display:flex; }
     nav{ display:contents; }
-    nav ul{
+    #navMenuOuter{ display:contents; }
+    #navMenu{
       display:none; position:absolute; top:calc(100% + 14px); left:20px; width:min(78vw, 300px);
-      flex-direction:column; gap:0; background: var(--bg); border:1px solid var(--hairline);
+      background: var(--bg); border:1px solid var(--hairline);
       padding:8px 20px 16px; z-index:60;
     }
-    nav ul.open{ display:flex; }
-    nav ul li{ border-top:1px solid var(--hairline); }
-    nav ul li:first-child{ border-top:none; }
-    nav ul li a{ display:block; padding:14px 0; }
+    #navMenu.open{ display:block; }
+    .nav-main-list{ display:flex; flex-direction:column; gap:0; list-style:none; }
+    .nav-main-list li{ border-top:1px solid var(--hairline); }
+    .nav-main-list li:first-child{ border-top:none; }
+    .nav-main-list li a{ display:block; padding:14px 0; }
     .nav-more{ padding: 4px 0; }
     .nav-more-btn{ width:100%; justify-content:space-between; padding:10px 0; }
     .nav-more-menu{
@@ -306,7 +311,9 @@
     <div class="brand-name">MINI ARCHIVE</div>
   </a>
   <nav>
-    <ul id="navMenu">
+    <ul id="navMenuOuter">
+    <li id="navMenu" class="nav-main-group">
+    <ul class="nav-main-list">
       <li><a class="active" href="archive.html" data-i18n="nav_collection">Archive</a></li>
       <li><a href="index.html#how" data-i18n="nav_how_it_works">How it works</a></li>
       <li><a href="index.html#provenance" data-i18n="nav_provenance">Provenance</a></li>
@@ -321,12 +328,15 @@
         </div>
       </li>
     </ul>
-    <div class="user-group" id="userMenu">
+    </li>
+    <li class="user-group" id="userMenu">
       <div id="authArea">
         <a class="login-link" href="login.html" data-i18n="nav_login">Log in</a>
         <a class="btn-gold" href="start.html" data-i18n="nav_start_archive">Start an Archive</a>
       </div>
     </div>
+    </li>
+    </ul>
   </nav>
   <div class="lang-dropdown">
     <a href="#" class="lang-dropdown-btn" role="button" onclick="event.preventDefault(); event.stopPropagation(); this.nextElementSibling.classList.toggle('open')">
