@@ -339,11 +339,11 @@
     </ul>
   </nav>
   <div class="lang-dropdown">
-    <a href="#" class="lang-dropdown-btn" role="button" onclick="event.preventDefault(); event.stopPropagation(); this.nextElementSibling.classList.toggle('open')">
+    <a href="#" class="lang-dropdown-btn" id="langDropdownBtn" role="button">
       <span class="lang-dropdown-label">EN</span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
     </a>
-    <div class="lang-dropdown-menu">
+    <div class="lang-dropdown-menu" id="langDropdownMenu">
       <button type="button" data-lang="en" onclick="setLanguage('en', supabaseClient)">🇬🇧 English</button>
       <button type="button" data-lang="fr" onclick="setLanguage('fr', supabaseClient)">🇫🇷 Français</button>
     </div>
@@ -563,12 +563,24 @@
     const dropdown = document.getElementById("userDropdown");
     if (dropdown) dropdown.classList.toggle("open");
   });
+  const langDropdownBtn = document.getElementById("langDropdownBtn");
+  const langDropdownMenu = document.getElementById("langDropdownMenu");
+
   navMoreBtn.addEventListener("click", (e) => {
     e.preventDefault();
     e.stopPropagation();
+    langDropdownMenu.classList.remove("open");
     const isOpen = navMoreMenu.classList.toggle("open");
     navMoreBtn.classList.toggle("open", isOpen);
     navMoreBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  });
+  langDropdownBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navMoreMenu.classList.remove("open");
+    navMoreBtn.classList.remove("open");
+    navMoreBtn.setAttribute("aria-expanded", "false");
+    langDropdownMenu.classList.toggle("open");
   });
   navMenu.querySelectorAll("a").forEach(link => {
     link.addEventListener("click", () => navMenu.classList.remove("open"));
@@ -583,6 +595,9 @@
       navMoreMenu.classList.remove("open");
       navMoreBtn.classList.remove("open");
       navMoreBtn.setAttribute("aria-expanded", "false");
+    }
+    if (!langDropdownBtn.contains(e.target) && !langDropdownMenu.contains(e.target)){
+      langDropdownMenu.classList.remove("open");
     }
   });
 </script>
