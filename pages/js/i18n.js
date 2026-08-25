@@ -1,7 +1,5 @@
 // Mini Archive — shared i18n helper. Include this + translations.js on
-// every page, after the Supabase client is created.
-//
-// Shared language state and translation helpers.
+every page, after the Supabase client is created.
 
 let CURRENT_LANG = "en";
 const LANGUAGES = {
@@ -96,15 +94,30 @@ document.addEventListener("click", () => {
     /* Desktop: the avatar is the single account entry point. */
     @media (min-width:801px){#userMenuBtn{display:none !important;}#userToggle{display:flex !important;}}
 
-    /* One typography system across navbar controls and dropdown menus. */
-    .nav-main-list li a,.nav-more-btn,.lang-dropdown-btn,#authArea .login-link,#authArea .btn-gold,.user-menu-btn,.dropdown a,.dropdown button,.lang-dropdown-menu button{
+    /* Use the site's existing typography system instead of forcing IBM Plex Mono
+       onto every navbar item. Primary navigation follows the site's Jost body
+       typography; compact utility controls and menus retain the site's mono face. */
+    .nav-main-list li a,.nav-more-btn{
+      font-family:'Jost',sans-serif !important;
+      font-size:0.85rem !important;
+      font-weight:300 !important;
+      letter-spacing:0.04em !important;
+      text-transform:none !important;
+    }
+    .lang-dropdown-btn,#authArea .login-link,#authArea .btn-gold,.user-menu-btn,
+    .dropdown a,.dropdown button,.lang-dropdown-menu button{
       font-family:'IBM Plex Mono',monospace !important;
-      font-size:0.68rem !important;
+      font-size:0.70rem !important;
       font-weight:500 !important;
-      letter-spacing:0.12em !important;
+      letter-spacing:0.10em !important;
       text-transform:uppercase !important;
     }
     .dropdown a,.dropdown button,.lang-dropdown-menu button{line-height:1.4 !important;}
+
+    /* Optical correction: the brand mark has transparent breathing room in its
+       image box, so the text needs a 1px nudge to look truly centred beside it. */
+    .brand{align-items:center !important;}
+    .brand-name{transform:translateY(1px) !important;}
   `;
   const style = document.createElement("style");
   style.id = "miniarchive-navbar-layout-fix";
