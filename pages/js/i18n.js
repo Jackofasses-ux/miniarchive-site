@@ -86,20 +86,66 @@ document.addEventListener("click", () => {
 
 /*
  * Navbar alignment repair.
- * The old navbar accumulated table/table-cell rules while the rest of the
- * site uses flexbox. Override those legacy rules in one shared place so the
- * navigation, language control, login link and action button share one
- * vertical-centering context on every page.
+ * Keep the existing navbar markup, but give every desktop control the same
+ * 42px alignment rail. This makes the text centres line up with each other
+ * and with the gold action button, without using table layout.
  */
 (function installNavbarLayout(){
   const css = `
-    #navMenuOuter{display:flex !important;align-items:center !important;gap:40px !important;border-spacing:0 !important;list-style:none !important;}
-    #navMenuOuter > li{display:flex !important;align-items:center !important;vertical-align:initial !important;}
-    .nav-main-list{display:flex !important;align-items:center !important;gap:34px !important;border-spacing:0 !important;list-style:none !important;}
-    .nav-main-list > li{display:flex !important;align-items:center !important;vertical-align:initial !important;}
-    #authArea{display:flex !important;align-items:center !important;gap:20px !important;border-spacing:0 !important;}
-    #authArea > *{display:flex !important;align-items:center !important;vertical-align:initial !important;}
-    #authArea .btn-gold,#authArea .login-link{height:auto !important;min-height:20px;}
+    #navMenuOuter,
+    .nav-main-list,
+    #authArea{
+      display:flex !important;
+      align-items:center !important;
+      border-spacing:0 !important;
+    }
+
+    #navMenuOuter{ gap:40px !important; list-style:none !important; }
+    .nav-main-list{ gap:34px !important; list-style:none !important; }
+    #authArea{ gap:20px !important; position:relative; }
+
+    #navMenuOuter > li,
+    .nav-main-list > li,
+    #authArea > *{
+      display:flex !important;
+      align-items:center !important;
+      height:42px !important;
+      vertical-align:initial !important;
+    }
+
+    .nav-main-list li a,
+    .nav-more-btn,
+    .lang-dropdown-btn{
+      height:42px !important;
+      padding-top:0 !important;
+      padding-bottom:0 !important;
+      display:flex !important;
+      align-items:center !important;
+      line-height:1 !important;
+    }
+
+    .nav-main-list li a::after{ bottom:6px !important; }
+
+    #authArea .login-link{
+      height:42px !important;
+      min-height:42px !important;
+      display:flex !important;
+      align-items:center !important;
+      line-height:1 !important;
+    }
+
+    #authArea .btn-gold{
+      height:42px !important;
+      min-height:42px !important;
+      display:flex !important;
+      align-items:center !important;
+      justify-content:center !important;
+      line-height:1 !important;
+    }
+
+    #authArea .lang-dropdown,
+    #authArea .login-link,
+    #authArea .btn-gold{ align-self:center !important; }
   `;
   const style = document.createElement("style");
   style.id = "miniarchive-navbar-layout-fix";
