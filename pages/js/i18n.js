@@ -1,5 +1,5 @@
 // Mini Archive — shared i18n helper. Include this + translations.js on
-every page, after the Supabase client is created.
+// every page, after the Supabase client is created.
 
 let CURRENT_LANG = "en";
 const LANGUAGES = {
