@@ -7,11 +7,13 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === "/sitemap.xml") return serveSitemap(env);
 
-    // Record pages keep using the existing, proven static application route.
-    // For anonymous GETs we only enrich <head> at the edge; body markup,
-    // JavaScript, auth, Supabase calls and relative asset URLs are untouched.
+    // SEO enrichment is deliberately limited to public GET document requests.
+    // The original asset response/body remains the application source of truth.
     if (request.method === "GET" && url.pathname === "/record.html" && url.searchParams.get("id")) {
       return serveRecordWithMetadata(request, env, url.searchParams.get("id"));
+    }
+    if (request.method === "GET" && url.pathname === "/profile.html" && url.searchParams.get("username")) {
+      return serveProfileWithMetadata(request, env, url.searchParams.get("username"));
     }
 
     return env.ASSETS.fetch(request);
@@ -20,74 +22,186 @@ export default {
 
 async function serveRecordWithMetadata(request, env, archiveId) {
   const assetResponse = await env.ASSETS.fetch(request);
-  if (!assetResponse.ok || !assetResponse.headers.get("content-type")?.includes("text/html")) return assetResponse;
+  if (!assetResponse.ok || !isHtml(assetResponse)) return assetResponse;
 
-  const record = await fetchPublicRecord(archiveId);
-  if (!record) return assetResponse;
+  try {
+    const select = "archive_id,title,manufacturer,description,completed_at,painter_name,painter_profile:profiles!painter_profile_id(username,display_name),photos(image_url,photo_type)";
+    const endpoint = `${SUPABASE_URL}/rest/v1/miniatures?select=${encodeURIComponent(select)}&archive_id=eq.${encodeURIComponent(archiveId)}&visibility=eq.public&status=eq.completed&limit=1`;
+    const rows = await supabaseGet(endpoint);
+    const record = rows?.[0];
+    if (!record) return assetResponse;
 
-  const canonical = `${SITE_URL}/record.html?id=${encodeURIComponent(record.archive_id)}`;
-  const painter = record.painter_name || record.painter_profile?.display_name || record.painter_profile?.username || "";
-  const title = `${record.title}${record.manufacturer ? ` — ${record.manufacturer}` : ""} | Mini Archive`;
-  const description = [record.title, painter ? `painted by ${painter}` : "", record.manufacturer, record.description]
-    .filter(Boolean).join(" · ").replace(/\s+/g, " ").slice(0, 160);
-  const front = (record.photos || []).find(photo => photo.photo_type === "front");
-  const image = (front || record.photos?.[0])?.image_url || "";
+    const canonical = `${SITE_URL}/record.html?id=${encodeURIComponent(record.archive_id)}`;
+    const painter = record.painter_name || record.painter_profile?.display_name || record.painter_profile?.username || "";
+    const title = `${record.title}${record.manufacturer ? ` — ${record.manufacturer}` : ""} | Mini Archive`;
+    const description = buildDescription([record.title, painter ? `painted by ${painter}` : "", record.manufacturer, record.description]);
+    const image = chooseImage(record.photos || []);
+    const profileUrl = record.painter_profile?.username ? `${SITE_URL}/profile.html?username=${encodeURIComponent(record.painter_profile.username)}` : null;
 
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "CreativeWork",
-    name: record.title,
-    description,
-    url: canonical,
-    identifier: record.archive_id,
-    isPartOf: { "@type": "WebSite", name: "Mini Archive", url: SITE_URL },
-  };
-  if (painter) schema.creator = { "@type": "Person", name: painter };
-  if (record.manufacturer) schema.brand = { "@type": "Brand", name: record.manufacturer };
-  if (record.completed_at) schema.dateCreated = record.completed_at;
-  if (image) schema.image = image;
+    const work = {
+      "@context": "https://schema.org",
+      "@type": "CreativeWork",
+      name: record.title,
+      description,
+      url: canonical,
+      identifier: record.archive_id,
+      isPartOf: { "@type": "WebSite", name: "Mini Archive", url: SITE_URL },
+    };
+    if (record.manufacturer) work.brand = { "@type": "Brand", name: record.manufacturer };
+    if (painter) work.creator = profileUrl ? { "@type": "Person", name: painter, url: profileUrl } : { "@type": "Person", name: painter };
+    if (record.completed_at) work.dateCreated = record.completed_at;
+    if (image) work.image = image;
 
+    const breadcrumb = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Mini Archive", item: SITE_URL },
+        { "@type": "ListItem", position: 2, name: "Archive", item: `${SITE_URL}/archive.html` },
+        { "@type": "ListItem", position: 3, name: record.title, item: canonical },
+      ],
+    };
+
+    return enrichHtml(assetResponse, buildHeadMetadata({ title, description, canonical, image, type: "article", schemas: [work, breadcrumb] }));
+  } catch (error) {
+    console.error("Record SEO enrichment failed:", error);
+    return assetResponse;
+  }
+}
+
+async function serveProfileWithMetadata(request, env, username) {
+  const assetResponse = await env.ASSETS.fetch(request);
+  if (!assetResponse.ok || !isHtml(assetResponse)) return assetResponse;
+
+  try {
+    const select = "id,username,display_name,bio,country,avatar_url";
+    const endpoint = `${SUPABASE_URL}/rest/v1/profiles?select=${encodeURIComponent(select)}&username=eq.${encodeURIComponent(username)}&limit=1`;
+    const rows = await supabaseGet(endpoint);
+    const profile = rows?.[0];
+    if (!profile) return assetResponse;
+
+    // Only expose/index a profile through this route if it participates in the
+    // public archive. This avoids turning empty/private account pages into SEO pages.
+    const miniSelect = "archive_id,title,manufacturer,created_at,photos(image_url,photo_type)";
+    const ownedEndpoint = `${SUPABASE_URL}/rest/v1/miniatures?select=${encodeURIComponent(miniSelect)}&owner_profile_id=eq.${encodeURIComponent(profile.id)}&visibility=eq.public&status=eq.completed&order=created_at.desc&limit=50`;
+    const paintedEndpoint = `${SUPABASE_URL}/rest/v1/miniatures?select=${encodeURIComponent(miniSelect)}&painter_profile_id=eq.${encodeURIComponent(profile.id)}&visibility=eq.public&status=eq.completed&order=created_at.desc&limit=50`;
+    const [owned, painted] = await Promise.all([supabaseGet(ownedEndpoint), supabaseGet(paintedEndpoint)]);
+    const byId = new Map();
+    [...(owned || []), ...(painted || [])].forEach((mini) => byId.set(mini.archive_id, mini));
+    const minis = [...byId.values()];
+    if (!minis.length) return assetResponse;
+
+    const name = profile.display_name || profile.username;
+    const canonical = `${SITE_URL}/profile.html?username=${encodeURIComponent(profile.username)}`;
+    const description = buildDescription([`${name} on Mini Archive`, profile.bio, profile.country, `${minis.length} public miniature${minis.length === 1 ? "" : "s"}`]);
+    const title = `${name} (@${profile.username}) | Mini Archive`;
+
+    const person = {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      name,
+      alternateName: `@${profile.username}`,
+      url: canonical,
+      description,
+    };
+    if (profile.avatar_url) person.image = profile.avatar_url;
+
+    const itemList = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      name: `${name} — public miniature records`,
+      numberOfItems: minis.length,
+      itemListElement: minis.slice(0, 50).map((mini, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        name: mini.title,
+        url: `${SITE_URL}/record.html?id=${encodeURIComponent(mini.archive_id)}`,
+      })),
+    };
+
+    return enrichHtml(assetResponse, buildHeadMetadata({ title, description, canonical, image: profile.avatar_url, type: "profile", schemas: [person, itemList] }));
+  } catch (error) {
+    console.error("Profile SEO enrichment failed:", error);
+    return assetResponse;
+  }
+}
+
+async function supabaseGet(endpoint) {
+  const response = await fetch(endpoint, {
+    headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` },
+  });
+  if (!response.ok) throw new Error(`Supabase metadata request failed: ${response.status}`);
+  return response.json();
+}
+
+function isHtml(response) {
+  return (response.headers.get("content-type") || "").includes("text/html");
+}
+
+function enrichHtml(assetResponse, metadata) {
   return new HTMLRewriter()
-    .on("title", { element(element) { element.setInnerContent(title); } })
-    .on("head", { element(element) {
-      element.append(`<meta name="description" content="${escapeAttribute(description)}">`, { html: true });
-      element.append(`<link rel="canonical" href="${escapeAttribute(canonical)}">`, { html: true });
-      element.append(`<meta property="og:type" content="article"><meta property="og:site_name" content="Mini Archive"><meta property="og:title" content="${escapeAttribute(title)}"><meta property="og:description" content="${escapeAttribute(description)}"><meta property="og:url" content="${escapeAttribute(canonical)}">`, { html: true });
-      if (image) element.append(`<meta property="og:image" content="${escapeAttribute(image)}">`, { html: true });
-      element.append(`<meta name="twitter:card" content="${image ? "summary_large_image" : "summary"}"><meta name="twitter:title" content="${escapeAttribute(title)}"><meta name="twitter:description" content="${escapeAttribute(description)}">`, { html: true });
-      if (image) element.append(`<meta name="twitter:image" content="${escapeAttribute(image)}">`, { html: true });
-      element.append(`<script type="application/ld+json">${JSON.stringify(schema).replace(/</g, "\\u003c")}</script>`, { html: true });
-    }})
+    .on("title", { element(element) { element.setInnerContent(metadata.title); } })
+    .on("head", { element(element) { element.append(metadata.head, { html: true }); } })
     .transform(assetResponse);
 }
 
-async function fetchPublicRecord(archiveId) {
-  const select = "archive_id,title,manufacturer,description,completed_at,painter_name,photos(image_url,photo_type),painter_profile:profiles!painter_profile_id(username,display_name)";
-  const endpoint = `${SUPABASE_URL}/rest/v1/miniatures?select=${encodeURIComponent(select)}&archive_id=eq.${encodeURIComponent(archiveId)}&limit=1`;
-  try {
-    const response = await fetch(endpoint, { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } });
-    if (!response.ok) return null;
-    const rows = await response.json();
-    return rows[0] || null;
-  } catch (error) {
-    console.error("Record metadata lookup failed", error);
-    return null;
-  }
+function buildHeadMetadata({ title, description, canonical, image, type, schemas }) {
+  const tags = [
+    `<meta name="description" content="${escapeAttribute(description)}">`,
+    `<link rel="canonical" href="${escapeAttribute(canonical)}">`,
+    `<meta property="og:type" content="${escapeAttribute(type)}">`,
+    `<meta property="og:site_name" content="Mini Archive">`,
+    `<meta property="og:title" content="${escapeAttribute(title)}">`,
+    `<meta property="og:description" content="${escapeAttribute(description)}">`,
+    `<meta property="og:url" content="${escapeAttribute(canonical)}">`,
+    image ? `<meta property="og:image" content="${escapeAttribute(image)}">` : "",
+    `<meta name="twitter:card" content="${image ? "summary_large_image" : "summary"}">`,
+    `<meta name="twitter:title" content="${escapeAttribute(title)}">`,
+    `<meta name="twitter:description" content="${escapeAttribute(description)}">`,
+    image ? `<meta name="twitter:image" content="${escapeAttribute(image)}">` : "",
+    ...(schemas || []).map((schema) => `<script type="application/ld+json">${safeJson(schema)}</script>`),
+  ];
+  return { title, head: tags.filter(Boolean).join("\n") };
+}
+
+function buildDescription(parts) {
+  return parts.filter(Boolean).join(" · ").replace(/\s+/g, " ").slice(0, 160);
+}
+
+function chooseImage(photos) {
+  return (photos.find((photo) => photo.photo_type === "front") || photos[0])?.image_url || null;
 }
 
 function escapeAttribute(value) {
   return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;").replace(/\n/g, " ");
 }
 
+function safeJson(value) {
+  return JSON.stringify(value).replace(/</g, "\\u003c");
+}
+
 async function serveSitemap(env) {
+  // Keep normal page delivery completely untouched. The sitemap is the only
+  // non-document response transformed by this Worker.
   const cached = await env.SITEMAP_CACHE.get("sitemap.xml");
   let xml = cached || `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`;
+
   xml = xml.replaceAll("https://www.miniarchive.net", SITE_URL);
 
   const publicPages = ["/", "/archive.html", "/features.html", "/about.html"];
   const existing = new Set(Array.from(xml.matchAll(/<loc>(.*?)<\/loc>/g), match => match[1]));
-  const additions = publicPages.map(path => `${SITE_URL}${path}`).filter(loc => !existing.has(loc)).map(loc => `<url><loc>${loc}</loc></url>`).join("");
+  const additions = publicPages
+    .map(path => `${SITE_URL}${path}`)
+    .filter(loc => !existing.has(loc))
+    .map(loc => `<url><loc>${loc}</loc></url>`)
+    .join("");
+
   if (additions) xml = xml.replace("</urlset>", `${additions}</urlset>`);
 
-  return new Response(xml, { headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
+  return new Response(xml, {
+    headers: {
+      "Content-Type": "application/xml; charset=utf-8",
+      "Cache-Control": "public, max-age=3600",
+    },
+  });
 }
