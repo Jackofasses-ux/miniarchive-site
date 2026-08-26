@@ -1,10 +1,11 @@
 User-agent: *
 Allow: /
-Allow: /index.html
 Allow: /archive.html
+Allow: /record/
 Allow: /record.html
 Allow: /profile.html
 Allow: /features.html
+Allow: /about.html
 
 Disallow: /login.html
 Disallow: /start.html
@@ -15,4 +16,4 @@ Disallow: /edit-record.html
 Disallow: /nfc.html
 Disallow: /log-game.html
 
-Sitemap: https://www.miniarchive.net/sitemap.xml
+Sitemap: https://miniarchive.net/sitemap.xml
