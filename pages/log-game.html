@@ -692,8 +692,8 @@
         img.src = frontPhoto.image_url;
         img.style.display = "block";
       }
-      document.getElementById("viewModelLink").href = `record.html?id=${data.archive_id}`;
-      document.getElementById("successViewModelLink").href = `record.html?id=${data.archive_id}`;
+      document.getElementById("viewModelLink").href = `/archive/${encodeURIComponent(data.archive_id)}`;
+      document.getElementById("successViewModelLink").href = `/archive/${encodeURIComponent(data.archive_id)}`;
 
       clearTimeout(loadTimeout);
       document.getElementById("loadingBox").style.display = "none";

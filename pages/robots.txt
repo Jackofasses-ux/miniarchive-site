@@ -1,8 +1,7 @@
 User-agent: *
 Allow: /
 Allow: /archive.html
-Allow: /record/
-Allow: /record.html
+Allow: /archive/
 Allow: /profile.html
 Allow: /features.html
 Allow: /about.html

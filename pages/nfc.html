@@ -138,7 +138,7 @@
     const isOwner = session && session.user.id === data.owner_profile_id;
 
     if (!isOwner){
-      window.location.replace(`record.html?id=${data.archive_id}`);
+      window.location.replace(`/archive/${encodeURIComponent(data.archive_id)}`);
       return;
     }
 
@@ -157,7 +157,7 @@
       photoEl.style.display = "block";
     }
     document.getElementById("logGameLink").href = `log-game.html?id=${data.id}`;
-    document.getElementById("viewModelLink").href = `record.html?id=${data.archive_id}`;
+    document.getElementById("viewModelLink").href = `/archive/${encodeURIComponent(data.archive_id)}`;
     document.getElementById("ownerChoiceBox").style.display = "block";
   })();
 </script>

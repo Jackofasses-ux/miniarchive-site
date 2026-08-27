@@ -786,7 +786,7 @@
 
   let currentSession = null;
   let modelId = null; // null = creating a brand new draft
-  let currentArchiveId = null; // set once loaded, for building public record.html links
+  let currentArchiveId = null; // set once loaded, for building canonical public record links
   let currentStatus = null; // 'in_progress' | 'completed' | null (new)
   let selectedPainterProfileId = null; // set when a registered painter is picked from autocomplete
 
@@ -1179,7 +1179,7 @@
       if (publishErr) throw publishErr;
 
       progressNote.textContent = "";
-      showTopSuccess(`Published! This model is now <b>${archiveId}</b>. <a href="record.html?id=${archiveId}" style="color:var(--gold-bright);">View its archive page →</a>`);
+      showTopSuccess(`Published! This model is now <b>${archiveId}</b>. <a href="/archive/${encodeURIComponent(archiveId)}" style="color:var(--gold-bright);">View its archive page →</a>`);
       currentStatus = "completed";
       applyStatusUI();
 
@@ -1391,7 +1391,7 @@
         renderGameLogEntriesList();
       }
 
-      showTopSuccess(`Saved. <a href="record.html?id=${currentArchiveId}" style="color:var(--gold-bright);">View its archive page →</a>`);
+      showTopSuccess(`Saved. <a href="/archive/${encodeURIComponent(currentArchiveId)}" style="color:var(--gold-bright);">View its archive page →</a>`);
     } catch (err){
       console.error("Save failed:", err);
       showTopError(err.message || "Something went wrong saving your changes.");

@@ -12,6 +12,10 @@
 
   function enhanceCard(card) {
     if (!card || card.dataset.crawlableLink === 'true') return;
+    if (card.matches('a[href]')) {
+      card.dataset.crawlableLink = 'true';
+      return;
+    }
     const href = targetFromCard(card);
     if (!href) return;
 

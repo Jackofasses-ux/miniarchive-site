@@ -8,7 +8,11 @@ export default {
     if (url.pathname === "/sitemap.xml") return serveSitemap(env);
 
     if (request.method === "GET" && url.pathname === "/record.html" && url.searchParams.get("id")) {
-      return serveRecordWithMetadata(request, env, url.searchParams.get("id"));
+      return Response.redirect(recordUrl(url.searchParams.get("id")), 308);
+    }
+    const recordMatch = request.method === "GET" && url.pathname.match(/^\/archive\/([^/]+)\/?$/);
+    if (recordMatch) {
+      return serveRecordWithMetadata(request, env, decodeURIComponent(recordMatch[1]));
     }
     if (request.method === "GET" && url.pathname === "/profile.html" && url.searchParams.get("username")) {
       const response = await serveProfileWithMetadata(request, env, url.searchParams.get("username"));
@@ -31,15 +35,17 @@ function addCardLinkEnhancer(response) {
 }
 
 async function serveRecordWithMetadata(request, env, archiveId) {
-  const assetResponse = await env.ASSETS.fetch(request);
+  const assetUrl = new URL("/record.html", request.url);
+  const assetResponse = await env.ASSETS.fetch(new Request(assetUrl, request));
   if (!assetResponse.ok || !isHtml(assetResponse)) return assetResponse;
   try {
     const select = "archive_id,title,manufacturer,description,completed_at,painter_name,painter_profile:profiles!painter_profile_id(username,display_name),photos(image_url,photo_type)";
     const endpoint = `${SUPABASE_URL}/rest/v1/miniatures?select=${encodeURIComponent(select)}&archive_id=eq.${encodeURIComponent(archiveId)}&visibility=eq.public&status=eq.completed&limit=1`;
     const rows = await supabaseGet(endpoint);
     const record = rows?.[0];
-    if (!record) return assetResponse;
-    const canonical = `${SITE_URL}/record.html?id=${encodeURIComponent(record.archive_id)}`;
+    if (!record) return noindexNotFound(assetResponse);
+    const canonical = recordUrl(record.archive_id);
+    if (new URL(request.url).pathname !== new URL(canonical).pathname) return Response.redirect(canonical, 308);
     const painter = record.painter_name || record.painter_profile?.display_name || record.painter_profile?.username || "";
     const title = `${record.title}${record.manufacturer ? ` — ${record.manufacturer}` : ""} | Mini Archive`;
     const description = buildDescription([record.title, painter ? `painted by ${painter}` : "", record.manufacturer, record.description]);
@@ -55,8 +61,8 @@ async function serveRecordWithMetadata(request, env, archiveId) {
       {"@type":"ListItem",position:2,name:"Archive",item:`${SITE_URL}/archive.html`},
       {"@type":"ListItem",position:3,name:record.title,item:canonical}
     ]};
-    return enrichHtml(assetResponse, buildHeadMetadata({ title, description, canonical, image, type:"article", schemas:[work,breadcrumb] }));
-  } catch (error) { console.error("Record SEO enrichment failed:", error); return assetResponse; }
+    return enrichRecordHtml(assetResponse, buildHeadMetadata({ title, description, canonical, image, type:"article", schemas:[work,breadcrumb] }), buildRecordSummary(record, painter, image));
+  } catch (error) { console.error("Record SEO enrichment failed:", error); return temporaryNoindex(assetResponse); }
 }
 
 async function serveProfileWithMetadata(request, env, username) {
@@ -81,7 +87,7 @@ async function serveProfileWithMetadata(request, env, username) {
     const title = `${name} (@${profile.username}) | Mini Archive`;
     const person = { "@context":"https://schema.org", "@type":"Person", name, alternateName:`@${profile.username}`, url:canonical, description };
     if (profile.avatar_url) person.image = profile.avatar_url;
-    const itemList = { "@context":"https://schema.org", "@type":"ItemList", name:`${name} — public miniature records`, numberOfItems:minis.length, itemListElement:minis.slice(0,50).map((mini,index)=>({"@type":"ListItem",position:index+1,name:mini.title,url:`${SITE_URL}/record.html?id=${encodeURIComponent(mini.archive_id)}`})) };
+    const itemList = { "@context":"https://schema.org", "@type":"ItemList", name:`${name} — public miniature records`, numberOfItems:minis.length, itemListElement:minis.slice(0,50).map((mini,index)=>({"@type":"ListItem",position:index+1,name:mini.title,url:recordUrl(mini.archive_id)})) };
     return enrichHtml(assetResponse, buildHeadMetadata({ title, description, canonical, image:profile.avatar_url, type:"profile", schemas:[person,itemList] }));
   } catch (error) { console.error("Profile SEO enrichment failed:", error); return assetResponse; }
 }
@@ -93,6 +99,7 @@ async function supabaseGet(endpoint) {
 }
 function isHtml(response){ return (response.headers.get("content-type") || "").includes("text/html"); }
 function enrichHtml(assetResponse, metadata){ return new HTMLRewriter().on("title",{element(e){e.setInnerContent(metadata.title);}}).on("head",{element(e){e.append(metadata.head,{html:true});}}).transform(assetResponse); }
+function enrichRecordHtml(assetResponse, metadata, summary){ return new HTMLRewriter().on("title",{element(e){e.setInnerContent(metadata.title);}}).on("head",{element(e){e.append(metadata.head,{html:true});}}).on("main",{element(e){e.prepend(summary,{html:true});}}).transform(assetResponse); }
 function buildHeadMetadata({title,description,canonical,image,type,schemas}){
   const tags=[`<meta name="description" content="${escapeAttribute(description)}">`,`<link rel="canonical" href="${escapeAttribute(canonical)}">`,`<meta property="og:type" content="${escapeAttribute(type)}">`,`<meta property="og:site_name" content="Mini Archive">`,`<meta property="og:title" content="${escapeAttribute(title)}">`,`<meta property="og:description" content="${escapeAttribute(description)}">`,`<meta property="og:url" content="${escapeAttribute(canonical)}">`,image?`<meta property="og:image" content="${escapeAttribute(image)}">`:"",`<meta name="twitter:card" content="${image?"summary_large_image":"summary"}">`,`<meta name="twitter:title" content="${escapeAttribute(title)}">`,`<meta name="twitter:description" content="${escapeAttribute(description)}">`,image?`<meta name="twitter:image" content="${escapeAttribute(image)}">`:"",...(schemas||[]).map(schema=>`<script type="application/ld+json">${safeJson(schema)}</script>` )];
   return {title,head:tags.filter(Boolean).join("\n")};
@@ -102,6 +109,18 @@ function chooseImage(photos){ return (photos.find(photo=>photo.photo_type==="fro
 function escapeAttribute(value){ return String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;").replace(/\n/g," "); }
 function escapeXml(value){ return String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&apos;"); }
 function safeJson(value){ return JSON.stringify(value).replace(/</g,"\\u003c"); }
+function recordUrl(archiveId){ return `${SITE_URL}/archive/${encodeURIComponent(archiveId)}`; }
+function buildRecordSummary(record,painter,image){
+  const details=[record.manufacturer,painter?`Painted by ${painter}`:"",record.completed_at?`Completed ${String(record.completed_at).slice(0,10)}`:""].filter(Boolean);
+  return `<article id="server-record-summary" data-record-summary><h1>${escapeHtml(record.title)}</h1>${image?`<img src="${escapeAttribute(image)}" alt="${escapeAttribute(record.title)} painted miniature">`:""}${details.length?`<p>${details.map(escapeHtml).join(" · ")}</p>`:""}${record.description?`<p>${escapeHtml(record.description)}</p>`:""}<p><a href="/archive.html">Browse the Mini Archive</a></p></article>`;
+}
+function noindexNotFound(response){
+  return new HTMLRewriter().on("head",{element(e){e.append('<meta name="robots" content="noindex, nofollow">',{html:true});}}).transform(new Response(response.body,{status:404,headers:response.headers}));
+}
+function temporaryNoindex(response){
+  return new HTMLRewriter().on("head",{element(e){e.append('<meta name="robots" content="noindex, nofollow">',{html:true});}}).transform(new Response(response.body,{status:503,headers:response.headers}));
+}
+function escapeHtml(value){ return String(value??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;"); }
 
 async function serveSitemap(env) {
   try {
@@ -114,7 +133,7 @@ async function serveSitemap(env) {
     const urls=new Map();
     const addUrl=(loc,lastmod="")=>{ if(!loc||urls.has(loc))return; urls.set(loc,lastmod?String(lastmod).slice(0,10):""); };
     addUrl(`${SITE_URL}/`); addUrl(`${SITE_URL}/archive.html`); addUrl(`${SITE_URL}/features.html`); addUrl(`${SITE_URL}/about.html`);
-    for(const record of records||[]) addUrl(`${SITE_URL}/record.html?id=${encodeURIComponent(record.archive_id)}`,record.updated_at);
+    for(const record of records||[]) addUrl(recordUrl(record.archive_id),record.updated_at);
     for(const profile of profiles||[]) if(profile.username) addUrl(`${SITE_URL}/profile.html?username=${encodeURIComponent(profile.username)}`);
     const body=[...urls.entries()].map(([loc,lastmod])=>`  <url><loc>${escapeXml(loc)}</loc>${lastmod?`<lastmod>${escapeXml(lastmod)}</lastmod>`:""}</url>`).join("\n");
     const xml=`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>`;
@@ -122,7 +141,12 @@ async function serveSitemap(env) {
   } catch(error){
     console.error("Dynamic sitemap generation failed:",error);
     const cached=await env.SITEMAP_CACHE.get("sitemap.xml");
-    if(cached) return new Response(cached.replaceAll("https://www.miniarchive.net",SITE_URL),{headers:{"Content-Type":"application/xml; charset=utf-8","Cache-Control":"public, max-age=300"}});
+    if(cached){
+      const normalized=cached
+        .replaceAll("https://www.miniarchive.net",SITE_URL)
+        .replace(/https:\/\/miniarchive\.net\/record\.html\?id=([A-Za-z0-9_-]+)/g,(_,id)=>recordUrl(id));
+      return new Response(normalized,{headers:{"Content-Type":"application/xml; charset=utf-8","Cache-Control":"public, max-age=300"}});
+    }
     return new Response("Sitemap temporarily unavailable",{status:503});
   }
 }

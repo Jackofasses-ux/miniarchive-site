@@ -7,9 +7,7 @@
   function text(value){ return value == null ? '' : String(value).trim(); }
   function escapeHtml(value){ return text(value).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
   function first(...values){ return values.map(text).find(Boolean) || ''; }
-  // Keep record navigation on the proven static-page route. Pretty-path routing
-  // can be introduced later at the edge without changing the browser app.
-  function recordPath(id){ return id ? `/record.html?id=${encodeURIComponent(id)}` : '/archive.html'; }
+  function recordPath(id){ return id ? `/archive/${encodeURIComponent(id)}` : '/archive.html'; }
   function recordUrl(id){ return `${SITE_URL}${recordPath(id)}`; }
   function buildRecordSEO(record, options = {}){
     const id=first(record?.archive_id,record?.archiveId,record?.id);

@@ -366,6 +366,7 @@
     overflow: hidden;
     transition: border-color 0.3s ease, transform 0.3s ease;
   }
+  .mini-card-link{ display:block; color:inherit; text-decoration:none; }
   .mini-card:hover{ border-color: var(--gold); transform: translateY(-4px); }
   .mini-card .thumb{
     height: 230px;
@@ -797,16 +798,18 @@
         ? `<a href="edit-record.html?id=${m.id}" onclick="event.stopPropagation()" class="card-edit-link" title="Edit this model">✎</a>`
         : "";
       return `
-        <div class="mini-card" onclick="window.location.href='record.html?id=${m.archive_id}'">
+        <div class="mini-card">
+          <a class="mini-card-link" href="/archive/${encodeURIComponent(m.archive_id)}">
           <div class="thumb">
             <span class="id-tag">${m.archive_id}</span>
-            ${editShortcut}
             ${frontPhoto ? `<img src="${frontPhoto.image_url}" alt="${m.title}" style="width:100%;height:100%;object-fit:cover;">` : shieldIcon}
           </div>
           <div class="info">
             <div class="name">${m.title}</div>
             <div class="meta">${m.manufacturer || "—"}${metaRight ? " · " + metaRight : ""}</div>
           </div>
+          </a>
+          ${editShortcut}
         </div>
       `;
     }).join("");
