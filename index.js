@@ -80,8 +80,6 @@ async function serveProfileWithMetadata(request, env, username) {
     const profile = rows?.[0];
     if (!profile) return assetResponse;
 
-    // Only expose/index a profile through this route if it participates in the
-    // public archive. This avoids turning empty/private account pages into SEO pages.
     const miniSelect = "archive_id,title,manufacturer,created_at,photos(image_url,photo_type)";
     const ownedEndpoint = `${SUPABASE_URL}/rest/v1/miniatures?select=${encodeURIComponent(miniSelect)}&owner_profile_id=eq.${encodeURIComponent(profile.id)}&visibility=eq.public&status=eq.completed&order=created_at.desc&limit=50`;
     const paintedEndpoint = `${SUPABASE_URL}/rest/v1/miniatures?select=${encodeURIComponent(miniSelect)}&painter_profile_id=eq.${encodeURIComponent(profile.id)}&visibility=eq.public&status=eq.completed&order=created_at.desc&limit=50`;
@@ -176,32 +174,71 @@ function escapeAttribute(value) {
   return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;").replace(/\n/g, " ");
 }
 
+function escapeXml(value) {
+  return String(value ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
+}
+
 function safeJson(value) {
   return JSON.stringify(value).replace(/</g, "\\u003c");
 }
 
 async function serveSitemap(env) {
-  // Keep normal page delivery completely untouched. The sitemap is the only
-  // non-document response transformed by this Worker.
-  const cached = await env.SITEMAP_CACHE.get("sitemap.xml");
-  let xml = cached || `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`;
+  // The sitemap is generated from the current public archive so crawlers do not
+  // depend on a separate job having populated KV correctly.
+  try {
+    const recordSelect = "archive_id,updated_at,owner_profile_id,painter_profile_id";
+    const recordEndpoint = `${SUPABASE_URL}/rest/v1/miniatures?select=${encodeURIComponent(recordSelect)}&visibility=eq.public&status=eq.completed&archive_id=not.is.null&order=updated_at.desc&limit=5000`;
+    const records = await supabaseGet(recordEndpoint);
 
-  xml = xml.replaceAll("https://www.miniarchive.net", SITE_URL);
+    const profileIds = [...new Set((records || []).flatMap((record) => [record.owner_profile_id, record.painter_profile_id]).filter(Boolean))];
+    let profiles = [];
+    if (profileIds.length) {
+      const idFilter = `(${profileIds.map((id) => `\"${id}\"`).join(",")})`;
+      const profileEndpoint = `${SUPABASE_URL}/rest/v1/profiles?select=id,username&id=in.${encodeURIComponent(idFilter)}&username=not.is.null&limit=5000`;
+      profiles = await supabaseGet(profileEndpoint);
+    }
 
-  const publicPages = ["/", "/archive.html", "/features.html", "/about.html"];
-  const existing = new Set(Array.from(xml.matchAll(/<loc>(.*?)<\/loc>/g), match => match[1]));
-  const additions = publicPages
-    .map(path => `${SITE_URL}${path}`)
-    .filter(loc => !existing.has(loc))
-    .map(loc => `<url><loc>${loc}</loc></url>`)
-    .join("");
+    const urls = new Map();
+    const addUrl = (loc, lastmod = "") => {
+      if (!loc || urls.has(loc)) return;
+      urls.set(loc, lastmod ? String(lastmod).slice(0, 10) : "");
+    };
 
-  if (additions) xml = xml.replace("</urlset>", `${additions}</urlset>`);
+    addUrl(`${SITE_URL}/`);
+    addUrl(`${SITE_URL}/archive.html`);
+    addUrl(`${SITE_URL}/features.html`);
+    addUrl(`${SITE_URL}/about.html`);
 
-  return new Response(xml, {
-    headers: {
-      "Content-Type": "application/xml; charset=utf-8",
-      "Cache-Control": "public, max-age=3600",
-    },
-  });
+    for (const record of records || []) {
+      addUrl(`${SITE_URL}/record.html?id=${encodeURIComponent(record.archive_id)}`, record.updated_at);
+    }
+    for (const profile of profiles || []) {
+      if (profile.username) addUrl(`${SITE_URL}/profile.html?username=${encodeURIComponent(profile.username)}`);
+    }
+
+    const body = [...urls.entries()].map(([loc, lastmod]) => {
+      const modified = lastmod ? `<lastmod>${escapeXml(lastmod)}</lastmod>` : "";
+      return `  <url><loc>${escapeXml(loc)}</loc>${modified}</url>`;
+    }).join("\n");
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>`;
+    return new Response(xml, {
+      headers: {
+        "Content-Type": "application/xml; charset=utf-8",
+        "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      },
+    });
+  } catch (error) {
+    console.error("Dynamic sitemap generation failed:", error);
+
+    // Preserve the existing KV sitemap as a fail-safe only. A sitemap outage is
+    // worse for crawling than serving the last known-good snapshot.
+    const cached = await env.SITEMAP_CACHE.get("sitemap.xml");
+    if (cached) {
+      return new Response(cached.replaceAll("https://www.miniarchive.net", SITE_URL), {
+        headers: { "Content-Type": "application/xml; charset=utf-8", "Cache-Control": "public, max-age=300" },
+      });
+    }
+    return new Response("Sitemap temporarily unavailable", { status: 503 });
+  }
 }
