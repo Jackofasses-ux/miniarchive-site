@@ -195,6 +195,7 @@
     border:1px solid var(--hairline); background: var(--bg-raised); overflow:hidden;
     transition: border-color .3s ease, transform .3s ease; cursor:pointer;
   }
+  .mini-card-link{ display:block; color:inherit; text-decoration:none; }
   .mini-card:hover{ border-color: var(--gold); transform: translateY(-4px); }
   .mini-card .thumb{
     height: 190px; position:relative;
@@ -463,7 +464,7 @@
 
     grid.innerHTML = filtered.map(m => {
       const isDraft = m.status === "in_progress";
-      const linkTarget = isDraft ? `edit-record.html?id=${m.id}` : `record.html?id=${m.code}`;
+      const linkTarget = isDraft ? `edit-record.html?id=${m.id}` : `/archive/${encodeURIComponent(m.code)}`;
       const tag = isDraft
         ? `<span class="status-tag wip">${t("collection_status_draft")}</span>`
         : `<span class="id-tag">${m.code}</span>`;
@@ -471,16 +472,18 @@
         ? `<a href="edit-record.html?id=${m.code}" onclick="event.stopPropagation()" class="card-edit-link" title="${t("edit_this_model_title")}">✎</a>`
         : "";
       return `
-        <div class="mini-card" onclick="window.location.href='${linkTarget}'">
+        <div class="mini-card">
+          <a class="mini-card-link" href="${linkTarget}">
           <div class="thumb">
             ${tag}
-            ${editShortcut}
             ${m.thumbUrl ? `<img src="${m.thumbUrl}" alt="${m.name}" style="width:100%;height:100%;object-fit:cover;">` : shieldIcon}
           </div>
           <div class="info">
             <div class="name">${m.name}</div>
             <div class="meta">${isDraft ? t("collection_workbench") : `${m.manufacturer} · ${m.painter}`}</div>
           </div>
+          </a>
+          ${editShortcut}
         </div>
       `;
     }).join("");

@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<base href="/">
 <title>Captain Cassian — Mini Archive</title>
 <link rel="icon" href="/images/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
@@ -1128,7 +1129,7 @@
     });
   })();
 
-  // ---- Load real data if ?id= is present, else fall back to the dummy MODEL above ----
+  // ---- Load real data from the canonical /archive/:id route (legacy query URLs still work locally) ----
   const SUPABASE_URL = "https://oesjjvrofwlhcxilwaen.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9lc2pqdnJvZndsaGN4aWx3YWVuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQ3Mzg5MDEsImV4cCI6MjEwMDMxNDkwMX0.Tazlir8gkSk8Y-aQMFOjmgadCgOhyaTfV8p8dWi9thw";
   const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1139,7 +1140,13 @@
   }
 
   async function loadRealModel(id){
-    const { data: { session } } = await supabaseClient.auth.getSession();
+    // The public record must not wait indefinitely for auth storage/session
+    // initialization on preview or first-visit domains.
+    const sessionResult = await Promise.race([
+      supabaseClient.auth.getSession(),
+      new Promise(resolve => setTimeout(() => resolve({ data: { session: null } }), 1500)),
+    ]).catch(() => ({ data: { session: null } }));
+    const session = sessionResult?.data?.session || null;
 
     const { data, error } = await supabaseClient
       .from("miniatures")
@@ -1162,6 +1169,8 @@
       </div>`;
       return;
     }
+
+    document.querySelector("[data-record-summary]")?.remove();
 
     PHOTOS_BY_VIEW = {};
     (data.photos || []).forEach(p => { PHOTOS_BY_VIEW[p.photo_type] = p.image_url; });
@@ -1919,7 +1928,7 @@
         if (linkedName || plainName || row.notes){
           grouped[row.tally_type].named.push({
             name: linkedName || plainName,
-            url: row.target_name?.archive_id ? `record.html?id=${row.target_name.archive_id}` : null,
+            url: row.target_name?.archive_id ? `/archive/${encodeURIComponent(row.target_name.archive_id)}` : null,
             notes: row.notes,
           });
         }
@@ -2077,7 +2086,10 @@
     }).join("");
   }
 
-  const urlId = new URLSearchParams(window.location.search).get("id");
+  const archivePathMatch = window.location.pathname.match(/^\/archive\/([^/]+)\/?$/);
+  const urlId = archivePathMatch
+    ? decodeURIComponent(archivePathMatch[1])
+    : new URLSearchParams(window.location.search).get("id");
 
   function renderCurrentModel(){
     if (urlId){
@@ -2089,10 +2101,10 @@
     }
   }
 
-  (async () => {
-    await initLanguage(supabaseClient);
-    renderCurrentModel();
-  })();
+  // Start the record request immediately. Language/account initialization is
+  // progressive enhancement and must never leave the demo record on screen.
+  renderCurrentModel();
+  initLanguage(supabaseClient).catch(err => console.error("Language initialization failed:", err));
 
   function onLanguageChanged(){
     renderCurrentModel();
