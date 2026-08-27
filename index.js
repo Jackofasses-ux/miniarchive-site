@@ -35,7 +35,7 @@ function addCardLinkEnhancer(response) {
 }
 
 async function serveRecordWithMetadata(request, env, archiveId) {
-  const assetUrl = new URL("/record.html", request.url);
+  const assetUrl = new URL("/record", request.url);
   const assetResponse = await env.ASSETS.fetch(new Request(assetUrl, request));
   if (!assetResponse.ok || !isHtml(assetResponse)) return assetResponse;
   try {
