@@ -1140,7 +1140,13 @@
   }
 
   async function loadRealModel(id){
-    const { data: { session } } = await supabaseClient.auth.getSession();
+    // The public record must not wait indefinitely for auth storage/session
+    // initialization on preview or first-visit domains.
+    const sessionResult = await Promise.race([
+      supabaseClient.auth.getSession(),
+      new Promise(resolve => setTimeout(() => resolve({ data: { session: null } }), 1500)),
+    ]).catch(() => ({ data: { session: null } }));
+    const session = sessionResult?.data?.session || null;
 
     const { data, error } = await supabaseClient
       .from("miniatures")
@@ -2095,10 +2101,10 @@
     }
   }
 
-  (async () => {
-    await initLanguage(supabaseClient);
-    renderCurrentModel();
-  })();
+  // Start the record request immediately. Language/account initialization is
+  // progressive enhancement and must never leave the demo record on screen.
+  renderCurrentModel();
+  initLanguage(supabaseClient).catch(err => console.error("Language initialization failed:", err));
 
   function onLanguageChanged(){
     renderCurrentModel();
