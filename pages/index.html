@@ -508,8 +508,9 @@
     .brand{ gap:8px; }
     .brand-name{ font-size: 1rem; }
     .nav-toggle, .user-toggle{ display:flex; }
-    nav{ display:contents; }
-    #navMenuOuter{ display:contents; }
+    header > nav{ margin-left:0; position:static; }
+    #navMenuOuter{ display:block; border-spacing:0; }
+    #navMenuOuter > li{ display:none; }
     #navMenu{
       display:none; position:absolute; top:calc(100% + 14px); left:20px; width:min(78vw, 300px);
       background: var(--bg); border:1px solid var(--hairline);
@@ -599,7 +600,6 @@
         <a class="login-link" href="login.html" data-i18n="nav_login">Log in</a>
         <a class="btn-gold" href="start.html" data-i18n="nav_start_archive">Start an Archive</a>
       </div>
-    </div>
     </li>
     </ul>
   </nav>
