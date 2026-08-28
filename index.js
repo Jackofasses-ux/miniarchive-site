@@ -39,18 +39,23 @@ async function serveRecordWithMetadata(request, env, archiveId) {
   const assetResponse = await env.ASSETS.fetch(new Request(assetUrl, request));
   if (!assetResponse.ok || !isHtml(assetResponse)) return assetResponse;
   try {
-    const select = "archive_id,title,manufacturer,description,completed_at,painter_name,painter_profile:profiles!painter_profile_id(username,display_name),photos(image_url,photo_type)";
+    const select = "archive_id,title,manufacturer,description,completed_at,painter_name,painter_profile_id,photos(image_url,photo_type)";
     const endpoint = `${SUPABASE_URL}/rest/v1/miniatures?select=${encodeURIComponent(select)}&archive_id=eq.${encodeURIComponent(archiveId)}&visibility=eq.public&status=eq.completed&limit=1`;
     const rows = await supabaseGet(endpoint);
     const record = rows?.[0];
     if (!record) return noindexNotFound(assetResponse);
     const canonical = recordUrl(record.archive_id);
     if (new URL(request.url).pathname !== new URL(canonical).pathname) return Response.redirect(canonical, 308);
-    const painter = record.painter_name || record.painter_profile?.display_name || record.painter_profile?.username || "";
+    let painterProfile = null;
+    if (record.painter_profile_id) {
+      const profileEndpoint = `${SUPABASE_URL}/rest/v1/public_profiles?select=${encodeURIComponent("username,display_name")}&id=eq.${encodeURIComponent(record.painter_profile_id)}&limit=1`;
+      painterProfile = (await supabaseGet(profileEndpoint))?.[0] || null;
+    }
+    const painter = record.painter_name || painterProfile?.display_name || painterProfile?.username || "";
     const title = `${record.title}${record.manufacturer ? ` — ${record.manufacturer}` : ""} | Mini Archive`;
     const description = buildDescription([record.title, painter ? `painted by ${painter}` : "", record.manufacturer, record.description]);
     const image = chooseImage(record.photos || []);
-    const profileUrl = record.painter_profile?.username ? `${SITE_URL}/profile.html?username=${encodeURIComponent(record.painter_profile.username)}` : null;
+    const profileUrl = painterProfile?.username ? `${SITE_URL}/profile.html?username=${encodeURIComponent(painterProfile.username)}` : null;
     const work = { "@context":"https://schema.org", "@type":"CreativeWork", name:record.title, description, url:canonical, identifier:record.archive_id, isPartOf:{"@type":"WebSite",name:"Mini Archive",url:SITE_URL} };
     if (record.manufacturer) work.brand = { "@type":"Brand", name:record.manufacturer };
     if (painter) work.creator = profileUrl ? { "@type":"Person", name:painter, url:profileUrl } : { "@type":"Person", name:painter };
@@ -69,7 +74,7 @@ async function serveProfileWithMetadata(request, env, username) {
   const assetResponse = await env.ASSETS.fetch(request);
   if (!assetResponse.ok || !isHtml(assetResponse)) return assetResponse;
   try {
-    const endpoint = `${SUPABASE_URL}/rest/v1/profiles?select=${encodeURIComponent("id,username,display_name,bio,country,avatar_url")}&username=eq.${encodeURIComponent(username)}&limit=1`;
+    const endpoint = `${SUPABASE_URL}/rest/v1/public_profiles?select=${encodeURIComponent("id,username,display_name,bio,country,avatar_url")}&username=eq.${encodeURIComponent(username)}&limit=1`;
     const rows = await supabaseGet(endpoint);
     const profile = rows?.[0];
     if (!profile) return assetResponse;
@@ -129,7 +134,7 @@ async function serveSitemap(env) {
     const records=await supabaseGet(recordEndpoint);
     const profileIds=[...new Set((records||[]).flatMap(record=>[record.owner_profile_id,record.painter_profile_id]).filter(Boolean))];
     let profiles=[];
-    if(profileIds.length){ const idFilter=`(${profileIds.map(id=>`\"${id}\"`).join(",")})`; const profileEndpoint=`${SUPABASE_URL}/rest/v1/profiles?select=id,username&id=in.${encodeURIComponent(idFilter)}&username=not.is.null&limit=5000`; profiles=await supabaseGet(profileEndpoint); }
+    if(profileIds.length){ const idFilter=`(${profileIds.map(id=>`\"${id}\"`).join(",")})`; const profileEndpoint=`${SUPABASE_URL}/rest/v1/public_profiles?select=id,username&id=in.${encodeURIComponent(idFilter)}&username=not.is.null&limit=5000`; profiles=await supabaseGet(profileEndpoint); }
     const urls=new Map();
     const addUrl=(loc,lastmod="")=>{ if(!loc||urls.has(loc))return; urls.set(loc,lastmod?String(lastmod).slice(0,10):""); };
     addUrl(`${SITE_URL}/`); addUrl(`${SITE_URL}/archive.html`); addUrl(`${SITE_URL}/features.html`); addUrl(`${SITE_URL}/about.html`);

@@ -1136,7 +1136,11 @@
 
   function formatDate(dateStr){
     if (!dateStr) return "—";
-    return new Date(dateStr + "T00:00:00").toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
+    const parsed = /^\d{4}-\d{2}-\d{2}$/.test(dateStr)
+      ? new Date(`${dateStr}T00:00:00`)
+      : new Date(dateStr);
+    if (Number.isNaN(parsed.getTime())) return "—";
+    return parsed.toLocaleDateString("en-US", { day: "numeric", month: "short", year: "numeric" });
   }
 
   async function loadRealModel(id){
@@ -1153,9 +1157,7 @@
       .select(`
         id, archive_id, title, manufacturer, material, scale, base_size, description, status, hours_worked,
         started_at, completed_at, owner_profile_id, painter_name, painter_profile_id, owner_visible, created_at,
-        photos ( image_url, photo_type ),
-        owner:profiles!owner_profile_id ( username, display_name ),
-        painter_profile:profiles!painter_profile_id ( username )
+        photos ( image_url, photo_type )
       `)
       .eq("archive_id", id)
       .maybeSingle();
@@ -1169,6 +1171,14 @@
       </div>`;
       return;
     }
+
+    const relatedProfileIds = [...new Set([data.owner_profile_id, data.painter_profile_id].filter(Boolean))];
+    const { data: relatedProfiles } = relatedProfileIds.length
+      ? await supabaseClient.from("public_profiles").select("id, username, display_name").in("id", relatedProfileIds)
+      : { data: [] };
+    const profilesById = new Map((relatedProfiles || []).map(profile => [profile.id, profile]));
+    data.owner = profilesById.get(data.owner_profile_id) || null;
+    data.painter_profile = profilesById.get(data.painter_profile_id) || null;
 
     document.querySelector("[data-record-summary]")?.remove();
 
@@ -1728,20 +1738,16 @@
 
   async function loadNfcStatus(miniatureId){
     const nfcBox = document.getElementById("nfcBox");
-    const { data: tag } = await supabaseClient
-      .from("nfc_tags")
-      .select("id, first_scanned_at")
-      .eq("miniature_id", miniatureId)
-      .eq("status", "active")
-      .maybeSingle();
+    const { data: verification } = await supabaseClient
+      .rpc("get_nfc_verification", { p_miniature_id: miniatureId });
 
     nfcBox.classList.remove("unverified", "pending", "verified");
 
     let statusKey, stateClass;
-    if (tag && tag.first_scanned_at){
+    if (verification === "verified"){
       statusKey = "info_nfc_status_verified";
       stateClass = "verified";
-    } else if (tag){
+    } else if (verification === "pending"){
       statusKey = "info_nfc_status_pending";
       stateClass = "pending";
     } else {
@@ -2007,8 +2013,7 @@
     const { data, error } = await supabaseClient
       .from("miniature_edits")
       .select(`
-        field_name, old_value, new_value, created_at,
-        profiles:editor_profile_id ( username, display_name )
+        field_name, old_value, new_value, created_at, editor_profile_id
       `)
       .eq("miniature_id", miniatureId)
       .order("created_at", { ascending: false });
@@ -2024,6 +2029,13 @@
       document.getElementById("editHistoryList").innerHTML = `<p style="color:var(--cream-dim); padding:16px 0; border-top:1px solid var(--hairline);">${t("edit_history_empty")}</p>`;
       return;
     }
+
+    const editorIds = [...new Set(data.map(edit => edit.editor_profile_id).filter(Boolean))];
+    const { data: editors } = editorIds.length
+      ? await supabaseClient.from("public_profiles").select("id, username, display_name").in("id", editorIds)
+      : { data: [] };
+    const editorsById = new Map((editors || []).map(profile => [profile.id, profile]));
+    data.forEach(edit => { edit.profiles = editorsById.get(edit.editor_profile_id) || null; });
 
     // Group by the kind of thing that changed, not by day — "Creation
     // Timeline (5)" is more useful at a glance than "Edits (3) — Jul 26".

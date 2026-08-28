@@ -939,7 +939,7 @@
 
     async function runPainterSearch(q){
       const [profileRes, nameRes] = await Promise.all([
-        supabaseClient.from("profiles").select("id, username").ilike("username", `%${q}%`).limit(5),
+        supabaseClient.from("public_profiles").select("id, username").ilike("username", `%${q}%`).limit(5),
         supabaseClient.from("miniatures").select("painter_name").ilike("painter_name", `%${q}%`).not("painter_name", "is", null).limit(8),
       ]);
 
@@ -2514,6 +2514,7 @@
 
     document.getElementById("loadingState").style.display = "block";
 
+    const modelLookupColumn = /^MA-\d{4}-\d+$/i.test(modelId) ? "archive_id" : "id";
     const { data, error } = await supabaseClient
       .from("miniatures")
       .select(`
@@ -2521,7 +2522,7 @@
         started_at, completed_at, description, owner_visible, status, owner_profile_id,
         photos ( image_url, photo_type )
       `)
-      .eq("id", modelId)
+      .eq(modelLookupColumn, modelId)
       .maybeSingle();
 
     document.getElementById("loadingState").style.display = "none";
@@ -2530,6 +2531,10 @@
       document.getElementById("errorState").style.display = "block";
       return;
     }
+
+    // All subsequent writes and child-record queries use the internal ID,
+    // but completed-record URLs only expose the public Archive ID.
+    modelId = data.id;
 
     currentArchiveId = data.archive_id;
     currentStatus = data.status;

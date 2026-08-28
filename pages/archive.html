@@ -406,8 +406,7 @@
       .from("miniatures")
       .select(`
         id, archive_id, title, manufacturer, status, hours_worked, owner_profile_id, painter_name,
-        photos ( image_url, photo_type ),
-        profiles:owner_profile_id ( username, display_name )
+        photos ( image_url, photo_type )
       `)
       .order("created_at", { ascending: false });
 
