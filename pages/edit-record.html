@@ -939,7 +939,7 @@
 
     async function runPainterSearch(q){
       const [profileRes, nameRes] = await Promise.all([
-        supabaseClient.from("profiles").select("id, username").ilike("username", `%${q}%`).limit(5),
+        supabaseClient.from("public_profiles").select("id, username").ilike("username", `%${q}%`).limit(5),
         supabaseClient.from("miniatures").select("painter_name").ilike("painter_name", `%${q}%`).not("painter_name", "is", null).limit(8),
       ]);
 

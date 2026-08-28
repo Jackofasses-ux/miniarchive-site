@@ -1728,20 +1728,16 @@
 
   async function loadNfcStatus(miniatureId){
     const nfcBox = document.getElementById("nfcBox");
-    const { data: tag } = await supabaseClient
-      .from("nfc_tags")
-      .select("id, first_scanned_at")
-      .eq("miniature_id", miniatureId)
-      .eq("status", "active")
-      .maybeSingle();
+    const { data: verification } = await supabaseClient
+      .rpc("get_nfc_verification", { p_miniature_id: miniatureId });
 
     nfcBox.classList.remove("unverified", "pending", "verified");
 
     let statusKey, stateClass;
-    if (tag && tag.first_scanned_at){
+    if (verification === "verified"){
       statusKey = "info_nfc_status_verified";
       stateClass = "verified";
-    } else if (tag){
+    } else if (verification === "pending"){
       statusKey = "info_nfc_status_pending";
       stateClass = "pending";
     } else {

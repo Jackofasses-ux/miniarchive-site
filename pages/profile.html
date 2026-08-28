@@ -250,8 +250,8 @@
     }
 
     const { data: profile, error } = await supabaseClient
-      .from("profiles")
-      .select("id, username, display_name, bio, country, avatar_url, tier, created_at")
+      .from("public_profiles")
+      .select("id, username, display_name, bio, country, avatar_url, created_at")
       .eq("username", username)
       .maybeSingle();
 
@@ -264,11 +264,6 @@
 
     document.getElementById("profileName").textContent = profile.display_name || profile.username;
     document.getElementById("profileHandle").textContent = `@${profile.username}`;
-    if (profile.tier === "paid"){
-      const badge = document.getElementById("tierBadge");
-      badge.textContent = t("profile_tier_paid");
-      badge.style.display = "inline-block";
-    }
     if (profile.country){
       const countryEl = document.getElementById("profileCountry");
       countryEl.textContent = profile.country;
