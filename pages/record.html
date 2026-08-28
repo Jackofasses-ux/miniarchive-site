@@ -1153,9 +1153,7 @@
       .select(`
         id, archive_id, title, manufacturer, material, scale, base_size, description, status, hours_worked,
         started_at, completed_at, owner_profile_id, painter_name, painter_profile_id, owner_visible, created_at,
-        photos ( image_url, photo_type ),
-        owner:profiles!owner_profile_id ( username, display_name ),
-        painter_profile:profiles!painter_profile_id ( username )
+        photos ( image_url, photo_type )
       `)
       .eq("archive_id", id)
       .maybeSingle();
@@ -1169,6 +1167,14 @@
       </div>`;
       return;
     }
+
+    const relatedProfileIds = [...new Set([data.owner_profile_id, data.painter_profile_id].filter(Boolean))];
+    const { data: relatedProfiles } = relatedProfileIds.length
+      ? await supabaseClient.from("public_profiles").select("id, username, display_name").in("id", relatedProfileIds)
+      : { data: [] };
+    const profilesById = new Map((relatedProfiles || []).map(profile => [profile.id, profile]));
+    data.owner = profilesById.get(data.owner_profile_id) || null;
+    data.painter_profile = profilesById.get(data.painter_profile_id) || null;
 
     document.querySelector("[data-record-summary]")?.remove();
 
@@ -2003,8 +2009,7 @@
     const { data, error } = await supabaseClient
       .from("miniature_edits")
       .select(`
-        field_name, old_value, new_value, created_at,
-        profiles:editor_profile_id ( username, display_name )
+        field_name, old_value, new_value, created_at, editor_profile_id
       `)
       .eq("miniature_id", miniatureId)
       .order("created_at", { ascending: false });
@@ -2020,6 +2025,13 @@
       document.getElementById("editHistoryList").innerHTML = `<p style="color:var(--cream-dim); padding:16px 0; border-top:1px solid var(--hairline);">${t("edit_history_empty")}</p>`;
       return;
     }
+
+    const editorIds = [...new Set(data.map(edit => edit.editor_profile_id).filter(Boolean))];
+    const { data: editors } = editorIds.length
+      ? await supabaseClient.from("public_profiles").select("id, username, display_name").in("id", editorIds)
+      : { data: [] };
+    const editorsById = new Map((editors || []).map(profile => [profile.id, profile]));
+    data.forEach(edit => { edit.profiles = editorsById.get(edit.editor_profile_id) || null; });
 
     // Group by the kind of thing that changed, not by day — "Creation
     // Timeline (5)" is more useful at a glance than "Edits (3) — Jul 26".
