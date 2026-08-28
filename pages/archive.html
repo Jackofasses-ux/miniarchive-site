@@ -468,7 +468,7 @@
         ? `<span class="status-tag wip">${t("collection_status_draft")}</span>`
         : `<span class="id-tag">${m.code}</span>`;
       const editShortcut = (currentUserId && m.ownerProfileId === currentUserId && !isDraft)
-        ? `<a href="edit-record.html?id=${m.id}" onclick="event.stopPropagation()" class="card-edit-link" title="${t("edit_this_model_title")}">✎</a>`
+        ? `<a href="edit-record.html?id=${m.code}" onclick="event.stopPropagation()" class="card-edit-link" title="${t("edit_this_model_title")}">✎</a>`
         : "";
       return `
         <div class="mini-card">
