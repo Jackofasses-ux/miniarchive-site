@@ -117,8 +117,6 @@
     font-weight: 600;
   }
   nav{ display:block; }
-  #navMenuOuter{ display:table; border-spacing:40px 0; list-style:none; }
-  #navMenuOuter > li{ display:table-cell; vertical-align:middle; }
   .nav-main-list{ display:table; border-spacing:34px 0; list-style:none; }
   .nav-main-list > li{ display:table-cell; vertical-align:middle; }
   .user-group{ display:flex; align-items:center; gap:20px; }
@@ -509,8 +507,6 @@
     .brand-name{ font-size: 1rem; }
     .nav-toggle, .user-toggle{ display:flex; }
     header > nav{ margin-left:0; position:static; }
-    #navMenuOuter{ display:block; border-spacing:0; }
-    #navMenuOuter > li{ display:none; }
     #navMenu{
       display:none; position:absolute; top:calc(100% + 14px); left:20px; width:min(78vw, 300px);
       background: var(--bg); border:1px solid var(--hairline);
@@ -576,9 +572,7 @@
     <div class="brand-mark"><picture><source srcset="images/logo-mark.webp" type="image/webp"><img src="images/logo-mark-optimized.png" alt="Mini Archive" width="32" height="41"></picture></div>
     <div class="brand-name">MINI ARCHIVE</div>
   </a>
-  <nav>
-    <ul id="navMenuOuter">
-    <li id="navMenu" class="nav-main-group">
+  <nav id="navMenu" class="nav-main-group">
     <ul class="nav-main-list">
       <li><a href="archive.html" data-i18n="nav_collection">Archive</a></li>
       <li><a href="#how" data-i18n="nav_how_it_works">How it works</a></li>
@@ -594,15 +588,13 @@
         </div>
       </li>
     </ul>
-    </li>
-    <li class="user-group" id="userMenu">
+  </nav>
+  <div class="user-group" id="userMenu">
       <div id="authArea">
         <a class="login-link" href="login.html" data-i18n="nav_login">Log in</a>
         <a class="btn-gold" href="start.html" data-i18n="nav_start_archive">Start an Archive</a>
       </div>
-    </li>
-    </ul>
-  </nav>
+  </div>
   <div class="lang-dropdown">
     <a href="#" class="lang-dropdown-btn" id="langDropdownBtn" role="button">
       <span class="lang-dropdown-label">EN</span>
