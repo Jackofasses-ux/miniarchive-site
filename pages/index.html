@@ -508,15 +508,16 @@
     .nav-toggle, .user-toggle{ display:flex; }
     header > nav{ margin-left:0; position:static; }
     #navMenu{
-      display:none; position:absolute; top:calc(100% + 14px); left:20px; width:min(78vw, 300px);
-      background: var(--bg); border:1px solid var(--hairline);
-      padding:8px 20px 16px; z-index:60;
+      display:none; position:absolute; top:100%; left:0; width:100%;
+      background:rgba(12,11,9,0.99); border:0; border-bottom:1px solid var(--hairline);
+      padding:6px 24px 12px; z-index:60;
     }
     #navMenu.open{ display:block; }
     .nav-main-list{ display:flex; flex-direction:column; gap:0; width:100%; list-style:none; }
     .nav-main-list > li{ display:block; width:100%; border-top:1px solid var(--hairline); }
     .nav-main-list li:first-child{ border-top:none; }
-    .nav-main-list li a{ display:block; width:100%; height:auto; padding:12px 0; text-align:left; line-height:1.4; }
+    #navMenu .nav-main-list > li > a{ display:block; width:100%; height:auto; padding:11px 0; text-align:left; line-height:1.35; }
+    #navMenu .nav-main-list li a::after{ display:none; }
     .nav-more{ padding:0; }
     .nav-more-btn{ display:flex !important; width:100%; height:auto; justify-content:space-between; padding:12px 0 !important; }
     .nav-more-menu{
@@ -524,7 +525,7 @@
       width:100%; padding:0 0 4px 14px; margin:0;
     }
     .nav-more-menu.open{ display:flex; }
-    .nav-more-menu a{ height:auto; border-bottom:none; padding:8px 0; text-align:left; }
+    #navMenu .nav-more-menu > a{ display:block; width:100%; height:auto; border-bottom:none; padding:8px 0; text-align:left; line-height:1.35; }
     header > .lang-dropdown{ margin-left:auto; }
     .lang-dropdown-btn{ padding:6px 9px; font-size:0.62rem; }
     .user-group{

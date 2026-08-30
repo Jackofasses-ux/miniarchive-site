@@ -517,22 +517,23 @@
     .nav-toggle, .user-toggle{ display:flex; }
     header > nav{ margin-left:0; position:static; }
     nav ul{
-      display:none; position:absolute; top:calc(100% + 14px); left:20px; width:min(78vw, 300px);
-      flex-direction:column; gap:0; background: var(--bg); border:1px solid var(--hairline);
-      padding:8px 20px 16px; z-index:60;
+      display:none; position:absolute; top:100%; left:0; width:100%;
+      flex-direction:column; gap:0; background:rgba(12,11,9,0.99); border:0; border-bottom:1px solid var(--hairline);
+      padding:6px 24px 12px; z-index:60;
     }
     nav ul.open{ display:flex; }
     nav ul li{ border-top:1px solid var(--hairline); }
     nav ul li:first-child{ border-top:none; }
-    nav ul li a{ display:block; padding:14px 0; }
-    .nav-more{ padding: 4px 0; }
-    .nav-more-btn{ width:100%; justify-content:space-between; padding:10px 0; }
+    nav ul li a{ display:block; width:100%; height:auto; padding:11px 0; text-align:left; line-height:1.35; }
+    nav ul li a::after{ display:none; }
+    .nav-more{ padding:0; }
+    .nav-more-btn{ display:flex !important; width:100%; height:auto; justify-content:space-between; padding:11px 0 !important; }
     .nav-more-menu{
       display:none; position:static !important; border:none; background:none;
-      padding-left:14px; margin-top:4px;
+      width:100%; padding:0 0 4px 14px; margin:0;
     }
     .nav-more-menu.open{ display:flex; }
-    .nav-more-menu a{ border-bottom:none; padding:10px 0; }
+    .nav-more-menu a{ display:block; width:100%; height:auto; border-bottom:none; padding:8px 0; text-align:left; line-height:1.35; }
     header > .lang-dropdown{ margin-left:auto; }
     .lang-dropdown-btn{ padding:6px 9px; font-size:0.62rem; }
     .user-group{
