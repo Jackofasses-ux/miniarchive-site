@@ -517,9 +517,9 @@
     .nav-toggle, .user-toggle{ display:flex; }
     header > nav{ margin-left:0; position:static; }
     nav ul{
-      display:none; position:absolute; top:100%; left:0; width:100%;
-      flex-direction:column; gap:0; background:rgba(12,11,9,0.99); border:0; border-bottom:1px solid var(--hairline);
-      padding:6px 24px 12px; z-index:60;
+      display:none; position:absolute; top:calc(100% + 14px); left:20px; width:min(78vw, 300px);
+      flex-direction:column; gap:0; background:var(--bg); border:1px solid var(--hairline);
+      padding:6px 20px 12px; z-index:60;
     }
     nav ul.open{ display:flex; }
     nav ul li{ border-top:1px solid var(--hairline); }
@@ -2140,7 +2140,7 @@
     navMoreBtn.classList.toggle("open", isOpen);
     navMoreBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
   });
-  navMenu.querySelectorAll("a").forEach(link => {
+  navMenu.querySelectorAll("a:not(#navMoreBtn)").forEach(link => {
     link.addEventListener("click", () => navMenu.classList.remove("open"));
   });
   document.addEventListener("click", (e) => {
