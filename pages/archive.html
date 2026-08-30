@@ -259,13 +259,14 @@
     .nav-main-list li:first-child{ border-top:none; }
     #navMenu .nav-main-list > li > a{ display:block; width:100%; height:auto; padding:11px 0; text-align:left; line-height:1.35; }
     #navMenu .nav-main-list li a::after{ display:none; }
-    .nav-more{ padding:0; }
+    .nav-more{ display:block !important; position:static; padding:0; }
     .nav-more-btn{ display:flex !important; width:100%; height:auto; justify-content:space-between; padding:12px 0 !important; }
     .nav-more-menu{
-      display:none; position:static !important; border:none; background:none;
-      width:100%; padding:0 0 4px 14px; margin:0;
+      display:none !important; position:static !important; inset:auto !important;
+      width:100%; min-width:0; border:0; background:none;
+      padding:0 0 6px 16px; margin:0;
     }
-    .nav-more-menu.open{ display:flex; }
+    .nav-more-menu.open{ display:block !important; }
     #navMenu .nav-more-menu > a{ display:block; width:100%; height:auto; border-bottom:none; padding:8px 0; text-align:left; line-height:1.35; }
     header > .lang-dropdown{ margin-left:auto; }
     .lang-dropdown-btn{ padding:6px 9px; font-size:0.62rem; }
