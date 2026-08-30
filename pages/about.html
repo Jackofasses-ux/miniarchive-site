@@ -208,14 +208,16 @@
     .nav-main-list li:first-child{ border-top:none; }
     #navMenu .nav-main-list > li > a{ display:block; width:100%; height:auto; padding:11px 0; text-align:left; line-height:1.35; }
     #navMenu .nav-main-list li a::after{ display:none; }
-    .nav-more{ display:block !important; position:static; padding:0; }
-    .nav-more-btn{ display:flex !important; width:100%; height:auto; justify-content:space-between; padding:12px 0 !important; }
+    .nav-more{ display:grid !important; grid-template-columns:minmax(0, 1fr); position:static; padding:0; }
+    .nav-more-btn{ grid-row:1; display:flex !important; width:100%; height:auto; justify-content:space-between; padding:12px 0 !important; }
     .nav-more-menu{
-      display:none !important; position:static !important; inset:auto !important;
+      grid-row:2; display:none !important; position:relative !important;
+      top:auto !important; right:auto !important; bottom:auto !important; left:auto !important;
+      transform:none !important; float:none !important;
       width:100%; min-width:0; border:0; background:none;
       padding:0 0 6px 16px; margin:0;
     }
-    .nav-more-menu.open{ display:block !important; }
+    .nav-more-menu.open{ display:grid !important; grid-template-columns:minmax(0, 1fr); }
     #navMenu .nav-more-menu > a{ display:block; width:100%; height:auto; border-bottom:none; padding:8px 0; text-align:left; line-height:1.35; }
     header > .lang-dropdown{ margin-left:auto; }
     .lang-dropdown-btn{ padding:6px 9px; font-size:0.62rem; }
