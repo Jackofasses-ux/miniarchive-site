@@ -405,7 +405,7 @@
     let query = supabaseClient
       .from("miniatures")
       .select(`
-        id, archive_id, title, manufacturer, status, hours_worked, owner_profile_id, painter_name,
+        archive_id, title, manufacturer, status, hours_worked, owner_profile_id, painter_name,
         photos ( image_url, photo_type )
       `)
       .order("created_at", { ascending: false });
@@ -431,7 +431,6 @@
       const anyPhoto = frontPhoto || (m.photos || [])[0];
       const painterLabel = m.painter_name || t("collection_unattributed");
       return {
-        id: m.id,
         code: m.archive_id,
         name: m.title,
         manufacturer: m.manufacturer || "—",
@@ -463,7 +462,7 @@
 
     grid.innerHTML = filtered.map(m => {
       const isDraft = m.status === "in_progress";
-      const linkTarget = isDraft ? `edit-record.html?id=${m.id}` : `/archive/${encodeURIComponent(m.code)}`;
+      const linkTarget = isDraft ? `edit-record.html?id=${encodeURIComponent(m.code)}` : `/archive/${encodeURIComponent(m.code)}`;
       const tag = isDraft
         ? `<span class="status-tag wip">${t("collection_status_draft")}</span>`
         : `<span class="id-tag">${m.code}</span>`;
@@ -552,6 +551,18 @@
   const userMenu = document.getElementById("userMenu");
   const navMoreBtn = document.getElementById("navMoreBtn");
   const navMoreMenu = document.getElementById("navMoreMenu");
+
+  if (window.matchMedia("(max-width: 800px)").matches) {
+    navMoreBtn.remove();
+    navMoreMenu.remove();
+    const disclosure = navMenu.querySelector(".mobile-more");
+    const summary = disclosure.querySelector("summary");
+    const links = disclosure.querySelector(".mobile-more-links");
+    disclosure.style.cssText = "display:block;width:100%;";
+    summary.style.cssText = "display:flex;align-items:center;justify-content:space-between;width:100%;padding:11px 0;cursor:pointer;list-style:none;";
+    links.style.cssText = "display:block;padding:0 0 6px 16px;";
+    links.querySelectorAll("a").forEach(link => link.style.cssText = "display:block;width:100%;height:auto;padding:8px 0;text-align:left;line-height:1.35;border:0;");
+  }
 
   navToggle.addEventListener("click", (e) => {
     e.stopPropagation();

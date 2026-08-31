@@ -443,6 +443,18 @@
   const navMoreBtn = document.getElementById("navMoreBtn");
   const navMoreMenu = document.getElementById("navMoreMenu");
 
+  if (window.matchMedia("(max-width: 800px)").matches) {
+    navMoreBtn.remove();
+    navMoreMenu.remove();
+    const disclosure = navMenu.querySelector(".mobile-more");
+    const summary = disclosure.querySelector("summary");
+    const links = disclosure.querySelector(".mobile-more-links");
+    disclosure.style.cssText = "display:block;width:100%;";
+    summary.style.cssText = "display:flex;align-items:center;justify-content:space-between;width:100%;padding:11px 0;cursor:pointer;list-style:none;";
+    links.style.cssText = "display:block;padding:0 0 6px 16px;";
+    links.querySelectorAll("a").forEach(link => link.style.cssText = "display:block;width:100%;height:auto;padding:8px 0;text-align:left;line-height:1.35;border:0;");
+  }
+
   navToggle.addEventListener("click", (e) => {
     e.stopPropagation();
     userMenu.classList.remove("open");

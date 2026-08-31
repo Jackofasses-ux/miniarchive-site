@@ -776,7 +776,7 @@
     const { data, error } = await supabaseClient
       .from("miniatures")
       .select(`
-        id, archive_id, title, manufacturer, status, hours_worked, owner_profile_id,
+        archive_id, title, manufacturer, status, hours_worked, owner_profile_id,
         photos ( image_url, photo_type )
       `)
       .eq("visibility", "public")
@@ -795,7 +795,7 @@
       const frontPhoto = (m.photos || []).find(p => p.photo_type === "front") || (m.photos || [])[0];
       const metaRight = m.hours_worked ? `${m.hours_worked.toFixed(1)} hrs` : "";
       const editShortcut = (currentUserId && m.owner_profile_id === currentUserId)
-        ? `<a href="edit-record.html?id=${m.id}" onclick="event.stopPropagation()" class="card-edit-link" title="Edit this model">✎</a>`
+        ? `<a href="edit-record.html?id=${encodeURIComponent(m.archive_id)}" onclick="event.stopPropagation()" class="card-edit-link" title="Edit this model">✎</a>`
         : "";
       return `
         <div class="mini-card">
@@ -910,6 +910,18 @@
   const userMenu = document.getElementById("userMenu");
   const navMoreBtn = document.getElementById("navMoreBtn");
   const navMoreMenu = document.getElementById("navMoreMenu");
+
+  if (window.matchMedia("(max-width: 900px)").matches) {
+    navMoreBtn.remove();
+    navMoreMenu.remove();
+    const disclosure = navMenu.querySelector(".mobile-more");
+    const summary = disclosure.querySelector("summary");
+    const links = disclosure.querySelector(".mobile-more-links");
+    disclosure.style.cssText = "display:block;width:100%;";
+    summary.style.cssText = "display:flex;align-items:center;justify-content:space-between;width:100%;padding:11px 0;cursor:pointer;list-style:none;";
+    links.style.cssText = "display:block;padding:0 0 6px 16px;";
+    links.querySelectorAll("a").forEach(link => link.style.cssText = "display:block;width:100%;height:auto;padding:8px 0;text-align:left;line-height:1.35;border:0;");
+  }
 
   navToggle.addEventListener("click", (e) => {
     e.stopPropagation();
