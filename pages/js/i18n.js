@@ -7,7 +7,48 @@ const LANGUAGES = {
   fr: { label: "FR", flag: "🇫🇷" },
 };
 
+/* User-facing terminology is intentionally normalized here without renaming
+   legacy translation keys, routes, filenames, or data identifiers.
+   Archive = the body of models; Model = the miniature; Record = its documented
+   history/provenance when that distinction is actually meaningful. */
+const TERMINOLOGY_OVERRIDES = {
+  en: {
+    nav_my_collection: "My Archive",
+    footer_browse: "Browse Archive",
+    collection_my_eyebrow: "My Archive",
+    collection_error_eyebrow: "Couldn't load the archive",
+    model_edit_this: "Edit This Model",
+    model_back_to_collection: "← Back to Archive",
+    feat_browse_desc: "Find any model by name or painter, or switch to a filtered view of just your own models.",
+    nfc_view_model: "View Model",
+    confirm_cta_browse: "Browse the Archive",
+  },
+  fr: {
+    nav_collection: "Archive",
+    nav_my_collection: "Mon archive",
+    footer_browse: "Parcourir l'archive",
+    hero_cta_view_collection: "Voir l'archive",
+    section_from_collection: "Aperçu de l'archive",
+    view_full_collection: "Voir toute l'archive →",
+    provenance_p2: "Gratuit pour créer une archive. La vérification est réservée aux pièces où elle compte vraiment.",
+    profile_back_to_collection: "← Retour à l'archive",
+    profile_owned_eyebrow: "Archive possédée",
+    footer_browse_collection: "Parcourir l'archive",
+    collection_eyebrow: "L'archive",
+    collection_my_eyebrow: "Mon archive",
+    collection_error_eyebrow: "Impossible de charger l'archive",
+    account_archive_name_hint: "Affiché sur l'URL de votre profil public et sur la page de votre archive.",
+    model_back_to_collection: "← Retour à l'archive",
+    model_footer_back: "← Retour à l'archive",
+    em_error_back: "Retour à mon archive",
+    confirm_cta_browse: "Parcourir l'archive",
+    feat_browse_desc: "Trouvez n'importe quel modèle par nom ou peintre, ou affichez uniquement vos propres modèles.",
+  },
+};
+
 function t(key){
+  const override = TERMINOLOGY_OVERRIDES[CURRENT_LANG] && TERMINOLOGY_OVERRIDES[CURRENT_LANG][key];
+  if (override !== undefined) return override;
   return (TRANSLATIONS[CURRENT_LANG] && TRANSLATIONS[CURRENT_LANG][key])
     || (TRANSLATIONS.en && TRANSLATIONS.en[key])
     || key;
