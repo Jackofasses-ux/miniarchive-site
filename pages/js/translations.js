@@ -115,6 +115,8 @@ const TRANSLATIONS = {
     collection_status_draft: "Draft",
     collection_workbench: "On your workbench — click to publish",
     collection_unattributed: "Unattributed",
+    collection_load_more: "Load more",
+    collection_loading_more: "Loading…",
 
     // ---- account.html ----
     account_gate_eyebrow: "Account Settings",
@@ -758,6 +760,8 @@ const TRANSLATIONS = {
     collection_status_draft: "Brouillon",
     collection_workbench: "Sur votre établi — cliquez pour publier",
     collection_unattributed: "Non attribué",
+    collection_load_more: "Charger plus",
+    collection_loading_more: "Chargement…",
 
     // ---- account.html ----
     account_gate_eyebrow: "Mon archive",
