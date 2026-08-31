@@ -93,7 +93,7 @@
   .nav-more-menu a:last-child{ border-bottom:none; }
   .nav-more-menu a:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
   .nav-more-menu a.active{ color: var(--gold); }
-  .mobile-more-menu{ display:none; }
+  .mobile-more{ display:none; }
   .user-group{ display:flex; align-items:center; gap:20px; }
   .user-toggle-wrap{ position:relative; }
   .user-toggle-wrap img{ width:36px !important; height:36px !important; }
@@ -206,12 +206,16 @@
     .nav-main-list li:first-child{ border-top:none; }
     #navMenu .nav-main-list > li > a{ display:block; width:100%; height:auto; padding:11px 0; text-align:left; line-height:1.35; }
     #navMenu .nav-main-list li a::after{ display:none; }
-    .nav-more{ display:grid !important; grid-template-columns:minmax(0, 1fr); position:static; padding:0; }
-    .nav-more-btn{ grid-row:1; display:flex !important; width:100%; height:auto; justify-content:space-between; padding:12px 0 !important; }
+    .nav-more{ display:block !important; position:static; padding:0; }
+    .nav-more-btn{ display:none !important; }
     .nav-more-menu, .nav-more-menu.open{ display:none !important; }
-    .mobile-more-menu{ grid-row:2; width:100%; padding:0 0 6px 16px; }
-    .mobile-more-menu.open{ display:block; }
-    #navMenu .mobile-more-menu > a{ display:block; width:100%; height:auto; border:0; padding:8px 0; text-align:left; line-height:1.35; }
+    .mobile-more{ display:block; width:100%; }
+    .mobile-more summary{ display:flex; align-items:center; justify-content:space-between; width:100%; padding:11px 0; cursor:pointer; list-style:none; }
+    .mobile-more summary::-webkit-details-marker{ display:none; }
+    .mobile-more summary svg{ width:9px; height:9px; transition:transform .2s ease; }
+    .mobile-more[open] summary svg{ transform:rotate(180deg); }
+    .mobile-more-links{ padding:0 0 6px 16px; }
+    #navMenu .mobile-more-links > a{ display:block; width:100%; height:auto; border:0; padding:8px 0; text-align:left; line-height:1.35; }
     header > .lang-dropdown{ margin-left:auto; }
     .lang-dropdown-btn{ padding:6px 9px; font-size:0.62rem; }
     .user-group{
@@ -264,10 +268,10 @@
           <a class="active" href="features.html" data-i18n="nav_features">Features</a>
           <a href="about.html" data-i18n="nav_about">About</a>
         </div>
-        <div class="mobile-more-menu" id="mobileMoreMenu">
-          <a class="active" href="features.html" data-i18n="nav_features">Features</a>
-          <a href="about.html" data-i18n="nav_about">About</a>
-        </div>
+        <details class="mobile-more">
+          <summary><span data-i18n="nav_more">More</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></summary>
+          <div class="mobile-more-links"><a class="active" href="features.html" data-i18n="nav_features">Features</a><a href="about.html" data-i18n="nav_about">About</a></div>
+        </details>
       </li>
     </ul>
   </nav>
@@ -438,7 +442,6 @@
   const userMenu = document.getElementById("userMenu");
   const navMoreBtn = document.getElementById("navMoreBtn");
   const navMoreMenu = document.getElementById("navMoreMenu");
-  const mobileMoreMenu = document.getElementById("mobileMoreMenu");
 
   navToggle.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -460,7 +463,6 @@
     e.stopPropagation();
     langDropdownMenu.classList.remove("open");
     const isOpen = navMoreMenu.classList.toggle("open");
-    mobileMoreMenu.classList.toggle("open", isOpen);
     navMoreBtn.classList.toggle("open", isOpen);
     navMoreBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
   });
@@ -468,7 +470,6 @@
     e.preventDefault();
     e.stopPropagation();
     navMoreMenu.classList.remove("open");
-    mobileMoreMenu.classList.remove("open");
     navMoreBtn.classList.remove("open");
     navMoreBtn.setAttribute("aria-expanded", "false");
     langDropdownMenu.classList.toggle("open");
@@ -484,7 +485,6 @@
     if (!userMenu.contains(e.target) && e.target !== userToggle) userMenu.classList.remove("open");
     if (!navMoreBtn.contains(e.target) && !navMoreMenu.contains(e.target)){
       navMoreMenu.classList.remove("open");
-      mobileMoreMenu.classList.remove("open");
       navMoreBtn.classList.remove("open");
       navMoreBtn.setAttribute("aria-expanded", "false");
     }
