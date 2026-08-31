@@ -259,6 +259,7 @@ const TRANSLATIONS = {
     comparable_official_tooltip: "Manufacturer-confirmed equivalent",
     comparable_official_note: "manufacturer-confirmed equivalent",
     comparable_see_more: "See more comparables on BrushForge",
+    comparable_filter_all: "All",
 
     // ---- model.html: edit history ----
     edit_history_none: "None",
@@ -901,6 +902,7 @@ const TRANSLATIONS = {
     comparable_official_tooltip: "Équivalent confirmé par le fabricant",
     comparable_official_note: "équivalent confirmé par le fabricant",
     comparable_see_more: "Voir plus de comparables sur BrushForge",
+    comparable_filter_all: "Tous",
 
     // ---- model.html: edit history ----
     edit_history_none: "Aucune",
