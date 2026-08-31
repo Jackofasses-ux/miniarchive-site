@@ -126,6 +126,7 @@
   .nav-more-menu a:last-child{ border-bottom:none; }
   .nav-more-menu a:hover{ color: var(--gold-bright); background: rgba(201,162,75,0.05); }
   .nav-more-menu a.active{ color: var(--gold); }
+  .mobile-more-menu{ display:none; }
   .btn-gold{
     font-family:'IBM Plex Mono', monospace; font-size:0.72rem; letter-spacing:0.14em; text-transform:uppercase;
     color:#0c0b09; background: var(--gold); padding:11px 22px; border:1px solid var(--gold); transition: background .25s ease;
@@ -524,24 +525,23 @@
     .brand{ gap:8px; }
     .brand-name{ font-size: 1rem; }
     .nav-toggle, .user-toggle{ display:flex; }
-    nav{ display:contents; }
+    header > nav{ margin-left:0; position:static; }
     nav ul{
       display:none; position:absolute; top:calc(100% + 14px); left:20px; width:min(78vw, 300px);
-      flex-direction:column; gap:0; background: var(--bg); border:1px solid var(--hairline);
-      padding:8px 20px 16px; z-index:60;
+      flex-direction:column; gap:0; background:var(--bg); border:1px solid var(--hairline);
+      padding:6px 20px 12px; z-index:60;
     }
     nav ul.open{ display:flex; }
     nav ul li{ border-top:1px solid var(--hairline); }
     nav ul li:first-child{ border-top:none; }
-    nav ul li a{ display:block; padding:14px 0; }
-    .nav-more{ padding: 4px 0; }
-    .nav-more-btn{ width:100%; justify-content:space-between; padding:10px 0; }
-    .nav-more-menu{
-      display:none; position:static !important; border:none; background:none;
-      padding-left:14px; margin-top:4px;
-    }
-    .nav-more-menu.open{ display:flex; }
-    .nav-more-menu a{ border-bottom:none; padding:10px 0; }
+    nav ul li a{ display:block; width:100%; height:auto; padding:11px 0; text-align:left; line-height:1.35; }
+    nav ul li a::after{ display:none; }
+    .nav-more{ display:grid !important; grid-template-columns:minmax(0, 1fr); position:static; padding:0; }
+    .nav-more-btn{ grid-row:1; display:flex !important; width:100%; height:auto; justify-content:space-between; padding:11px 0 !important; }
+    .nav-more-menu, .nav-more-menu.open{ display:none !important; }
+    .mobile-more-menu{ grid-row:2; width:100%; padding:0 0 6px 16px; }
+    .mobile-more-menu.open{ display:block; }
+    .mobile-more-menu a{ display:block; width:100%; height:auto; border:0; padding:8px 0; text-align:left; line-height:1.35; }
     header > .lang-dropdown{ margin-left:auto; }
     .lang-dropdown-btn{ padding:6px 9px; font-size:0.62rem; }
     .user-group{
@@ -583,6 +583,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
         </a>
         <div class="nav-more-menu" id="navMoreMenu">
+          <a href="features.html" data-i18n="nav_features">Features</a>
+          <a href="about.html" data-i18n="nav_about">About</a>
+        </div>
+        <div class="mobile-more-menu" id="mobileMoreMenu">
           <a href="features.html" data-i18n="nav_features">Features</a>
           <a href="about.html" data-i18n="nav_about">About</a>
         </div>
@@ -2179,6 +2183,7 @@
   const userToggle = document.getElementById("userToggle");
   const navMoreBtn = document.getElementById("navMoreBtn");
   const navMoreMenu = document.getElementById("navMoreMenu");
+  const mobileMoreMenu = document.getElementById("mobileMoreMenu");
 
   navToggle.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -2188,16 +2193,18 @@
     e.preventDefault();
     e.stopPropagation();
     const isOpen = navMoreMenu.classList.toggle("open");
+    mobileMoreMenu.classList.toggle("open", isOpen);
     navMoreBtn.classList.toggle("open", isOpen);
     navMoreBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
   });
-  navMenu.querySelectorAll("a").forEach(link => {
+  navMenu.querySelectorAll("a:not(#navMoreBtn)").forEach(link => {
     link.addEventListener("click", () => navMenu.classList.remove("open"));
   });
   document.addEventListener("click", (e) => {
     if (!navMenu.contains(e.target) && e.target !== navToggle) navMenu.classList.remove("open");
     if (!navMoreBtn.contains(e.target) && !navMoreMenu.contains(e.target)){
       navMoreMenu.classList.remove("open");
+      mobileMoreMenu.classList.remove("open");
       navMoreBtn.classList.remove("open");
       navMoreBtn.setAttribute("aria-expanded", "false");
     }
