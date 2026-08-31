@@ -74,6 +74,36 @@ function updateLangToggleUI(){
   document.querySelectorAll(".lang-dropdown-menu button").forEach(btn => { btn.classList.toggle("active", btn.dataset.lang === CURRENT_LANG); });
 }
 
+/* Navbar dropdowns use page-level click handlers that stop propagation, so use
+   the capture phase here to make the three desktop menus mutually exclusive. */
+document.addEventListener("click", (e) => {
+  const target = e.target;
+  if (!(target instanceof Element)) return;
+
+  const openingProfile = target.closest("#userToggle, #userMenuBtn");
+  const openingMore = target.closest("#navMoreBtn");
+  const openingLanguage = target.closest("#langDropdownBtn, .lang-dropdown-btn");
+
+  if (openingProfile) {
+    document.querySelectorAll(".nav-more-menu.open").forEach(m => m.classList.remove("open"));
+    document.querySelectorAll(".nav-more-btn.open").forEach(b => {
+      b.classList.remove("open");
+      b.setAttribute("aria-expanded", "false");
+    });
+    document.querySelectorAll(".lang-dropdown-menu.open").forEach(m => m.classList.remove("open"));
+  } else if (openingMore) {
+    document.querySelectorAll("#userDropdown.open, #userMenu.open").forEach(m => m.classList.remove("open"));
+    document.querySelectorAll(".lang-dropdown-menu.open").forEach(m => m.classList.remove("open"));
+  } else if (openingLanguage) {
+    document.querySelectorAll("#userDropdown.open, #userMenu.open").forEach(m => m.classList.remove("open"));
+    document.querySelectorAll(".nav-more-menu.open").forEach(m => m.classList.remove("open"));
+    document.querySelectorAll(".nav-more-btn.open").forEach(b => {
+      b.classList.remove("open");
+      b.setAttribute("aria-expanded", "false");
+    });
+  }
+}, true);
+
 document.addEventListener("click", () => {
   document.querySelectorAll(".lang-dropdown-menu.open").forEach(m => m.classList.remove("open"));
 });
