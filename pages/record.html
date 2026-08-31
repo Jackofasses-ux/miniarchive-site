@@ -1421,7 +1421,7 @@
   // groups paints: an opaque color should never be "comparable" to a wash
   // or a metallic just because the flat hex happens to be close.
   function paintFamily(category){
-    if (category === "contrast" || category === "shade" || category === "metallic" || category === "dry") return category;
+    if (category === "contrast" || category === "shade" || category === "metallic" || category === "dry" || category === "glaze") return category;
     return "opaque"; // base, layer, and unclassified (mostly Warpaints/Fanatic/P3) all opaque colors
   }
 
