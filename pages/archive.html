@@ -191,6 +191,18 @@
     max-width:1280px; margin: 0 auto; padding: 10px 56px 100px;
     display:grid; grid-template-columns: repeat(4, 1fr); gap: 24px;
   }
+  .load-more-wrap{
+    max-width:1280px; margin: -70px auto 100px; padding: 0 56px;
+    display:flex; justify-content:center;
+  }
+  .load-more-wrap:empty{ display:none; }
+  .load-more-btn{
+    font-family:'IBM Plex Mono', monospace; font-size:0.68rem; letter-spacing:0.06em; text-transform:uppercase;
+    padding:10px 28px; border:1px solid var(--hairline); background:transparent;
+    color:var(--cream-dim); cursor:pointer; transition: color .2s ease, border-color .2s ease;
+  }
+  .load-more-btn:hover{ color:var(--gold-bright); border-color:var(--gold); }
+  .load-more-btn:disabled{ opacity:0.5; cursor:default; }
   .mini-card{
     border:1px solid var(--hairline); background: var(--bg-raised); overflow:hidden;
     transition: border-color .3s ease, transform .3s ease; cursor:pointer;
@@ -373,6 +385,8 @@
 
 <div class="grid" id="grid"></div>
 
+<div class="load-more-wrap" id="loadMoreWrap"></div>
+
 <footer>
   <div>© 2026 Mini Archive. <span data-i18n="footer_tagline">Every miniature has a story.</span></div>
   <div><a href="index.html" data-i18n="collection_back_home">← Back home</a></div>
@@ -386,13 +400,26 @@
   const grid = document.getElementById("grid");
   const searchInput = document.getElementById("searchInput");
   const resultCount = document.getElementById("resultCount");
+  const loadMoreWrap = document.getElementById("loadMoreWrap");
   let ALL_MINIS = [];
+  const PAGE_SIZE = 60;
+  let currentOffset = 0;
+  let totalCount = 0;
+  let isLoadingMore = false;
+  let searchDebounceTimer = null;
+
+  function sanitizeSearchTerm(term){
+    // Strip characters that would break PostgREST's or() filter
+    // mini-language, and escape SQL LIKE wildcards so a literal % or _
+    // in someone's search doesn't get treated as a wildcard.
+    return term.replace(/[,()]/g, "").replace(/[%_]/g, c => "\\" + c);
+  }
   let isMineView = false;
   let currentUserId = null;
 
   const shieldIcon = `<svg class="placeholder-icon" viewBox="0 0 24 24" fill="none" stroke="#c9a24b" stroke-width="1"><path d="M12 2 3 6v6c0 5.2 3.6 9.9 9 11 5.4-1.1 9-5.8 9-11V6l-9-4z"/></svg>`;
 
-  async function loadMinis(){
+  async function loadMinis(reset = true){
     isMineView = new URLSearchParams(window.location.search).get("mine") === "true";
     const { data: { session } } = await supabaseClient.auth.getSession();
     currentUserId = session?.user?.id || null;
@@ -402,12 +429,17 @@
       return;
     }
 
+    if (reset){
+      currentOffset = 0;
+      ALL_MINIS = [];
+    }
+
     let query = supabaseClient
       .from("miniatures")
       .select(`
         id, archive_id, title, manufacturer, status, hours_worked, owner_profile_id, painter_name,
         photos ( image_url, photo_type )
-      `)
+      `, { count: "exact" })
       .order("created_at", { ascending: false });
 
     if (isMineView){
@@ -418,15 +450,27 @@
       query = query.eq("visibility", "public").eq("status", "completed");
     }
 
-    const { data, error } = await query;
+    const searchTerm = searchInput.value.trim();
+    if (searchTerm){
+      const safe = sanitizeSearchTerm(searchTerm);
+      query = query.or(`title.ilike.%${safe}%,painter_name.ilike.%${safe}%`);
+    }
+
+    query = query.range(currentOffset, currentOffset + PAGE_SIZE - 1);
+
+    const { data, error, count } = await query;
 
     if (error){
       console.error("Failed to load miniatures:", error);
       grid.innerHTML = `<div class="empty-state"><span class="eyebrow">${t("collection_error_eyebrow")}</span>${t("collection_error_desc")}</div>`;
+      loadMoreWrap.innerHTML = "";
       return;
     }
 
-    ALL_MINIS = (data || []).map(m => {
+    totalCount = count || 0;
+    currentOffset += (data || []).length;
+
+    const mapped = (data || []).map(m => {
       const frontPhoto = (m.photos || []).find(p => p.photo_type === "front");
       const anyPhoto = frontPhoto || (m.photos || [])[0];
       const painterLabel = m.painter_name || t("collection_unattributed");
@@ -443,25 +487,42 @@
       };
     });
 
+    ALL_MINIS = ALL_MINIS.concat(mapped);
     render();
   }
 
+  async function loadMoreMinis(){
+    if (isLoadingMore || ALL_MINIS.length >= totalCount) return;
+    isLoadingMore = true;
+    renderLoadMoreButton(); // swap to a disabled/loading state immediately
+    await loadMinis(false);
+    isLoadingMore = false;
+    renderLoadMoreButton(); // loadMinis' internal render() ran while isLoadingMore was still true, so refresh it now that loading is done
+  }
+
+  function renderLoadMoreButton(){
+    if (ALL_MINIS.length >= totalCount){
+      loadMoreWrap.innerHTML = "";
+      return;
+    }
+    loadMoreWrap.innerHTML = `<button type="button" class="load-more-btn" id="loadMoreBtn" ${isLoadingMore ? "disabled" : ""}>${isLoadingMore ? t("collection_loading_more") : t("collection_load_more")}</button>`;
+    if (!isLoadingMore){
+      document.getElementById("loadMoreBtn").addEventListener("click", loadMoreMinis);
+    }
+  }
+
   function render(){
-    const query = searchInput.value.trim().toLowerCase();
-    const filtered = ALL_MINIS.filter(m => {
-      return !query || m.name.toLowerCase().includes(query) || m.painter.toLowerCase().includes(query);
-    });
+    resultCount.textContent = `${totalCount}${totalCount === 1 ? t("collection_result_count_singular") : t("collection_result_count_plural")}`;
 
-    resultCount.textContent = `${filtered.length}${filtered.length === 1 ? t("collection_result_count_singular") : t("collection_result_count_plural")}`;
-
-    if (filtered.length === 0){
+    if (totalCount === 0){
       grid.innerHTML = isMineView
         ? `<div class="empty-state"><span class="eyebrow">${t("collection_empty_mine_eyebrow")}</span>${t("collection_empty_mine_desc")}<a href="edit-record.html" style="color:var(--gold-bright);">${t("collection_empty_mine_link")}</a></div>`
         : `<div class="empty-state"><span class="eyebrow">${t("collection_empty_search_eyebrow")}</span>${t("collection_empty_search_desc")}</div>`;
+      loadMoreWrap.innerHTML = "";
       return;
     }
 
-    grid.innerHTML = filtered.map(m => {
+    grid.innerHTML = ALL_MINIS.map(m => {
       const isDraft = m.status === "in_progress";
       const linkTarget = isDraft ? `edit-record.html?id=${m.id}` : `/archive/${encodeURIComponent(m.code)}`;
       const tag = isDraft
@@ -486,9 +547,14 @@
         </div>
       `;
     }).join("");
+
+    renderLoadMoreButton();
   }
 
-  searchInput.addEventListener("input", render);
+  searchInput.addEventListener("input", () => {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => loadMinis(true), 300);
+  });
 
   loadMinis();
   initLanguage(supabaseClient);
