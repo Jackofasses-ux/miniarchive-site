@@ -1317,8 +1317,8 @@
     const brands = Array.from(new Set(matches.map(m => m.brand))).sort();
     const filtersHtml = brands.length > 1 ? `
       <div class="comparable-brand-filters">
-        <button type="button" class="comparable-filter-btn active" data-brand="">${t("comparable_filter_all")}</button>
-        ${brands.map(b => `<button type="button" class="comparable-filter-btn" data-brand="${b}">${b}</button>`).join("")}
+        <button type="button" class="comparable-filter-btn active" onclick="event.stopPropagation(); filterComparables(this, '')">${t("comparable_filter_all")}</button>
+        ${brands.map(b => `<button type="button" class="comparable-filter-btn" onclick="event.stopPropagation(); filterComparables(this, '${b}')">${b}</button>`).join("")}
       </div>
     ` : "";
     const html = matches.length ? `
@@ -1354,24 +1354,20 @@
     comparablesEl.innerHTML = html;
   };
 
-  // Brand filter buttons on the comparables card. Delegated because the
-  // buttons are injected via innerHTML (both fresh renders and cache
-  // hits) rather than present at page load. stopPropagation is required
-  // here — the row markup lives inside .recipe-card, which has its own
-  // onclick that collapses the card, so without it every filter click
-  // would also close the card it's filtering.
-  document.addEventListener("click", (e) => {
-    const btn = e.target.closest(".comparable-filter-btn");
-    if (!btn) return;
-    e.stopPropagation();
+  // stopPropagation happens inline on each button, not via a delegated
+  // listener — the row markup lives inside .recipe-card, which has its
+  // own onclick that collapses the card, and that inline onclick fires
+  // during the bubble phase before any listener attached higher up
+  // (e.g. on document) would get a chance to stop it. Stopping it here,
+  // at the button itself, is the only point early enough to work.
+  window.filterComparables = function(btn, brand){
     const group = btn.closest(".comparable-brand-filters");
-    const brand = btn.dataset.brand;
     group.querySelectorAll(".comparable-filter-btn").forEach(b => b.classList.toggle("active", b === btn));
     const comparablesEl = group.closest(".recipe-comparables");
     comparablesEl.querySelectorAll(".comparable-row").forEach(row => {
       row.classList.toggle("filtered-out", brand !== "" && row.dataset.brand !== brand);
     });
-  });
+  };
 
   // ---- Real color-distance matching (CIEDE2000) -----------------------
   // The old version only ever showed paints that happened to have a row in
