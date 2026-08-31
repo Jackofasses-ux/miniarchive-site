@@ -118,6 +118,38 @@ document.addEventListener("click", () => {
        image box, so the text needs a 1px nudge to look truly centred beside it. */
     .brand{align-items:center !important;}
     .brand-name{transform:translateY(1px) !important;}
+
+    /* The rules above repair the desktop navbar. They must not impose desktop
+       flex gaps or fixed 42px list-item heights on the mobile accordion. Those
+       overrides were keeping the More <details> parent at 42px, so Features and
+       About rendered outside the black menu panel instead of making it grow. */
+    @media (max-width:900px){
+      #navMenu .nav-main-list{
+        display:flex !important;
+        flex-direction:column !important;
+        align-items:stretch !important;
+        gap:0 !important;
+        width:100% !important;
+      }
+      #navMenu .nav-main-list > li{
+        display:block !important;
+        height:auto !important;
+        min-height:0 !important;
+        width:100% !important;
+      }
+      #navMenu .nav-main-list > li > a{
+        display:block !important;
+        height:auto !important;
+        padding:11px 0 !important;
+        line-height:1.35 !important;
+      }
+      #navMenu .mobile-more-links > a{
+        display:block !important;
+        height:auto !important;
+        padding:8px 0 !important;
+        line-height:1.35 !important;
+      }
+    }
   `;
   const style = document.createElement("style");
   style.id = "miniarchive-navbar-layout-fix";
