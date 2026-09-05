@@ -156,11 +156,14 @@ NFC tags attach to Archive Records, not miniature-specific rows.
 `nfc_tags` includes:
 - `id uuid` PK
 - `token text` unique
-- `record_id uuid` FK
-- tag status
-- timestamps including first scan/revocation as appropriate
+- `record_id uuid` FK, nullable while inventory is unassigned
+- tag status such as `inventory | assigned | active | revoked | replaced`
+- optional order/order-item provenance for Mini Archive-sold tags
+- timestamps including assignment, activation, first scan, and revocation as appropriate
 
-The NFC token is independent from both the internal UUID and public Archive ID.
+The NFC token is independent from both the internal UUID and public Archive ID. A physical tag can therefore be manufactured and sold before it is assigned to a Record.
+
+Tag activation/claiming must verify that the authenticated purchaser/recipient is entitled to claim the tag. Replacement or revocation must preserve the historical association rather than silently recycling a token.
 
 ### Missing/stolen recovery
 
@@ -218,7 +221,54 @@ Consent/versioning support should include a small `legal_documents` / `user_cons
 
 Before production cutover, maintain an inventory mapping personal-data fields to purpose, visibility, retention, and deletion behavior. Privacy/Terms copy must describe actual implemented behavior.
 
-## 14. Security and database invariants
+## 14. Monetization, subscriptions, and commerce
+
+V2 must support monetization without embedding one payment processor's object model throughout Archive data.
+
+### Plans and subscriptions
+
+Use an internal entitlement model:
+
+- `plans` defines Mini Archive plan identities and display metadata.
+- `plan_entitlements` defines capabilities/limits granted by a plan.
+- `subscriptions` links an account to a plan and stores provider-neutral billing state plus external provider/customer/subscription identifiers.
+- optional `subscription_events` records important billing lifecycle changes/webhook processing for idempotency/audit.
+
+Application features should ask **what the account is entitled to do**, not contain scattered checks such as `if plan = premium`. This allows future paid features, grandfathered users, promotions, lifetime/supporter tiers, or a change of billing provider without redesigning Archive Records.
+
+Potential entitlements can include limits or capabilities such as Record count, storage, private Records, enhanced provenance/recovery features, exports, advanced statistics, or other future features. The architecture does not decide which existing core features will be paywalled.
+
+Billing-provider identifiers and financial state remain private account data. Mini Archive should not store raw payment-card details; payment collection belongs to a compliant external payment provider.
+
+Subscription cancellation, expiration, payment failure, refunds, trials, and grace periods must not destroy user Archive data. Entitlement loss changes access/capabilities according to product policy; it does not cascade-delete Records or media.
+
+### NFC tag commerce
+
+Physical NFC tag purchasing is separate from subscription billing even if the same payment provider is eventually used.
+
+Commerce foundation:
+- `products` for sellable Mini Archive products
+- `product_variants` for physical variants/SKUs where needed
+- `orders`
+- `order_items`
+- `order_addresses` or equivalent immutable shipping snapshot
+- `payments` / provider transaction references as required
+- `fulfillments` for shipment state/tracking
+- optional `refunds` where provider synchronization requires local representation
+
+An NFC tag sold through an order can be linked from the physical `nfc_tags` inventory row to its order item. This supports inventory -> sold -> shipped -> claimed -> assigned -> active -> replaced/revoked history.
+
+Order records must preserve purchase history even if product names/prices later change. Order items therefore store transactional snapshots such as product description, quantity, unit amount, currency, taxes/discounts where applicable, rather than relying only on the current product catalogue.
+
+Shipping/billing addresses and payment-provider identifiers are private commerce data and are never exposed through public profiles or Archive Records. Retention/deletion behavior must account for legitimate accounting, tax, fraud, refund, and legal obligations rather than treating all commerce data like ordinary profile data.
+
+### Payment-provider boundary
+
+The database remains provider-neutral at the Archive/domain layer. A future Stripe, PayPal, Shopify, or other integration maps provider objects/events into Mini Archive subscription/order/payment state through a small integration boundary. Webhooks must be authenticated, idempotent, and recorded sufficiently to prevent duplicate fulfillment or entitlement changes.
+
+Do not make a successful browser redirect the authoritative proof of payment. Server-verified provider events/state control paid entitlements and order fulfillment.
+
+## 15. Security and database invariants
 
 Every new v2 table is created with its security/integrity model in the same migration:
 - PKs
@@ -231,13 +281,15 @@ Every new v2 table is created with its security/integrity model in the same migr
 
 `archive_records` is the authorization root for record-owned child data. Anonymous users receive only deliberate public read access. Authenticated ownership does not imply blanket write access to reference/catalogue tables.
 
+Commerce and subscription writes are especially restricted: clients may read only their own appropriate account/order/subscription state, while authoritative payment, fulfillment, entitlement, and provider-event mutations occur through trusted server-side paths.
+
 Public-facing views must not accidentally bypass underlying RLS. Security-definer functions are used only where required, with tightly scoped execution grants and pinned/qualified object access.
 
-## 15. Public read/SEO model
+## 16. Public read/SEO model
 
 The application and Cloudflare Worker should eventually consume a deliberate public Archive read model/view rather than independently reconstructing visibility rules from prototype tables. It must expose only fields appropriate for published public Records and support record metadata, archive browsing, profiles, structured data, and sitemap generation.
 
-## 16. Cutover sequence
+## 17. Cutover sequence
 
 1. Export and independently back up `paints` and `paint_conversions`.
 2. Review/approve physical v2 SQL before applying it.
@@ -245,9 +297,10 @@ The application and Cloudflare Worker should eventually consume a deliberate pub
 4. Build the new Add/Edit Record workflow against v2.
 5. Migrate record/archive/profile views.
 6. Migrate media, Work Log, paint usage, physical history, games, audit history, NFC, and recovery.
-7. Update Worker SEO/sitemap reads.
-8. Test authorization, privacy behavior, recovery flows, deletion/export, and public/private media.
-9. Cut over.
-10. Remove obsolete prototype tables only after successful cutover.
+7. Add monetization foundations before any paid launch: entitlement model, subscription provider boundary, commerce/order model, NFC inventory/claim lifecycle, and secure webhook processing.
+8. Update Worker SEO/sitemap reads.
+9. Test authorization, privacy behavior, recovery flows, deletion/export, commerce isolation, entitlement changes, webhook idempotency, and public/private media.
+10. Cut over.
+11. Remove obsolete prototype tables only after successful cutover.
 
 No destructive production mutation should occur merely by documenting this architecture.
