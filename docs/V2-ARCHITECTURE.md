@@ -2,12 +2,18 @@
 
 ## Product principle
 
-Mini Archive records individually identifiable physical miniature works and their histories.
+Mini Archive records individually identifiable physical miniature works and the stories they accumulate.
 
-- **Catalogue** describes what a product/source was when it entered the world.
-- **Archive Record** describes the physical work as it exists.
-- **Provenance** connects claims about that work to evidence.
-- Source identity never dictates the finished work's game, faction, material, base, or artistic identity.
+**Every miniature has a story** means more than modelling and painting. Mini Archive should be able to preserve what a miniature is, where it came from, who owned and used it, what or whom it represented, when and where it was used, what happened during those moments, and how all of those facts changed over time.
+
+- **Catalogue** describes the identifiable manufactured model/sculpt/release.
+- **Archive Record** is the permanent identity of the physical work.
+- **Provenance** preserves claims, evidence, attestations, transfers, and uncertainty about that work.
+- **Work History** records what was physically/artistically done to it.
+- **Play History** records how it was used in games, campaigns, sessions, leagues, role-playing, and other play contexts.
+- Source identity never dictates the finished work's game, faction, material, base, artistic identity, or represented identity.
+
+Depth is optional. A user must still be able to photograph a miniature, name it, and create a Record without understanding the catalogue or filling out a database. Catalogue incompleteness and uncertain history must never block Record creation.
 
 ## Preservation and cutover boundary
 
@@ -15,65 +21,65 @@ The current Archive/NFC/game/timeline/profile content is prototype data and does
 
 The current `model_kits`, `miniatures`, `timeline_events`, and `timeline_subtasks` structures are not v2 foundations.
 
-## 1. Archive Record root
+## 1. Archive Record root and permanence
 
-`archive_records` is the ownership, visibility, publication, and authorization root.
+`archive_records` is the identity, publication, and authorization root for a physical archived work.
 
-Core fields:
-- `id uuid` PK
-- `archive_id text` unique, nullable until publication
-- `owner_profile_id uuid` FK
-- `record_type`: `miniature | group | diorama | other`
-- `construction_type`: `standard | mostly_existing | multiple_kits | original` where applicable
-- `title`, `subtitle`, `description`
-- `status`
-- `visibility`
-- `started_at`, `completed_at`
+Core concepts include:
+- internal UUID primary key
+- permanent human-facing `archive_id`, allocated atomically at publication
+- current owner/account relationship
+- structural record type: `miniature | group | diorama | other`
+- construction type where applicable: `standard | mostly_existing | multiple_kits | original`
+- title, subtitle, description
+- draft/published archival lifecycle
+- physical/history state where appropriate
 - timestamps
 
-Public Archive IDs are human-facing identifiers. UUIDs remain internal keys. Archive IDs are allocated atomically by PostgreSQL during publication, never with browser `COUNT + 1` logic.
+### Public and permanent Archive rule
+
+A draft may remain private because it has not yet entered the Archive. A legitimately published Archive Record is public and is not ordinarily delisted, made private, or deleted by its owner. Selling, transferring, losing, recovering, damaging, destroying, repainting, or retiring the physical miniature changes its history; it does not create a reason to erase its Archive identity.
+
+Account deletion must not cascade-delete published Archive Records or their legitimate historical facts. Ownership/account attribution may need transfer, detachment, or anonymization according to the eventual account-deletion policy.
+
+Permanence does **not** require Mini Archive to continue publicly serving abusive, illegal, malicious, privacy-violating, or incorrectly published content. Moderation may suppress media/text or, exceptionally, suppress public presentation of a Record while preserving its Archive ID and administrative/audit history. Archive IDs are never silently recycled.
+
+Public Archive data is distinct from private account, billing, recovery-location, moderation, evidence, and security data.
 
 ## 2. Physical miniature details
 
-`miniature_details` is a one-to-one extension of `archive_records` for individual miniature-specific physical/current attributes. `record_id` is both PK and FK.
+A one-to-one physical-details extension may hold individual-miniature attributes such as current material, current physical base size, scale, current game/faction affiliation, and painter attribution.
 
-Examples:
-- current material
-- current physical base size
-- scale
-- current game system
-- current faction/affiliation
-- painter profile or free-text painter attribution
-
-These describe the finished physical work and are independent from its catalogue source.
+These describe the physical finished work now and are independent from catalogue source facts. Important changes can become Work/Record History rather than requiring every current-state field to have a bespoke history table.
 
 ## 3. Record relationships
 
-`record_relationships` links finished Archive Records to other finished Archive Records.
+Relationships link finished Archive Records to other finished Archive Records and may preserve start/end history where meaningful, for example group/unit/display membership.
 
-Fields include parent record, child record, relationship type, `started_at`, `ended_at`, and notes.
+A miniature keeps one Archive ID while joining or leaving groups or displays. Source/component relationships are separate from finished-record relationships.
 
-Relationships preserve history rather than overwriting membership. A miniature keeps one Archive ID while joining/leaving groups, units, or displays.
-
-Source/component relationships are not stored here; they belong to `record_sources`.
+Do not over-generalize representation: a miniature representing Thorin does not separately "represent" Thorin's class, party, faction, or role. Those are properties/relationships of the represented play identity.
 
 ## 4. Catalogue and taxonomy
 
-V2 replaces `model_kits` with a manufacturer-agnostic catalogue hierarchy:
+V2 replaces `model_kits` with a manufacturer-agnostic catalogue/reference model. Exact physical tables remain subject to physical-schema review, but the catalogue must be capable of representing:
+- manufacturers and aliases
+- game systems and aliases
+- factions/affiliations and aliases
+- product ranges where useful
+- catalogue models/sculpts/design identities
+- historically distinguishable releases/castings/revisions
+- aliases and supporting evidence
 
-- `manufacturers`
-- `manufacturer_aliases`
-- `game_systems`
-- `game_system_aliases`
-- `factions`
-- `faction_aliases`
-- `product_ranges`
-- `catalogue_models`
-- `catalogue_releases`
-- `catalogue_aliases`
-- `catalogue_evidence`
+### Catalogue scope rule
 
-A catalogue model represents a model/design identity. Releases/castings represent historically distinguishable production forms such as material, supplied base, SKU, release period, packaging, and other provenance-bearing attributes.
+Mini Archive is not attempting to reconstruct every retailer bundle, battalion box, army box, packaging variation, or individual bit.
+
+A model appearing unchanged in multiple retail boxes does not create multiple model identities. Retail packaging/set information is worth modelling only when it materially helps identify or distinguish the physical miniature, such as an exclusive sculpt or identifiable production difference.
+
+A release/revision is worth distinguishing when the physical model or supplied kit changed in a way that helps identify, date, or authenticate the miniature: sculpt, material, meaningful component/sprue revision, supplied base, or another identifiable production characteristic. A mere cardboard/package change normally is not.
+
+The same sculpt may be used in multiple products without becoming multiple sculpts. Mini Archive does not catalogue individual weapon/claw/bit inventory simply because a kit offered multiple build options.
 
 Unknown values remain unknown. Catalogue completeness must never block Archive Record creation.
 
@@ -81,12 +87,7 @@ Unknown values remain unknown. Catalogue completeness must never block Archive R
 
 `record_sources` bridges a finished Archive Record to what it was made from.
 
-A source can reference a known catalogue model/release or represent a non-catalogue source such as:
-- third-party component
-- 3D-printed component
-- hand-sculpted component
-- scratch-built component
-- unknown source
+A source may reference a known catalogue model/release or a non-catalogue source such as third-party, 3D printed, hand-sculpted, scratch-built, or unknown material/component.
 
 Construction modes presented to users are:
 1. Existing / Standard model
@@ -94,213 +95,291 @@ Construction modes presented to users are:
 3. Built from multiple kits
 4. Original creation
 
-No percentages or mandatory primary source are required for multi-kit work.
+No percentages or mandatory primary source are required for multi-kit work. The catalogue is not polluted with every random conversion bit.
 
-## 6. Provenance and ownership
+## 6. Provenance, ownership, claims, and trust
 
-Physical history and documentation claims are modeled separately.
+Mini Archive preserves provenance; it does not promise omniscient historical authentication.
 
-- `provenance_claims`
-- `provenance_evidence`
-- `ownership_events`
+The architecture must distinguish:
+- historical/provenance claims
+- evidence supporting or conflicting with claims
+- attestations/confirmations by involved users
+- ownership/transfer events
+- actions Mini Archive itself can prove occurred inside the service
 
-Claims support verification states such as `unverified`, `supported`, `conflicting`, and `verified`, plus optional confidence. Evidence can include photos, receipts, auction listings, certificates, markings, packaging, catalogue references, or prior Mini Archive transfers.
+Do not present one mysterious `verified` flag as if Mini Archive independently authenticated every historical fact. Trust should be descriptive. Useful concepts include:
+- **self-reported**
+- **supported by evidence**
+- **corroborated**
+- **participant-confirmed**
+- **system-recorded** (Mini Archive can prove the platform transaction/action occurred)
+- **disputed**
 
-Ownership events represent actual asserted ownership history. Editing an ownership claim is an audit event, not itself an ownership transfer.
+For example, Mini Archive can prove that two authenticated accounts completed an Archive ownership transfer through Mini Archive. That does not prove the complete legal ownership history of the physical object before the transaction.
+
+Evidence may include photos, receipts, auction listings, certificates, competition records, publications, markings, packaging, catalogue references, URLs/documents, prior owner attestations, and prior Mini Archive transactions.
+
+Historical uncertainty is allowed. V2 does not need a complex fuzzy-date system initially; normal partial/approximate user-entered dating is sufficient unless catalogue/provenance use demonstrates a stronger need.
+
+### Ownership transfers
+
+Ownership changes should be explicit transactions rather than arbitrary edits to an owner field. A requested transfer remains pending until the appropriate receiving party accepts it. Completed transfers become durable history and are not casually rewritten or deleted.
+
+Ownership and edit permission are conceptually distinct even if initial V2 ships with a simple owner model. The physical schema should not make future delegated/collaborative management impossible.
 
 ## 7. Work Log
 
-- `work_entries`
-- `work_entry_paints`
-- `work_entry_media`
+Work History preserves Assembly, Surface Prep, Paint, Basing, Varnish, Repair, Completed, and Other entries with optional time, notes, media, milestones, and paint usage.
 
-Work entries retain the useful existing concepts: Assembly, Surface Prep, Paint, Basing, Varnish, Repair, Completed, and Other.
+Paint product identity is separate from usage. A coloured primer and an ordinary paint may intentionally share a colour/hex while remaining separate products. Usage roles such as Primer, Basecoat, Layer, Highlight, Shade, etc. belong to work-entry paint usage rather than dedicated basecoat columns.
 
-Paint product identity is separate from usage. A coloured primer and an ordinary paint may intentionally share a colour/hex while remaining separate products. Usage roles such as Primer, Basecoat, Layer, Highlight, Shade, etc. belong to `work_entry_paints` rather than dedicated basecoat columns.
-
-The existing `paints` and `paint_conversions` reference data survives v2 intact. `paint_role` is not treated as a canonical v2 taxonomy.
+The existing `paints` and `paint_conversions` reference data survives v2 intact. Existing IDs remain stable and `paint_role` is not treated as a canonical v2 taxonomy.
 
 ## 8. Physical Record History
 
-`record_events` represents events that happened to the physical work, including exhibitions, competitions, damage, restoration, discoveries, and other notable provenance events.
+Physical Record History represents meaningful events that happened to the physical work: ownership changes, exhibitions, competitions, damage, restoration, discovery, recovery, and other provenance-bearing events.
 
-Games remain specialized structured data rather than generic record-event JSON.
+This is distinct from Work History, Play History, and Edit/Audit History even if the UI later assembles all of them into a unified chronological "life of this miniature" presentation.
 
-## 9. Game history
+## 9. Play History: game-agnostic foundation
 
-Game storage is normalized while preserving the existing fast logging UX:
+V2 must not assume every miniature is used in a Warhammer-style match. "Game History" is therefore broadened to **Play History**.
 
-- `game_sessions`
-- `game_rounds`
-- `game_participants`
-- `game_tallies`
+Play History must support, without forcing every feature on every system:
+- traditional wargame matches
+- tournaments
+- Blood Bowl-style leagues/seasons and sport-like events
+- narrative campaigns
+- role-playing campaigns and sessions
+- other tabletop/play contexts
 
-A casual/matched/campaign game is a session with one round. A tournament is one session with tournament metadata and multiple rounds. Participation attaches to Archive Records generally, allowing groups/units or individuals to participate without miniature-specific foreign keys.
+Mini Archive should understand Records, Play Identities, contexts/sessions, structured events, and Stories. Individual game systems can provide vocabulary and suggested event/stat types rather than requiring hard-coded universal concepts such as kills, wounds, victory points, or rounds.
 
-## 10. Media and storage
+### Play contexts and sessions
 
-Media is represented centrally rather than scattering permanent URLs through unrelated tables:
+The physical schema should support optional longer-running contexts such as Campaign, League, Season, Adventure, Crusade, or Tournament and the sessions/games that occur within them. User-facing vocabulary may be game-system-specific.
 
-- `media`
-- `record_media`
-- `work_entry_media`
-- `evidence_media`
-- `event_media`
+Ruleset/edition may be optional context, for example `D&D 5e` or `Warhammer 40,000 3rd Edition`, because it can enrich historical context. Mini Archive does not need to validate, calculate, or convert rules.
 
-Storage policy must enforce uploader/record ownership, MIME restrictions, and file-size restrictions. Draft/private media must not become public merely because a bucket URL is known. Published-media delivery and private/in-progress media are deliberately separated by policy or bucket strategy.
+### Play Identities / represented characters
 
-## 11. NFC and recovery
+A persistent represented identity can be distinct from a physical Archive Record. This is particularly important for role-playing and campaign play.
 
-NFC tags attach to Archive Records, not miniature-specific rows.
+Example: a user's D&D character Thorin may be represented by Miniature A for two years and Miniature B afterward. Thorin's character/play history follows Thorin, while each physical Archive Record accurately preserves when it represented him.
 
-`nfc_tags` includes:
-- `id uuid` PK
-- `token text` unique
-- `record_id uuid` FK, nullable while inventory is unassigned
-- tag status such as `inventory | assigned | active | revoked | replaced`
-- optional order/order-item provenance for Mini Archive-sold tags
-- timestamps including assignment, activation, first scan, and revocation as appropriate
+Personal/play identities are scoped entities identified internally by IDs, never by display name. Two users may both have a character named Thorin without any data collision. Names are labels for people; IDs identify entities to Mini Archive.
 
-The NFC token is independent from both the internal UUID and public Archive ID. A physical tag can therefore be manufactured and sold before it is assigned to a Record.
+Published/canonical characters and personal/homebrew play identities have different authority and should not be conflated merely because both are "characters." Shared canonical reference identity may be useful for published characters; personal identities belong to their user/play context.
 
-Tag activation/claiming must verify that the authenticated purchaser/recipient is entitled to claim the tag. Replacement or revocation must preserve the historical association rather than silently recycling a token.
+Play Identity state may optionally include system-specific current-state data and historical snapshots so a character's progression can be shown. Mini Archive may record entered character-sheet/state information without becoming a rules engine. It does not need to calculate armor class, spell slots, legality, or system mechanics.
+
+### Structured play events
+
+The canonical interaction term is not `kill`. A Warhammer-like system may present **Defeat / Defeated by**, because removal from play does not imply fictional death. Other systems may use different event vocabulary: Blood Bowl may care about touchdowns and casualties, while an RPG may rely far more heavily on narrative Stories.
+
+Structured event definitions must therefore be extensible/game-aware. Some events have an actor and target (defeat/casualty); some have only an actor (touchdown); future event types may involve multiple participants. The physical schema should not require a database migration for every new game's vocabulary.
+
+Verification describes who confirmed an event, not Mini Archive certifying objective truth. An event involving another user's Record may be participant-confirmed. NFC is an optional fast resolver, never the underlying identity or a requirement.
+
+### Stories
+
+"Battle Stories" is broadened to **Stories / Play Stories**. Stories capture why a moment was memorable when structured statistics are inadequate or irrelevant.
+
+Stories may:
+- exist with or without a structured event
+- exist with or without a formal session/game
+- reference multiple Archive Records and/or Play Identities
+- optionally belong to a campaign/context/session
+- optionally link to Work entries when play inspired a physical modification
+
+Initial design limits remain:
+- title: 100 characters
+- story: 1,500 characters
+
+The intent is digestible anecdotes, not full battle-report storage.
+
+## 10. Media and evidence storage
+
+Media/attachments should be represented centrally enough to support Record photos, Work History, Stories, provenance evidence, moderation, and future non-image evidence without scattering permanent URLs through unrelated tables.
+
+Storage policy must enforce uploader authorization, MIME restrictions, file-size restrictions, and deliberate public/private delivery. Draft uploads and private evidence/account material must not become public merely because a bucket URL is known.
+
+Published Archive presentation is public, but that does not make every underlying receipt, evidence document, account artifact, or moderation attachment public.
+
+## 11. NFC identity, activation credits, and optional physical carriers
+
+NFC is a doorway into an Archive Record, not a separate archive or a requirement for core functionality.
+
+The architecture distinguishes:
+1. **NFC activation credit**: entitlement consumed to provision an NFC identity.
+2. **NFC identity/token**: permanent digital identity resolving to an Archive Record.
+3. **Physical carrier/tag**: optional hardware containing that identity URL; may be user-supplied or an official Mini Archive product.
+
+A user may purchase/earn activation credits and write Mini Archive-generated URLs to their own compatible NFC tags. Mini Archive does not need to sell physical tags for the activation model to work.
+
+Credits use a traceable ledger rather than a magic integer balance. Sources can include signup grants, recurring subscription grants, purchased packs, promotions/referrals, gifts, or physical-product purchases. One activation consumes one activation credit regardless of the dollar price at which that credit was acquired.
+
+Current product direction favors one permanent free activation on signup and recurring subscription grants that accumulate/roll over, with exact quantities/pricing deferred. Earned credits are not active-tag slots. Subscription lapse does not deactivate already-provisioned NFC identities or dead-link tagged miniatures.
+
+NFC public tokens are independent from internal UUIDs and public Archive IDs and must not expose account/internal Record UUIDs.
+
+### Two-tap/target interactions
+
+On iPhone/Safari, core NFC workflows must not depend on Web NFC. An authenticated user can begin a pending interaction from Record A, then physically tap Record B's normal HTTPS NFC tag. The second navigation resolves Record B server-side and completes/continues the pending interaction. Archive ID/search provides a non-NFC alternative.
 
 ### Missing/stolen recovery
 
-Location collection is not general NFC analytics. It is activated for an open recovery case.
+Location collection is not general NFC analytics. It activates only for an open missing/stolen recovery case.
 
-`record_recovery_cases` includes:
-- record
-- reporting profile
-- case type: `missing | stolen`
-- reported/resolved timestamps
-- notes/status
+Normal NFC scans resolve the Archive Record without creating retained location history. During an active recovery case, the request may create a recovery scan with approximate IP/network-derived city/region/country. The page may separately request precise browser/device geolocation; precise location is stored only if the scanner explicitly grants permission.
 
-`recovery_scan_events` includes:
-- recovery case FK
-- NFC tag FK
-- scan timestamp
-- IP-derived approximate city/region/country where available
-- location method
-- optional precise-location request/grant state
-- optional device latitude/longitude/accuracy only when the scanner explicitly grants browser geolocation permission
+Once the recovery case is resolved, ordinary scans return to non-location behavior. Raw IP retention should be minimized/avoided where practical; public language must distinguish approximate network location from GPS.
 
-Normal NFC scans resolve the Archive Record without creating a retained location history. When a Record is actively missing/stolen, the initial request may create a recovery scan using approximate IP-derived location before any optional browser geolocation prompt. Precise device location is never inferred from IP data.
+## 12. Notifications and delivery preferences
 
-Recovery scans are a specialized event stream and are not duplicated into `record_events`; the UI may present significant recovery events in a unified history view.
+V2 needs shared notification infrastructure because ownership transfers, play-event confirmations, Record mentions/references, recovery scans, disputes, campaign/shared-play activity, NFC/account events, and future workflows can require asynchronous user attention.
 
-## 12. Edit/audit history
+Notifications are durable in-app objects, surfaced through a navbar notification control with unread state/count and a notification center/dropdown.
 
-`record_audit_log` records changes to documentation:
-- record
-- actor
-- action
-- entity type/id
-- structured changes
-- timestamp
+Separate concepts:
+- **notification**: what happened and which user needs to know
+- **delivery**: attempts/results for channels such as email
+- **notification preferences**: which optional categories/channels the user wants
 
-Audit history is distinct from Work Log, physical Record History, games, provenance, and ownership history.
+A notification references the authoritative object/action that caused it rather than duplicating that object's full state. Opening an old notification therefore resolves to the current transfer/dispute/event/recovery state.
 
-## 13. Privacy and compliance architecture
+In-app actionable notifications generally should not disappear merely because email is disabled. Exact preference flags and which transactional/security/recovery notifications are mandatory or default-on are implementation decisions to review later.
+
+Notification preferences are not the same thing as privacy/security settings.
+
+## 13. Disputes, reports, and trust correction
+
+Permanent Archive history does not mean every assertion is immutable truth.
+
+The architecture must allow appropriate claims, relationships, play events, provenance assertions, or transactions to be challenged without requiring a bespoke dispute table for every domain. A dispute points to the authoritative object being challenged and may carry evidence, participants, status, and resolution history.
+
+A disputed assertion can be visibly marked as disputed rather than silently erased. Resolution vocabulary and escalation rules are deferred, but may eventually include upheld, corrected, retracted, invalid/malicious, or unable to determine.
+
+Most historical disputes should not require Mini Archive staff to determine objective truth. The system can preserve competing claims/evidence and describe their support/attestation. Human/admin intervention should focus on abuse, fraud attempts, impersonation, account compromise, malicious dispute behavior, or cases where platform action is actually necessary.
+
+**Disputes are distinct from abuse reports.** A provenance disagreement is not the same thing as reporting pornography, harassment, stolen media, illegal content, spam, or other policy violations, even if both eventually surface in one admin interface.
+
+## 14. Moderation and abuse resistance
+
+A permanent public Archive must assume malicious uploads and abuse will eventually occur.
+
+V2 should provide attachment points for moderation without committing to a specific AI/moderation vendor. The preferred model is layered:
+- validation and rate limits before expensive moderation
+- automated screening at upload/publication/change where appropriate
+- allow/block/review outcomes
+- community/user reporting after publication
+- automated triage and abuse-pattern detection where useful
+- limited human/admin escalation for ambiguous or serious cases
+- auditability and an eventual appeal/correction path
+
+Moderation state is separate from archival publication/lifecycle state. A published Archive identity may remain permanent while offending media/text is blocked or the public presentation is administratively suppressed.
+
+Potential automated screening can eventually include explicit sexual content, spam, clearly irrelevant/non-miniature uploads, harassment/hateful content requiring contextual review, suspicious provenance spam, repeated stolen media, malicious Stories, and coordinated abuse. AI moderation is a tool/signal, not an infallible historical or policy authority.
+
+Non-AI controls should include appropriate upload type/size validation, verified-account requirements where useful, rate limits, new-account publishing controls, abuse throttling, account suspension, audit logs, and secure API/RLS enforcement.
+
+## 15. Edit/audit history
+
+Audit history records changes to documentation and sensitive workflows with actor, action, target entity, structured changes where appropriate, and timestamp.
+
+Edit/Audit History is distinct from Work History, Physical Record History, Play History, provenance, ownership history, notifications, disputes, and moderation cases.
+
+## 16. Privacy, account, and compliance architecture
 
 Privacy requirements are part of v2 schema design rather than post-launch documentation.
 
 Principles:
-- privacy-protective defaults
+- privacy-protective defaults for private/account data
 - purpose limitation and data minimization
-- public Archive data separated from private account information
+- published Archive Records are public and permanent by product design
+- private account/payment/security/evidence data remains separated from public Archive data
 - no routine NFC location retention
-- recovery location collected only for an active missing/stolen recovery purpose
+- recovery location collected only for active missing/stolen recovery purposes
 - precise browser/device geolocation requires explicit permission
-- retention/deletion rules defined for personal and recovery data
+- notification/email preferences are separate from Record publication
+- personal-data retention/deletion rules are defined without cascading away permanent Archive history
 - account access/export/deletion must be supportable
 - optional/non-essential processing is separated from service-essential processing
 - aggregated/anonymized hobby statistics may be derived later without making identifiable-user surveillance the product
 
-Consent/versioning support should include a small `legal_documents` / `user_consents` model where explicit acceptance is actually required, recording document/purpose version, user, timestamp, and withdrawal where applicable. Do not use one perpetual consent flag for unrelated future purposes.
+Consent/versioning should use explicit purpose/document version records where acceptance is actually required rather than one perpetual consent flag.
 
 Before production cutover, maintain an inventory mapping personal-data fields to purpose, visibility, retention, and deletion behavior. Privacy/Terms copy must describe actual implemented behavior.
 
-## 14. Monetization, subscriptions, and commerce
+## 17. Monetization, subscriptions, and commerce
 
-V2 must support monetization without embedding one payment processor's object model throughout Archive data.
+V2 supports monetization through provider-neutral plans/subscriptions/entitlements and NFC activation credits without embedding one payment processor throughout Archive data.
 
-### Plans and subscriptions
+Application features ask what an account is entitled to do rather than scattering plan-name checks. Subscription cancellation/payment failure must not destroy Archive data or deactivate permanent NFC identities already earned/activated.
 
-Use an internal entitlement model:
+Payment collection belongs to a compliant external provider; Mini Archive does not store raw card details. Server-verified provider events/webhooks are authoritative and idempotent; browser success redirects are not proof of payment.
 
-- `plans` defines Mini Archive plan identities and display metadata.
-- `plan_entitlements` defines capabilities/limits granted by a plan.
-- `subscriptions` links an account to a plan and stores provider-neutral billing state plus external provider/customer/subscription identifiers.
-- optional `subscription_events` records important billing lifecycle changes/webhook processing for idempotency/audit.
+Optional physical Mini Archive NFC products may later use ordinary product/order/fulfillment concepts, but digital NFC activation does not depend on Mini Archive selling or shipping hardware.
 
-Application features should ask **what the account is entitled to do**, not contain scattered checks such as `if plan = premium`. This allows future paid features, grandfathered users, promotions, lifetime/supporter tiers, or a change of billing provider without redesigning Archive Records.
-
-Potential entitlements can include limits or capabilities such as Record count, storage, private Records, enhanced provenance/recovery features, exports, advanced statistics, or other future features. The architecture does not decide which existing core features will be paywalled.
-
-Billing-provider identifiers and financial state remain private account data. Mini Archive should not store raw payment-card details; payment collection belongs to a compliant external payment provider.
-
-Subscription cancellation, expiration, payment failure, refunds, trials, and grace periods must not destroy user Archive data. Entitlement loss changes access/capabilities according to product policy; it does not cascade-delete Records or media.
-
-### NFC tag commerce
-
-Physical NFC tag purchasing is separate from subscription billing even if the same payment provider is eventually used.
-
-Commerce foundation:
-- `products` for sellable Mini Archive products
-- `product_variants` for physical variants/SKUs where needed
-- `orders`
-- `order_items`
-- `order_addresses` or equivalent immutable shipping snapshot
-- `payments` / provider transaction references as required
-- `fulfillments` for shipment state/tracking
-- optional `refunds` where provider synchronization requires local representation
-
-An NFC tag sold through an order can be linked from the physical `nfc_tags` inventory row to its order item. This supports inventory -> sold -> shipped -> claimed -> assigned -> active -> replaced/revoked history.
-
-Order records must preserve purchase history even if product names/prices later change. Order items therefore store transactional snapshots such as product description, quantity, unit amount, currency, taxes/discounts where applicable, rather than relying only on the current product catalogue.
-
-Shipping/billing addresses and payment-provider identifiers are private commerce data and are never exposed through public profiles or Archive Records. Retention/deletion behavior must account for legitimate accounting, tax, fraud, refund, and legal obligations rather than treating all commerce data like ordinary profile data.
-
-### Payment-provider boundary
-
-The database remains provider-neutral at the Archive/domain layer. A future Stripe, PayPal, Shopify, or other integration maps provider objects/events into Mini Archive subscription/order/payment state through a small integration boundary. Webhooks must be authenticated, idempotent, and recorded sufficiently to prevent duplicate fulfillment or entitlement changes.
-
-Do not make a successful browser redirect the authoritative proof of payment. Server-verified provider events/state control paid entitlements and order fulfillment.
-
-## 15. Security and database invariants
+## 18. Security and database invariants
 
 Every new v2 table is created with its security/integrity model in the same migration:
-- PKs
-- FKs and deliberate deletion behavior
+- primary/foreign keys and deliberate deletion behavior
 - unique/check constraints
-- indexes for FKs/query paths
+- indexes for foreign keys/query paths
 - explicit grants
-- RLS enabled
-- RLS policies using optimized ownership checks
+- Row Level Security (RLS) enabled where exposed
+- optimized policies and deliberately restricted trusted functions
 
-`archive_records` is the authorization root for record-owned child data. Anonymous users receive only deliberate public read access. Authenticated ownership does not imply blanket write access to reference/catalogue tables.
+`archive_records` remains the authorization anchor for Record-owned content, but ownership must not be confused with every future permission/role. Anonymous users receive deliberate public read access to published Archive data. Authenticated ownership does not imply blanket write access to reference/catalogue data.
 
-Commerce and subscription writes are especially restricted: clients may read only their own appropriate account/order/subscription state, while authoritative payment, fulfillment, entitlement, and provider-event mutations occur through trusted server-side paths.
+Historical data must use deliberate deletion semantics. Do not casually `ON DELETE CASCADE` ownership transfers, attestations, verified interactions, disputes, or other history merely because an account or related object changes state.
 
-Public-facing views must not accidentally bypass underlying RLS. Security-definer functions are used only where required, with tightly scoped execution grants and pinned/qualified object access.
+Public views must not accidentally bypass underlying RLS. Security-definer functions are used only where required with tightly scoped execution grants and qualified object access.
 
-## 16. Public read/SEO model
+## 19. Public read, unified history, and SEO
 
-The application and Cloudflare Worker should eventually consume a deliberate public Archive read model/view rather than independently reconstructing visibility rules from prototype tables. It must expose only fields appropriate for published public Records and support record metadata, archive browsing, profiles, structured data, and sitemap generation.
+The application and Cloudflare Worker should eventually consume a deliberate public Archive read model rather than independently reconstructing publication rules from prototype tables.
 
-## 17. Cutover sequence
+The Record page may assemble a unified chronological "life of the miniature" from catalogue context, Work History, Physical Record History, Play History, Stories, representation relationships, ownership/provenance, and recovery milestones without forcing all of those facts into one monster timeline table.
+
+Public read models must support Record metadata, Archive browsing, profiles, structured data, and sitemap generation while excluding private account/evidence/recovery/moderation information.
+
+## 20. Physical-schema design rules and open implementation questions
+
+Conceptual entities in this document do not automatically imply one physical PostgreSQL table each. During physical design, consolidate concepts only where they genuinely share lifecycle, security, constraints, and query behavior. Do not consolidate merely to reduce table count.
+
+Before SQL is approved, stress-test the reusable primitives against at least:
+- standard miniature with simple catalogue source
+- converted/multi-kit miniature
+- old miniature with uncertain provenance
+- model with a physically meaningful kit/release revision
+- group/unit and diorama membership over time
+- ownership transfer and account deletion
+- Warhammer-style game with a participant-confirmed defeat
+- Blood Bowl-style touchdown/casualty vocabulary
+- D&D character represented by multiple physical miniatures over time
+- long-running campaign with character-state snapshots and Stories
+- missing/stolen NFC recovery
+- malicious upload/report/moderation suppression
+- disputed provenance/transaction
+
+Still-open implementation details should be reviewed rather than silently invented, including exact notification preference flags, dispute-resolution states, moderation thresholds/providers, collaborative permissions, exact Play Identity/state representation, and which game-system configuration belongs in reference data versus application code.
+
+## 21. Cutover sequence
 
 1. Export and independently back up `paints` and `paint_conversions`.
-2. Review/approve physical v2 SQL before applying it.
-3. Create v2 foundation tables, constraints, indexes, grants, and RLS in small migrations.
-4. Build the new Add/Edit Record workflow against v2.
-5. Migrate record/archive/profile views.
-6. Migrate media, Work Log, paint usage, physical history, games, audit history, NFC, and recovery.
-7. Add monetization foundations before any paid launch: entitlement model, subscription provider boundary, commerce/order model, NFC inventory/claim lifecycle, and secure webhook processing.
-8. Update Worker SEO/sitemap reads.
-9. Test authorization, privacy behavior, recovery flows, deletion/export, commerce isolation, entitlement changes, webhook idempotency, and public/private media.
-10. Cut over.
-11. Remove obsolete prototype tables only after successful cutover.
+2. Translate this conceptual architecture into a concrete physical-schema proposal: exact tables/columns/types, constraints, indexes, deletion behavior, RLS/grants, trusted functions, storage policy, notification/dispute/moderation boundaries, and public read models.
+3. Review the physical schema before applying production mutations.
+4. Create v2 foundations in small atomic migrations/commits.
+5. Build the new Add/Edit Record workflow against v2 while preserving the low-friction creation experience.
+6. Migrate public Record/archive/profile reads and media/Work/paint functionality.
+7. Implement Physical History, Play History/Stories/Play Identities, ownership/provenance, notifications, disputes/reporting hooks, audit history, NFC activation/recovery, and account/privacy foundations in staged increments.
+8. Add monetization foundations before any paid launch: entitlements/subscriptions, NFC credit ledger, provider boundary, and optional commerce support.
+9. Update Worker SEO/sitemap reads.
+10. Test authorization, permanence, account deletion/anonymization, moderation/suppression, recovery, notification delivery, disputes, public/private data boundaries, entitlement changes, and webhook idempotency.
+11. Cut over.
+12. Remove obsolete prototype tables only after successful cutover.
 
 No destructive production mutation should occur merely by documenting this architecture.
