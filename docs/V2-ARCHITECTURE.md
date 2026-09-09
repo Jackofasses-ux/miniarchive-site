@@ -338,6 +338,36 @@ Historical data must use deliberate deletion semantics. Do not casually `ON DELE
 
 Public views must not accidentally bypass underlying RLS. Security-definer functions are used only where required with tightly scoped execution grants and qualified object access.
 
+### Mandatory pre-production security audit and launch gate
+
+A formal security audit is a **hard launch gate** for v2 before meaningful public adoption or storage of sensitive evidence. It is not an optional post-launch cleanup task and must be repeated after material changes to authentication, authorization, evidence/location handling, NFC security, billing, storage, or other sensitive boundaries.
+
+The audit must deliberately attempt to break Mini Archive rather than merely confirm that security features are enabled. At minimum it must cover:
+- anonymous access to data, APIs, RPCs, storage, and public read models
+- authenticated cross-account access: User A attempting to read, modify, delete, transfer, or enumerate User B's private data
+- complete RLS and explicit-grant review for every exposed table/view/function
+- `SECURITY DEFINER`, service-role, privileged server function, and privilege-escalation review
+- public/private storage bucket policies, signed URL expiry, object enumeration, malicious upload, MIME/type/size validation, and unauthorized original-file/evidence access
+- separation of public Archive presentation from private account, receipt, evidence, EXIF/location, moderation, recovery, billing, and security data
+- secrets and credential exposure, including ensuring privileged/service credentials never reach browser code or repository history
+- authentication/session controls and account-recovery abuse paths
+- NFC public-token unpredictability, enumeration, replay/interaction abuse, reassignment, transfer, missing/stolen, and evidence-related attack paths
+- IDOR/BOLA-style authorization failures across all object identifiers
+- API/RPC abuse, rate limiting, automated enumeration/scraping of non-public resources, and resource-exhaustion paths
+- ownership transfer, account deletion/anonymization, Record transfer, moderation, dispute, and entitlement edge cases
+- payment/webhook authenticity, replay protection, idempotency, and privilege changes caused by billing events
+- audit-log integrity and access controls
+- dependency and supply-chain vulnerability review
+- database backup, export, log, and operational-data protection so security is not limited to the live application
+- privacy/data-minimization review for sensitive evidence and location data
+- incident detection, logging, alerting, containment, recovery, and a documented breach-response procedure
+
+Security tests should include automated regression coverage where practical, especially RLS/cross-account authorization tests, so fixed vulnerabilities do not silently return.
+
+No audit can establish that Mini Archive is "unhackable." The launch criterion is that known critical/high-risk findings are remediated, sensitive boundaries have been adversarially tested, and any accepted residual risks are explicitly documented rather than accidentally ignored.
+
+As Mini Archive grows and begins holding meaningful volumes of sensitive user/evidence data, an independent professional penetration test/security review should become an additional release/operational requirement rather than relying solely on internal testing.
+
 ## 19. Public read, unified history, and SEO
 
 The application and Cloudflare Worker should eventually consume a deliberate public Archive read model rather than independently reconstructing publication rules from prototype tables.
@@ -378,8 +408,8 @@ Still-open implementation details should be reviewed rather than silently invent
 7. Implement Physical History, Play History/Stories/Play Identities, ownership/provenance, notifications, disputes/reporting hooks, audit history, NFC activation/recovery, and account/privacy foundations in staged increments.
 8. Add monetization foundations before any paid launch: entitlements/subscriptions, NFC credit ledger, provider boundary, and optional commerce support.
 9. Update Worker SEO/sitemap reads.
-10. Test authorization, permanence, account deletion/anonymization, moderation/suppression, recovery, notification delivery, disputes, public/private data boundaries, entitlement changes, and webhook idempotency.
-11. Cut over.
+10. Run the mandatory pre-production security audit in Section 18, including adversarial authorization/privacy/storage/NFC/billing testing and regression coverage. Remediate critical/high-risk findings before launch.
+11. Cut over only after the security launch gate passes.
 12. Remove obsolete prototype tables only after successful cutover.
 
 No destructive production mutation should occur merely by documenting this architecture.
