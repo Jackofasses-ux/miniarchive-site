@@ -94,6 +94,33 @@ Constraints/design:
 - current fields are conveniences for display/filtering. Important historical changes are recorded in history rather than attempting temporal columns here.
 - source catalogue faction/material/base remain separate from these finished-work values.
 
+## `group_types`
+
+Extensible vocabulary describing what kind of group a Group Archive Record represents. This is reference/configuration data rather than a hard-coded enum so new game systems can introduce useful grouping concepts without schema changes.
+
+| Column | Type | Null | Notes |
+|---|---|---:|---|
+| `id` | `uuid` | no | PK |
+| `code` | `text` | no | stable machine-readable code |
+| `name` | `text` | no | display label, e.g. Squad, Team, Fleet, Collection |
+| `game_system_id` | `uuid` | yes | FK `game_systems(id)`; null = generic/cross-system type |
+| `parent_type_id` | `uuid` | yes | optional self-FK for future specialization/hierarchy |
+| `description` | `text` | yes | optional reference description |
+| `active` | `boolean` | no | allows retirement without deleting historical vocabulary |
+
+Design principle: Mini Archive provides the grouping mechanism; game systems provide the vocabulary.
+
+## `group_details`
+
+One-to-one extension for Archive Records whose `record_type = group`.
+
+| Column | Type | Null | Notes |
+|---|---|---:|---|
+| `record_id` | `uuid` | no | PK/FK `archive_records(id)` |
+| `group_type_id` | `uuid` | no | FK `group_types(id)` |
+
+This keeps the root Archive Record generic while allowing groups such as squads, teams, armies, fleets, collections, parties, warbands or future system-specific concepts to be added as reference data.
+
 ## `record_relationships`
 
 Historical relationships between finished Archive Records, such as miniature membership in a squad/group or placement in a diorama.
@@ -193,7 +220,7 @@ A private/sensitive evidence asset cannot become public merely by creating this 
 Planned tables:
 - `manufacturers`
 - `manufacturer_aliases`
-- `game_systems`
+- `game_systems` (referenced by `group_types`; implementation ordering must satisfy that FK)
 - `game_system_aliases`
 - `factions`
 - `faction_aliases`
