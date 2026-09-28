@@ -288,6 +288,185 @@ A Record publicly credits Alex as painter. Alex disputes the credit and says Jor
 
 **Signal:** cluster C is reinforced. Credits, ownership claims and other provenance-bearing facts should likely expose stable assertion/event identities that can be evidenced, attested, disputed and superseded.
 
+---
+
+## Scenario 15 — proxy / rebased miniature used across systems and factions
+
+The same physical miniature begins life as a 40K model, is later rebased for another ruleset, is sometimes used as a proxy for a different faction, and is eventually returned to its original game. Its manufactured identity never changes.
+
+| Requirement | Result | Notes |
+|---|---|---|
+| Manufactured source remains stable | PASS | Catalogue identity is correctly separate from finished/play identity. |
+| Base changes over time | PASS/AWKWARD | Current base pointer works, but history belongs in Work/physical history. |
+| Current faction differs from source faction | PASS | Existing source/finished-work separation works. |
+| Temporary proxy faction/use | **AWKWARD** | A single `current_faction_id` cannot distinguish physical presentation from temporary represented/play identity. |
+| Same physical Record used in multiple systems | **AWKWARD / NEEDS DESIGN** | Reinforces temporal affiliation versus Play Identity separation. |
+| Return to original system without losing intervening history | **NEEDS DESIGN** | Temporal affiliations/representations must preserve periods. |
+
+**Signal:** do not overload `miniature_details.current_game_system_id/current_faction_id` with every way a miniature has been used. Physical presentation affiliation and represented Play Identity need distinct concepts.
+
+---
+
+## Scenario 16 — homebrew faction / unknown future taxonomy
+
+A user paints an army for a completely original homebrew faction in an established game. Years later the faction becomes popular and gets richer shared reference data. Another user uses the same faction name for an unrelated homebrew force.
+
+| Requirement | Result | Notes |
+|---|---|---|
+| Record creation without official faction row | **NEEDS DESIGN** | Reference incompleteness must not block finished-work affiliation. |
+| Personal/homebrew affiliation without polluting global reference data | **NEEDS DESIGN** | Need scoped/custom affiliation identity or permissive local value. |
+| Two unrelated homebrew factions with same name | **NEEDS DESIGN** | Names cannot be identifiers. |
+| Later link personal faction to shared/canonical reference | EXTENSION | Should be possible without rewriting Record history. |
+| Official catalogue faction remains distinct from finished affiliation | PASS | Existing boundary holds. |
+
+### Failure cluster I — canonical versus user-defined taxonomy
+
+The catalogue/reference layer cannot be the only source of valid user-facing affiliations. Mini Archive needs a pattern for canonical/shared reference values versus user-defined/scoped identities, similar in spirit to canonical versus personal Play Identities.
+
+---
+
+## Scenario 17 — one physical work splits into two Archive-worthy works
+
+A large model is permanently dismantled. Its rider becomes a standalone miniature and its mount is rebuilt as a separate display piece. Both descendants should have their own permanent Archive identities while preserving provenance back to the original Record.
+
+| Requirement | Result | Notes |
+|---|---|---|
+| Original Record remains historical | PASS by principle | Published identity is never recycled/deleted. |
+| Create two new physical Records | PASS | New physical works receive new identities. |
+| Express that both originated from original physical Record | **NEEDS DESIGN** | Generic `record_relationships` may work if lineage semantics are explicitly supported. |
+| Original no longer represents one current intact object | **NEEDS DESIGN** | Lifecycle status needs a concept such as transformed/split/superseded without calling it deleted. |
+| Provenance follows descendants without duplicating old history | **NEEDS DESIGN** | Lineage should reference prior Record, not copy every event. |
+| NFC identity on original object | **NEEDS DESIGN** | Must define whether original token resolves to historical Record and links descendants. |
+
+---
+
+## Scenario 18 — two physical works permanently combined
+
+Two separately archived miniatures are physically combined into one permanent conversion. The original Records have meaningful independent histories and NFC identities before the combination.
+
+| Requirement | Result | Notes |
+|---|---|---|
+| Preserve both original Records/history | PASS by principle | No destructive merge of physical provenance. |
+| New combined work receives new Archive identity | PASS conceptually | Physical identity changed materially. |
+| Express derived-from-two lineage | **NEEDS DESIGN** | Same lineage vocabulary as Scenario 17. |
+| Original Records become historical/transformed | **NEEDS DESIGN** | Lifecycle model again. |
+| Old NFC tags continue to resolve intelligibly | **NEEDS DESIGN** | Should lead to historical source and current descendant rather than silently reassign identity. |
+
+### Failure cluster J — physical lineage / transformation
+
+Archive relationships need to distinguish structural membership from **physical lineage** such as split-from, combined-from, transformed-into or derived-from. These relationships are provenance-bearing and should not be treated like ordinary squad membership.
+
+---
+
+## Scenario 19 — duplicate Archive Records discovered after publication
+
+The same physical miniature is accidentally published twice, possibly by the same owner or by two users after a transfer. Both public Archive IDs may already have links, photos or history.
+
+| Requirement | Result | Notes |
+|---|---|---|
+| Detect/report possible duplicate | EXTENSION | Matching/moderation tooling can be added later. |
+| Never recycle either public Archive ID | PASS by principle | Permanence rule holds. |
+| Designate one Record as canonical/current | **NEEDS DESIGN** | Requires explicit duplicate/merged Record resolution. |
+| Preserve links to retired duplicate | **NEEDS DESIGN** | Old Archive ID should resolve to an explanatory historical/redirect state. |
+| Reconcile conflicting ownership/history safely | **NEEDS DESIGN** | Cannot blindly concatenate or overwrite provenance. |
+| Prevent malicious duplicate merge request | **NEEDS DESIGN** | Merge is privileged/verified workflow, not ordinary edit. |
+
+### Failure cluster K — Record supersession / duplicate resolution
+
+Permanent IDs require a non-destructive way to mark a Record as duplicate/superseded/merged while preserving resolution of the old public identity and audit history.
+
+---
+
+## Scenario 20 — malicious NFC / ownership / attribution edits
+
+An attacker scans someone else's public NFC tag, creates an account, attempts to change ownership, replace the painter credit, attach offensive text/media and reassign or disable the NFC identity.
+
+| Requirement | Result | Notes |
+|---|---|---|
+| Public NFC resolution grants no edit authority | PASS by architecture principle | Possession/scan is not authentication or ownership. |
+| Attacker cannot transfer ownership | PASS conceptually | Trusted ownership transaction requires current authority/acceptance. |
+| Attacker cannot reassign/disable NFC identity | **NEEDS DESIGN** | NFC mutation permissions/server functions must explicitly enforce this. |
+| Attacker cannot edit another owner's Record | PASS only if RLS/API design is correct | Mandatory adversarial test, not merely schema assumption. |
+| Attacker cannot alter historical credits | **NEEDS DESIGN** | Contributor assertions need authorization/correction workflow. |
+| Offensive public contribution is screened/reported | EXTENSION | Moderation system. |
+| Security-sensitive changes are auditable | PASS conceptually | Audit module planned. |
+
+**Signal:** NFC lookup and NFC management must be separate capabilities. Knowledge of a public token must never be sufficient authority for mutation.
+
+---
+
+## Scenario 21 — legitimate bulk collection import
+
+A collector imports 2,000 miniatures, many with similar titles, repeated catalogue models and shared photos/metadata. The activity superficially resembles automated spam.
+
+| Requirement | Result | Notes |
+|---|---|---|
+| Efficient bulk draft creation | **NEEDS DESIGN** | Product/API workflow, foundation can support it. |
+| Reuse catalogue references without duplicate catalogue rows | PASS | Normalized catalogue model helps. |
+| Apply shared defaults without destroying individual identity | PASS conceptually | Each physical Record remains separate. |
+| Avoid public-index flood before review | **NEEDS DESIGN** | Draft/publish boundary helps; bulk publishing needs velocity policy. |
+| Abuse controls do not permanently block legitimate collector | **NEEDS DESIGN** | Risk controls need challenge/review/escalation rather than binary bot verdict. |
+| 2,000 signup promotional NFC credits are not created | PASS if entitlement is account-level | Promo is not per Record. |
+
+**Signal:** abuse prevention must distinguish account/content/promotion risk and support legitimate high-volume workflows. Rate limits should throttle or challenge, not corrupt/import partially without recoverability.
+
+---
+
+## Scenario 22 — signup promotional NFC farming and consolidation
+
+An operator creates hundreds of accounts to obtain one free signup NFC activation each, activates Records/tags, then transfers the activated Records to a primary account to consolidate the promotional value.
+
+| Requirement | Result | Notes |
+|---|---|---|
+| Signup account itself does not mint transferable credit automatically | **NEEDS DESIGN** | Promotional entitlement should be eligibility-based. |
+| Promo source remains distinguishable from purchased/subscription credits | PASS conceptually | Credit ledger source/provenance supports this. |
+| Detect repeated promo → activation → rapid transfer → same destination | EXTENSION | Abuse/risk analytics can attach without changing Archive identity. |
+| Legitimate ownership transfer remains allowed | PASS by principle | Do not cripple transfers to solve promotion abuse. |
+| Activated NFC remains active after legitimate transfer | PASS by principle | Activation belongs to Record/NFC identity. |
+| Withhold promo from suspicious account without deleting account | **NEEDS DESIGN** | Entitlement state/eligibility required. |
+| Avoid treating one shared IP/device signal as proof of fraud | PASS by principle | Signals inform risk, not objective truth. |
+
+### Failure cluster L — promotional entitlement lifecycle
+
+The signup bonus should be a controlled promotional entitlement with issuance/eligibility/redemption state, not an unconditional transferable ledger balance created at registration.
+
+---
+
+## Scenario 23 — garbage/SEO spam public publishing
+
+Bots or low-quality accounts create thousands of Records containing keyword spam, affiliate links, nonsense text and duplicate images in an attempt to exploit public indexing.
+
+| Requirement | Result | Notes |
+|---|---|---|
+| Bot account creation can be challenged/rate-limited | EXTENSION | Auth/edge abuse control, not Archive schema. |
+| Draft creation can remain low-friction | PASS | Draft/publication separation works. |
+| Public publication can have stronger controls than signup | **NEEDS DESIGN** | Publication eligibility/risk gate needed outside core Archive identity. |
+| Suppress spam without deleting permanent legitimate Archive identity | PASS conceptually | Moderation separate from publication state. |
+| Prevent spam pages from remaining indexable | **NEEDS DESIGN** | Public read/SEO layer must respect moderation/indexability state. |
+| Preserve moderation/audit history | EXTENSION | Planned moderation/audit modules. |
+
+**Signal:** account creation, Record creation, publication and search-engine indexability are separate trust boundaries. Do not make public/indexable an automatic consequence of having an account.
+
+---
+
+## Scenario 24 — pornography / illegal or abusive public media upload
+
+A malicious account uploads pornography, graphic abuse, stolen images or other prohibited material and tries to attach it to public Archive Records. Some content may pass automated screening and later be reported.
+
+| Requirement | Result | Notes |
+|---|---|---|
+| Validate file type/size before acceptance | PASS by security design | Server-side ingestion requirement. |
+| Screen media at ingestion/change | EXTENSION | Moderation pipeline. |
+| Quarantine/block before public presentation where indicated | **NEEDS DESIGN** | Media moderation state must be distinct from Archive publication. |
+| User reports content that passed screening | EXTENSION | `abuse_reports`/moderation cases. |
+| Remove/suppress offending media without deleting Archive ID | PASS by principle | Permanence does not require hosting abusive content. |
+| Prevent public derivative/indexing while under block | **NEEDS DESIGN** | Storage/public read/SEO enforcement must agree. |
+| Preserve evidence needed for moderation while respecting legal/privacy retention | **NEEDS DESIGN** | Retention/access policy is operational/legal, not public Archive history. |
+
+### Failure cluster M — publication/media moderation state
+
+Media assets and public Archive presentation need explicit moderation/indexability gates. `publication_state` alone is intentionally insufficient and should remain separate from moderation.
+
 # Open findings register
 
 | ID | Finding | Severity | First exposed | Explore with |
@@ -308,6 +487,14 @@ A Record publicly credits Alex as painter. Alex disputes the credit and says Jor
 | F2 | Atomic first-claim and claim trust semantics | **NEEDS DESIGN** | Scenario 12 | concurrent claims, self-reported status |
 | G1 | Mixed-granularity diorama constituents need lightweight representation | **NEEDS DESIGN** | Scenario 09 | later promotion to Archive Record |
 | H1 | Relationship types need hierarchy/exclusivity/cycle semantics | **NEEDS DESIGN** | Scenario 10 | nested groups, simultaneous membership |
+| I1 | User-defined/homebrew affiliations cannot depend solely on canonical reference tables | **NEEDS DESIGN** | Scenario 16 | homebrew, same-name identities, later canonical linking |
+| J1 | Physical split/combine/transformation lineage needs explicit semantics | **NEEDS DESIGN** | Scenario 17 | split, combine, transformed works |
+| J2 | NFC behavior across physical transformation is unresolved | **NEEDS DESIGN** | Scenario 17 | historical token resolution, descendants |
+| K1 | Duplicate/superseded published Record resolution | **NEEDS DESIGN** | Scenario 19 | permanent IDs, redirects, conflicting history |
+| L1 | Signup NFC promotion needs controlled entitlement lifecycle | **NEEDS DESIGN** | Scenario 22 | farming, withholding, redemption |
+| M1 | Publication/indexability needs abuse/risk gating separate from draft creation | **NEEDS DESIGN** | Scenario 23 | SEO spam, mass publishing |
+| M2 | Media moderation state/quarantine separate from Archive publication | **NEEDS DESIGN** | Scenario 24 | prohibited media, reports, storage |
+| M3 | Moderation retention/access policy for abusive evidence | **NEEDS DESIGN** | Scenario 24 | legal/privacy retention |
 
 ## Current architectural signal
 
@@ -317,17 +504,36 @@ A stronger pattern has emerged: contributors, historical owners and durable hist
 
 The source/catalogue and group/relationship foundations are performing well under the tests so far.
 
-## Next scenarios
+## Physical/provenance pass checkpoint
 
-Physical/provenance testing should continue with additional edge cases before resolving the clusters:
+Twenty-four scenarios have now exercised the physical/provenance foundation, including ordinary use, collaboration, incomplete history, restoration, grouping, ownership, NFC, physical transformation, duplicates and adversarial abuse.
 
-1. proxy/recast/rebased miniature used across multiple game systems/factions;
-2. homebrew faction and affiliation not present in reference catalogue;
-3. miniature physically split into two works, or two works permanently combined;
-4. duplicate/merged Archive Records discovered after publication;
-5. stolen Record/NFC identity with malicious ownership or contributor edits;
-6. bulk collection import by a legitimate high-volume collector;
-7. promotional NFC activation farming and consolidation;
-8. malicious public-content publishing/media upload abuse.
+### Foundation pieces that are holding up
 
-After those scenarios, resolve the physical/provenance failure clusters coherently, update the physical schema and full ERD, rerun all physical tests, then run the separate multi-system Play History stress test.
+- `archive_records` as the permanent identity/header.
+- Type-specific extensions rather than one giant miniature table.
+- Catalogue identity separated from finished physical identity.
+- Repeatable `record_sources` rather than one source/model column.
+- Work History separated from current Record state.
+- Generic temporal Record relationships for grouping.
+- Media asset identity separated from Record/media presentation.
+- NFC identity attached to the Record rather than owner/subscription.
+- Draft versus published Archive lifecycle.
+- Separate provenance/evidence/moderation domains rather than one timeline blob.
+
+### Clusters to resolve before declaring the physical schema frozen
+
+1. **Party/person identity:** contributors, historical owners and durable actors outside authenticated accounts.
+2. **Contributor credits:** roles, Record-level versus Work-entry credit, linking, disputes and account deletion.
+3. **Targetable assertions:** evidence/attestation/dispute/correction/supersession semantics.
+4. **Temporal affiliations:** faction/system/current presentation versus represented Play Identity.
+5. **Physical lifecycle:** status versus condition, transformed/split/combined works and lineage.
+6. **Record supersession:** duplicate published Records without recycling IDs.
+7. **Ownership state machine:** transfers plus relinquish → 60-day cooling → claimability → atomic first claim.
+8. **Relationship semantics:** hierarchy, exclusivity, cycles and lightweight non-Record constituents.
+9. **Canonical versus user-defined taxonomy:** homebrew/scoped identities without polluting global reference data.
+10. **Promotion/abuse controls:** signup NFC entitlement, publication/indexability gates and media moderation/quarantine.
+
+### Next action
+
+Resolve these clusters as a coherent architecture revision, update `V2-PHYSICAL-SCHEMA.md` and the full master ERD, then rerun all 24 scenarios against the revised design. Any remaining FAIL/AWKWARD result blocks the physical-schema freeze. Once that passes, move to the separate multi-system Play History torture test.
